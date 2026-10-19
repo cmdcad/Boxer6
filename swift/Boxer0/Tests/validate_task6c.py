@@ -39,7 +39,7 @@ for forbidden in ['rootA.', 'rootB.', '.position', '.xScale', '.yScale', 'Timer'
 reset=scene[scene.index('func resetHealth()'):scene.index('var contactGeometry')]
 assert 'knockdown.cancel()' in reset and 'reaction.cancel()' in reset
 assert 'Text("Orange: down")' in view and 'playback.orangeFrameCount' in view
-assert '8A ' in view
+assert '8A.1 ' in view
 print('PASS: all nine integrated RGBA assets, baseline448, matching down pose, manifest, scene-clock sequence, final recoil, reset, diagnostics and unchanged transforms')
 compiler=shutil.which('swiftc')
 if compiler:

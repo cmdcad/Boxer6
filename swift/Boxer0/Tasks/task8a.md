@@ -365,3 +365,10 @@ swiftc Boxer0/JabPlayback.swift Boxer0/PunchContact.swift Boxer0/HitReactionPlay
 ```
 
 Pending iPhone SE validation: rebuild8A; CPU OFF manual guard/recoil regressions; CPU ON disables manual Guard; idle/far punches cause no defense; close punches sometimes trigger reacting/RAISING and default late HIT; pause during delay and Step/Resume without duplicate decisions; mode switch while reacting/raising, Reset, defeat/down and Rise leave AI idle and guard OFF. With explicitly tuned response, validate held guard/BLOCK/recoil, release, repeated attacks and1.5s cap. Confirm J+C=H+B+M, no CPU movement/attacks and landscape top-strip readability.
+
+
+## Task8A.1 tuning correction
+
+The user confirmed that the original timing produced no blocks before health reached zero. Updated production reaction delays: Jab20ms, Cross100ms. The120ms guard entry remains unchanged, so protection completes at140ms/220ms, before150ms/240ms contact. Attempt probabilities remain60%/75%, preserving ignored attacks and HITs. Range awareness,500ms/650ms holds,1.5s cap, geometry, damage and contact timing are unchanged. Build label8A.1.
+
+The earlier default-timing limitation above describes the superseded8A settings. Added executable Swift fixtures for first-punch protection with both new defaults, alongside the explicit slower-profile late-HIT fixture. Source and timing checks pass; Swift compilation and device validation remain pending.

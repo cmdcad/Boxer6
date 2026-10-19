@@ -22,7 +22,7 @@ for forbidden in ['position =', 'contactTracker =', 'health =']:
 assert 'ProgressView(value: Double(value), total: Double(maximum))' in view
 assert 'Text("\\(value)/\\(maximum)")' in view
 assert 'Button("Reset Health", action: playback.resetHealth)' in view
-assert '8A ' in view
+assert '8A.1 ' in view
 assert view.index('healthHUD\n            SpriteView') > 0
 print('PASS: damage/contact wiring, deduplication guard, bounded health, isolated reset, numeric/proportional HUD source checks')
 compiler = shutil.which('swiftc')

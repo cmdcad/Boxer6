@@ -8,6 +8,8 @@ struct DefensiveAIChecks {
         ai.observe(sequence: 1, kind: .jab, inRange: true, eligible: true)
         precondition(ai.state == .idle)
         ai.setEnabled(true)
+        ai.jabProfile.reactionDelay = 0.10 // explicit slow profile tests late HIT
+        ai.crossProfile.reactionDelay = 0.14
         ai.jabProfile.chance = 1
         ai.crossProfile.chance = 1
         ai.observe(sequence: 2, kind: .cross, inRange: false, eligible: true)
@@ -68,6 +70,21 @@ struct DefensiveAIChecks {
         precondition(guardPose.isEffective)
         ai.cancel(reseed:true);guardPose.cancel()
         precondition(ai.state == .idle && !guardPose.isSelected)
+        // Production defaults must allow both initial punches to be blocked.
+        for kind in [PunchKind.jab, .cross] {
+            var cpu = DefensiveAI()
+            cpu.setEnabled(true)
+            cpu.jabProfile.chance = 1
+            cpu.crossProfile.chance = 1
+            cpu.observe(sequence: 1, kind: kind, inRange: true, eligible: true)
+            let delay = cpu.remaining
+            precondition(cpu.advance(delay) == .raise)
+            var posture = GuardPlayback()
+            posture.toggle()
+            let contactTime = Double(kind.contactFrame) * kind.frameDuration
+            posture.advance(contactTime - delay)
+            precondition(posture.isEffective)
+        }
         print("PASS: default OFF, seeded event decisions, range/eligibility gating, earliest reaction, pause, late Jab, hold cap/release, mode/reset cancellation and normal guard activation")
     }
 }

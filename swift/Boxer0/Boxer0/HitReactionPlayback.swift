@@ -231,8 +231,8 @@ struct DefensiveAIProfile {
     var chance: Double
     var reactionDelay: Double
     var holdDuration: Double
-    static let jab = DefensiveAIProfile(chance: 0.60, reactionDelay: 0.10, holdDuration: 0.50)
-    static let cross = DefensiveAIProfile(chance: 0.75, reactionDelay: 0.14, holdDuration: 0.65)
+    static let jab = DefensiveAIProfile(chance: 0.60, reactionDelay: 0.02, holdDuration: 0.50)
+    static let cross = DefensiveAIProfile(chance: 0.75, reactionDelay: 0.10, holdDuration: 0.65)
 }
 
 enum DefensiveAIState: String { case idle, reacting, guarding }

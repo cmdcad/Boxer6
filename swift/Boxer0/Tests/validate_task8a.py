@@ -8,8 +8,8 @@ scene=(root/'Boxer0/IdleTestScene.swift').read_text(encoding='utf-8')
 model=(root/'Boxer0/HitReactionPlayback.swift').read_text(encoding='utf-8')
 view=(root/'Boxer0/ContentView.swift').read_text(encoding='utf-8')
 ai=model[model.index('struct DefensiveAIProfile'):]
-assert 'chance: 0.60, reactionDelay: 0.10, holdDuration: 0.50' in ai
-assert 'chance: 0.75, reactionDelay: 0.14, holdDuration: 0.65' in ai
+assert 'chance: 0.60, reactionDelay: 0.02, holdDuration: 0.50' in ai
+assert 'chance: 0.75, reactionDelay: 0.10, holdDuration: 0.65' in ai
 assert 'maximumGuardDuration = 1.5' in ai and 'enabled = false' in ai
 assert 'sequence > lastSequence' in ai and 'guard state == .idle' in ai
 for forbidden in ['Timer','DispatchQueue','SKAction','health.','position','contactTracker']:
@@ -23,7 +23,7 @@ assert 'if canRequestGuard { requestGuard(true) }' in scene
 assert 'guardEffectiveAtContact = guardPlayback.isEffective' in scene
 assert 'guardEffective: guardEffectiveAtContact ?? guardPlayback.isEffective' in scene
 assert 'defensiveAI.cancel(reseed: true)' in scene
-assert 'CPU: ON' in view and 'playback.cpuStatus' in view and '8A ' in view
+assert 'CPU: ON' in view and 'playback.cpuStatus' in view and '8A.1 ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0
@@ -40,3 +40,8 @@ if compiler:
         subprocess.run([str(binary)],check=True)
 else:
     print('SKIP: executable Swift checks; swiftc/Xcode unavailable. iPhone validation pending.')
+
+# Verify production timing permits first-punch protection without changing guard/contact.
+assert 0.02 + 0.12 < 3 * 0.05
+assert 0.10 + 0.12 < 4 * 0.06
+print('PASS: default Jab protection140ms < contact150ms; Cross220ms < contact240ms')

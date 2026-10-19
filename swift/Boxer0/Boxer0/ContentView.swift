@@ -342,7 +342,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("8A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("8A.1 · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
