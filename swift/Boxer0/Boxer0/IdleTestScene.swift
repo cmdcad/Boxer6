@@ -93,7 +93,7 @@ final class IdleTestScene: SKScene {
 
     override func willMove(from view: SKView) {
         cancelMovement()
-        if let resignObserver {
+        if let resignObserver = resignObserver { 
             NotificationCenter.default.removeObserver(resignObserver)
             self.resignObserver = nil
         }
