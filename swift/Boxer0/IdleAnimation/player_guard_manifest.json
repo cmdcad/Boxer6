@@ -1,0 +1,48 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "variants": [
+    {
+      "source": "guard_b_0",
+      "target": "guard_a_0"
+    },
+    {
+      "source": "guard_b_1",
+      "target": "guard_a_1"
+    },
+    {
+      "source": "guard_b_2",
+      "target": "guard_a_2"
+    },
+    {
+      "source": "block_jab_b_0",
+      "target": "block_jab_a_0"
+    },
+    {
+      "source": "block_jab_b_1",
+      "target": "block_jab_a_1"
+    },
+    {
+      "source": "block_jab_b_2",
+      "target": "block_jab_a_2"
+    },
+    {
+      "source": "block_cross_b_0",
+      "target": "block_cross_a_0"
+    },
+    {
+      "source": "block_cross_b_1",
+      "target": "block_cross_a_1"
+    },
+    {
+      "source": "block_cross_b_2",
+      "target": "block_cross_a_2"
+    }
+  ]
+}

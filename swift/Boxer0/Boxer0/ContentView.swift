@@ -24,6 +24,12 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var guardHeld = false
+    @Published var guardInputGeneration = 0
+    @Published var canHoldGuard = false
+    @Published var playerGuardAssetsAvailable = false
+    @Published var blueGuardStatus = "LOWERED"
+    @Published var blueBlockFX = "OFF"
     @Published var cpuAttack = "READY"
     @Published var cpuStats = ""
     @Published var cpuLastResult = "-"
@@ -104,6 +110,12 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        guardHeld = scene.guardHeld
+        guardInputGeneration = scene.guardInputGeneration
+        canHoldGuard = scene.canHoldGuard
+        playerGuardAssetsAvailable = scene.playerGuardAssetsAvailable
+        blueGuardStatus = scene.blueGuardStatus
+        blueBlockFX = scene.blueBlockFeedbackLabel
         cpuAttack = scene.cpuAttackLabel
         cpuStats = scene.cpuStats
         cpuLastResult = scene.cpuLastResult
@@ -142,6 +154,11 @@ final class IdlePlayback: ObservableObject {
                 Double(abs(event.attacker.rootPosition.x - event.defender.rootPosition.x)),
                 Double(event.attacker.scaleX), Double(event.defender.scaleX))
         }
+    }
+
+    func setGuardHeld(_ held: Bool) {
+        scene.setGuardHeld(held)
+        syncFromScene()
     }
 
     func toggleCPU() {
@@ -238,6 +255,7 @@ struct ContentView: View {
                 HStack(spacing: 8) {
                     punchButton("Jab", enabled: playback.canJab, action: playback.jab)
                     punchButton("Cross", enabled: playback.canCross, action: playback.cross)
+                    playerGuardControl
                     if showsDevelopmentDiagnostics { debugControls }
                 }
                 .frame(height: 54)
@@ -305,11 +323,15 @@ struct ContentView: View {
             Text("CPU Attack: \(playback.cpuAttack) | \(playback.cpuLastResult)")
             Text(playback.cpuStats)
             Text("Blue: \(playback.blueAnimation)")
+            Text("Blue Guard: \(playback.blueGuardStatus) | FX: \(playback.blueBlockFX)")
         }
     }
 
     @ViewBuilder
     private var assetWarnings: some View {
+        if !playback.playerGuardAssetsAvailable {
+            Text("Player guard assets missing").foregroundColor(Color.red)
+        }
         if !playback.bidirectionalAssetsAvailable {
             Text("8C punch/recovery assets missing").foregroundColor(Color.red)
         }
@@ -395,7 +417,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("8C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("8D · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
@@ -412,6 +434,23 @@ struct ContentView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private var playerGuardControl: some View {
+        Text("Guard")
+            .font(.system(size: 15, weight: .bold, design: .rounded))
+            .foregroundColor(playback.canHoldGuard ? Color.accentColor : Color.secondary)
+            .frame(width: 76, height: 46)
+            .background(playback.guardHeld ? Color.blue.opacity(0.28) : Color.white.opacity(0.8),
+                        in: RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                HoldTouchSurface(title: "Guard", inputGeneration: playback.guardInputGeneration,
+                                 hint: "Hold to defend; protection starts after gloves are raised") { held in
+                    playback.setGuardHeld(held)
+                }
+            )
+            .allowsHitTesting(playback.canHoldGuard)
+            .opacity(playback.canHoldGuard ? 1 : 0.55)
     }
 
     func punchButton(_ title: String, enabled: Bool, action: @escaping () -> Void) -> some View {

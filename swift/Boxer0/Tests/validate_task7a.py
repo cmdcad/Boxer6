@@ -30,7 +30,7 @@ assert 'enum FighterDefenseState' in model and 'entryDuration = 0.12' in model
 assert 'case block = "BLOCK"' in contact
 assert '!overlaps ? .miss : (guardEffective ? .block : .hit)' in contact
 assert 'case .block: blocks += 1' in contact
-assert 'guardEffective: attacker == .blue && (guardEffectiveAtContact ?? guardPlayback.isEffective)' in scene
+assert ': (blueGuardEffectiveAtContact ?? blueGuard.isEffective)' in scene
 assert 'if event.result == .hit {' in scene and 'guardPlayback.cancel()' in scene
 assert scene.count('tracker.evaluate(')==1
 assert 'guardPlayback.advance(dt)' in scene and 'guardPlayback.step()' in scene

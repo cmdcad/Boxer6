@@ -35,8 +35,8 @@ assert 'boxerB.texture = textures[blockFeedback.frameIndex]' in render
 for forbidden in ['boxerB.position','rootB.position','boxerB.xScale','boxerB.yScale','blockFeedbackNode']:
     assert forbidden not in render
 assert 'blockFeedbackNode' not in scene and 'applyBlockFeedback()' not in scene
-assert 'else if event.result == .block && blockRecoilAssetsAvailable' in scene
-assert 'Block recoil assets missing' in view and '8C ' in view
+assert 'if event.defenderID == .orange && blockRecoilAssetsAvailable' in scene
+assert 'Block recoil assets missing' in view and '8D ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0
