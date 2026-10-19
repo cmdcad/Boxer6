@@ -133,3 +133,14 @@ the latest source; rebuild this project's Boxer0 target to install these changes
 
 Source checks pass (both movement controls present, no debug ScrollView, balanced
 braces). Actual iOS layout and compilation remain unverified on Windows.
+
+
+### Crash report follow-up — October 19, 2026
+
+User reports Thread 1 EXC_BAD_ACCESS near line 65 in Xcode. The filename and
+backtrace are not yet available, so the cause is unconfirmed. Removed the recently
+added inherited isPaused property observer, which called sprite mutations during
+SpriteKit pause changes. Added an update readiness guard and cancellation for
+negative or >250 ms elapsed-time gaps instead. App focus and scene removal still
+cancel immediately. Source checks pass; no Swift/iOS runtime is available here.
+Rebuild and obtain the highlighted filename and Thread 1 backtrace if it persists.

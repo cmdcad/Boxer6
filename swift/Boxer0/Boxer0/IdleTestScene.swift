@@ -45,12 +45,6 @@ final class IdleTestScene: SKScene {
     static let defaultMoveSpeed: CGFloat = 100
 
     var movementSpeed: CGFloat = IdleTestScene.defaultMoveSpeed
-    override var isPaused: Bool {
-        didSet {
-            if isPaused { cancelMovement() }
-            lastTime = 0
-        }
-    }
     var isPlaying = true
     var playbackSpeed: IdlePlaybackSpeed = .normal
     var showsGuides = true {
@@ -112,12 +106,22 @@ final class IdleTestScene: SKScene {
     }
 
     override func update(_ currentTime: TimeInterval) {
+        guard boxerA != nil, boxerB != nil else {
+            lastTime = 0
+            return
+        }
         if lastTime == 0 {
             lastTime = currentTime
             return
         }
         let dt = currentTime - lastTime
         lastTime = currentTime
+        // Resume safely after a suspended render loop without changing nodes
+        // from inside SpriteKit's inherited pause-property setter.
+        guard dt >= 0, dt <= 0.25 else {
+            cancelMovement()
+            return
+        }
         guard isPlaying else { return }
 
         resolveClip()
