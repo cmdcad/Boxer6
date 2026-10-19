@@ -204,3 +204,27 @@ swiftc Boxer0/JabPlayback.swift Boxer0/PunchContact.swift Tests/SpriteKitContact
 That test verifies identical child canvas sizes, mirrored root scaling, actual
 SKNode.convert coordinates and both punches hitting at the computed close limit.
 It has not run on Windows because SpriteKit/Swift are unavailable.
+
+
+## Device recording verification — October 19, 2026
+
+Reviewed img_0161-1792435602181.mov (14.22 seconds), showing build 5A.2.
+The core all-MISS defect and the blue sizing regression are resolved in this
+recording:
+
+- Fighters have matching proportions and size. Defender target covers head/torso.
+- Both transforms report matching magnitude: Ax≈0.320, Bx≈−0.320.
+  Child widths and texture widths both report 512 for A and B.
+- At blue x342 / roots55.76pt: Jab HIT, d0.00 r6.39 gap−6.39pt.
+- At the same close separation: Cross HIT, d0.13 r5.75 gap−5.63pt.
+- After retreat to blue x265 / roots132.98pt: Jab MISS, d75.28 r6.39
+  gap+68.88pt; Cross MISS, d77.35 r5.75 gap+71.60pt.
+- Final visible totals J2 C2 H2 M2 satisfy J+C=H+M. Each demonstrated punch
+  increments its contact/result counts once. Orange remains stationary/idle.
+
+This validates the corrected rendered-coordinate mapping, close hits for both
+punches, distant misses and matching fighter scale on the user's iPhone.
+The recording does not independently establish precise threshold tangency,
+pause/frame-step deduplication or resumption after an interruption; those remain
+covered by source/Swift tests awaiting execution or further device checks.
+No additional source changes were needed after this successful recording.

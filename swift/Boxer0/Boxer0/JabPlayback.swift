@@ -30,7 +30,7 @@ struct PunchPlayback {
         return true
     }
 
-    mutating func advance(_ duration: Double) -> (contact: Bool, completed: Bool) {
+    mutating func advance(_ duration: Double, preserveContactPose: Bool = false) -> (contact: Bool, completed: Bool) {
         guard isActive, duration.isFinite, duration >= 0 else { return (false, false) }
         accumulator += duration
         var contact = false
@@ -45,6 +45,13 @@ struct PunchPlayback {
             if frameIndex == kind.contactFrame && !reachedContact {
                 reachedContact = true
                 contact = true
+                if preserveContactPose && accumulator + 1e-10 >= kind.frameDuration {
+                    // On a hitch, present contact rather than reacting against
+                    // a punch already rendered in withdrawal. Normal FPS timing
+                    // is unchanged; only an otherwise skipped contact is held.
+                    accumulator = 0
+                    return (true, false)
+                }
             }
             if frameIndex == kind.frameCount - 1 && accumulator + 1e-10 >= kind.frameDuration {
                 // A delayed render tick must still present recovery, rather

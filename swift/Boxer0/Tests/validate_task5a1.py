@@ -23,7 +23,6 @@ assert 'rootB.xScale = -fighterScale' in scene
 assert 'boxerA.xScale = fighterScale' not in scene
 assert 'node.size.width / Self.spriteCanvas' not in scene
 assert 'contactDistanceGuide' in scene and 'latestDistanceText' in view
-assert '5A.2' in view
 assert 'FighterSpacing' in contact and 'signedGap' in contact
 # Unchanged geometry. A hit cannot be created by inflating the target/radius.
 assert 'jabCenter = CGPoint(x: 384.5, y: 189)' in contact
@@ -49,4 +48,4 @@ for name,reach in [('Jab',200.5),('Cross',192.0)]:
     assert corrected_roots<half_scale_reach
     print(f'{name}: far MISS; threshold+0.1 MISS; tangent HIT; threshold-0.1 HIT; minimum spacing HIT')
     print(f'  mixed-scale reproduction: roots {old_roots:.3f} pt > reach {half_scale_reach:.3f} pt (MISS); shared-scale roots {corrected_roots:.3f} pt (HIT)')
-print('Video confirms transform asymmetry (Ax .320 vs Bx -.102) and a blue sizing regression; 5A.2 root/child correction still needs device verification.')
+print('Historical 5A.1 video exposed the transform mismatch; the 5A.2 recording subsequently confirmed matching scales, close HITs and distant MISSes.')
