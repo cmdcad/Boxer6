@@ -26,6 +26,9 @@ final class IdlePlayback: ObservableObject {
     @Published var canvasInfo = ""
     @Published var latestWasHit = false
     @Published var hasContactResult = false
+    @Published var orangeState = DefenderClip.idle.rawValue
+    @Published var orangeFrameIndex = 0
+    @Published var reactionAssetsAvailable = false
     @Published var canJab = false
     @Published var canCross = false
     @Published var crossAssetsAvailable = false
@@ -70,6 +73,9 @@ final class IdlePlayback: ObservableObject {
         hitCount = scene.hitCount
         missCount = scene.missCount
         canvasInfo = scene.textureCanvasInfo
+        orangeState = scene.orangeClip.rawValue
+        orangeFrameIndex = scene.orangeFrameIndex
+        reactionAssetsAvailable = scene.reactionAssetsAvailable
         if let event = scene.latestContact {
             latestResultText = "\(event.kind == .jab ? "JAB" : "CROSS") · \(event.result.rawValue)"
             latestWasHit = event.result == .hit
@@ -139,6 +145,11 @@ struct ContentView: View {
                     if showsDevelopmentDiagnostics && playback.showsGuides {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(playback.latestResultText)
+                            if playback.reactionAssetsAvailable {
+                                Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/4")
+                            } else {
+                                Text("Orange: reaction assets missing")
+                            }
                             if playback.hasContactResult {
                                 Text(playback.latestDistanceText)
                                 Text(playback.latestTransformText)
@@ -191,7 +202,7 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("5A.2 · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("5B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

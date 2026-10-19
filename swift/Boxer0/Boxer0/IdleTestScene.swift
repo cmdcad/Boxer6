@@ -2,7 +2,7 @@
 //  IdleTestScene.swift
 //  Boxer0
 //
-//  Idle playback, Task 3B footwork and Task 5A spatial punch contact.
+//  Idle playback, Task 3B footwork and Task 5B synchronized hit reactions.
 //
 
 import SpriteKit
@@ -62,9 +62,13 @@ final class IdleTestScene: SKScene {
 
     private var motion = FootworkMotion()
     private var punch = PunchPlayback()
+    private var reaction = HitReactionPlayback()
     private var hasFocus = true
     private(set) var jabAssetsAvailable = false
     private(set) var crossAssetsAvailable = false
+    private(set) var reactionAssetsAvailable = false
+    var orangeClip: DefenderClip { reaction.clip }
+    var orangeFrameIndex: Int { reaction.isActive ? reaction.frameIndex : orangeFrame }
     private var contactTracker = PunchContactTracker()
     var contactGeometry = PunchContactGeometry() {
         didSet { updateContactGuides() }
@@ -132,6 +136,7 @@ final class IdleTestScene: SKScene {
     private var retreatA: [SKTexture] = []
     private var jabA: [SKTexture] = []
     private var crossA: [SKTexture] = []
+    private var hitReactB: [SKTexture] = []
     private var groundLine: SKShapeNode!
     private var targetGuide: SKShapeNode!
     private var gloveRadiusGuide: SKShapeNode!
@@ -173,6 +178,9 @@ final class IdleTestScene: SKScene {
     override func willMove(from view: SKView) {
         cancelMovement()
         punch.cancel()
+        reaction.cancel()
+        orangeFrame = 0
+        orangeAccumulator = 0
         contactTracker.finish()
         settleIdle()
         applyFrames()
@@ -210,11 +218,12 @@ final class IdleTestScene: SKScene {
             return
         }
         guard isPlaying, hasFocus else { return }
+        // Advance the previous orange state before processing this tick's HIT.
+        // A newly triggered recoil must still display frame zero at applyFrames.
+        advanceOrange(dt)
         if punch.isActive {
-            let event = punch.advance(dt)
+            let event = punch.advance(dt, preserveContactPose: true)
             handlePunchEvent(event)
-            animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
-                         speed: playbackSpeed.rawValue, dt: dt)
             applyFrames()
             publishIfNeeded()
             return
@@ -245,8 +254,6 @@ final class IdleTestScene: SKScene {
             }
         }
         if motion.velocity == 0 { settleIdle() }
-        animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
-                     speed: playbackSpeed.rawValue, dt: dt)
         blueXFraction = rootA.position.x / max(size.width, 1)
         originA.position = rootA.position
 
@@ -258,6 +265,8 @@ final class IdleTestScene: SKScene {
     private var lastPublishedX: CGFloat = .nan
     private var lastPublishedClip: FighterClip?
     private var lastPublishedVelocity: Double = .nan
+    private var lastPublishedOrangeFrame = -1
+    private var lastPublishedOrangeClip: DefenderClip?
 
     private func publishIfNeeded() {
         let x = rootA.position.x
@@ -266,11 +275,15 @@ final class IdleTestScene: SKScene {
             || lastPublishedX.isNaN
             || abs(x - lastPublishedX) >= 1
             || lastPublishedVelocity.isNaN
-            || abs(motion.velocity - lastPublishedVelocity) >= 1 {
+            || abs(motion.velocity - lastPublishedVelocity) >= 1
+            || orangeFrameIndex != lastPublishedOrangeFrame
+            || orangeClip != lastPublishedOrangeClip {
             lastPublishedFrame = frameIndex
             lastPublishedClip = activeClip
             lastPublishedX = x
             lastPublishedVelocity = motion.velocity
+            lastPublishedOrangeFrame = orangeFrameIndex
+            lastPublishedOrangeClip = orangeClip
             onPlaybackChange?()
         }
     }
@@ -293,14 +306,15 @@ final class IdleTestScene: SKScene {
         motion.stop()
         lastTime = 0
         blueAccumulator = 0
+        // As in update: step old orange state first, then a new HIT may restart
+        // frame zero. Never step a reaction again in the tick it is triggered.
+        stepOrange()
         if punch.isActive {
             let event = punch.step()
             handlePunchEvent(event)
         } else {
             frameIndex = (frameIndex + 1) % activeClip.frameCount
         }
-        orangeAccumulator = 0
-        orangeFrame = (orangeFrame + 1) % FighterClip.idle.frameCount
         applyFrames()
         onPlaybackChange?()
     }
@@ -361,6 +375,10 @@ final class IdleTestScene: SKScene {
             if let contact = contactTracker.evaluate(punch.kind,
                     attacker: canvasTransform(for: boxerA),
                     defender: canvasTransform(for: boxerB), geometry: contactGeometry) {
+                if reactionAssetsAvailable && reaction.receive(contact.result) {
+                    orangeFrame = 0
+                    orangeAccumulator = 0
+                }
                 onPunchContact?(contact)
             }
         }
@@ -371,6 +389,30 @@ final class IdleTestScene: SKScene {
             settleIdle()
         } else {
             frameIndex = punch.frameIndex
+        }
+    }
+
+    private func advanceOrange(_ dt: TimeInterval) {
+        if reaction.isActive {
+            if reaction.advance(dt) {
+                orangeFrame = 0
+                orangeAccumulator = 0
+            }
+        } else {
+            animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
+                         speed: playbackSpeed.rawValue, dt: dt)
+        }
+    }
+
+    private func stepOrange() {
+        if reaction.isActive {
+            if reaction.step() {
+                orangeFrame = 0
+                orangeAccumulator = 0
+            }
+        } else {
+            orangeAccumulator = 0
+            orangeFrame = (orangeFrame + 1) % FighterClip.idle.frameCount
         }
     }
 
@@ -421,6 +463,8 @@ final class IdleTestScene: SKScene {
         crossA = loadPunchTextures(prefix: "cross_a", count: PunchKind.cross.frameCount)
         jabAssetsAvailable = jabA.count == PunchKind.jab.frameCount
         crossAssetsAvailable = crossA.count == PunchKind.cross.frameCount
+        hitReactB = loadPunchTextures(prefix: "hit_react_b", count: HitReactionPlayback.frameCount)
+        reactionAssetsAvailable = hitReactB.count == HitReactionPlayback.frameCount
     }
 
     private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
@@ -578,7 +622,11 @@ final class IdleTestScene: SKScene {
         }
         guard !blueTextures.isEmpty, !idleB.isEmpty else { return }
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
-        boxerB.texture = idleB[orangeFrame % idleB.count]
+        if reaction.isActive && reactionAssetsAvailable {
+            boxerB.texture = hitReactB[reaction.frameIndex]
+        } else {
+            boxerB.texture = idleB[orangeFrame % idleB.count]
+        }
         textureCanvasInfo = "child A\(Int(boxerA.size.width)) B\(Int(boxerB.size.width)) · tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0))"
         updateContactGuides()
     }

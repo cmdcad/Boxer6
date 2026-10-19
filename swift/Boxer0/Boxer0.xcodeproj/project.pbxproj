@@ -15,6 +15,7 @@
 		4E9E6D123085A90000DAD680 /* FootworkMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D133085A90000DAD680 /* FootworkMotion.swift */; };
 		4E9E6D143085A90000DAD680 /* JabPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D153085A90000DAD680 /* JabPlayback.swift */; };
 		4E9E6D163085A90000DAD680 /* PunchContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D173085A90000DAD680 /* PunchContact.swift */; };
+		4E9E6D183085A90000DAD680 /* HitReactionPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		4E9E6D133085A90000DAD680 /* FootworkMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FootworkMotion.swift; sourceTree = "<group>"; };
 		4E9E6D153085A90000DAD680 /* JabPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabPlayback.swift; sourceTree = "<group>"; };
 		4E9E6D173085A90000DAD680 /* PunchContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PunchContact.swift; sourceTree = "<group>"; };
+		4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HitReactionPlayback.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +67,7 @@
 				4E9E6D133085A90000DAD680 /* FootworkMotion.swift */,
 				4E9E6D153085A90000DAD680 /* JabPlayback.swift */,
 				4E9E6D173085A90000DAD680 /* PunchContact.swift */,
+				4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */,
 				4E9E6D053085A68700DAD680 /* Assets.xcassets */,
 				4E9E6D073085A68700DAD680 /* Preview Content */,
 			);
@@ -154,6 +157,7 @@
 				4E9E6D123085A90000DAD680 /* FootworkMotion.swift in Sources */,
 				4E9E6D143085A90000DAD680 /* JabPlayback.swift in Sources */,
 				4E9E6D163085A90000DAD680 /* PunchContact.swift in Sources */,
+				4E9E6D183085A90000DAD680 /* HitReactionPlayback.swift in Sources */,
 				4E9E6D023085A68100DAD680 /* Boxer0App.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

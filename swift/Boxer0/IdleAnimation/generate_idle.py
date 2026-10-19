@@ -74,7 +74,7 @@ def draw_ellipse(draw: ImageDraw.ImageDraw, cx, cy, rx, ry, fill, outline, strok
     draw.ellipse(box, fill=fill, outline=outline, width=stroke)
 
 
-def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead_x: float, rear_x: float, lead_pose=None, rear_pose=None, torso_points=None, head_dx=0) -> Image.Image:
+def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead_x: float, rear_x: float, lead_pose=None, rear_pose=None, torso_points=None, head_dx=0, rear_in_front=True) -> Image.Image:
     s = SUPERSAMPLE
     img = Image.new("RGBA", (CANVAS * s, CANVAS * s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
@@ -112,6 +112,10 @@ def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead
     if rear_pose is None:
         limb(247, 199, 235, 222, 30, 24, 0, uy)
         limb(235, 222, 278, 184, 27, 21, 0, uy)
+    elif not rear_in_front:
+        rear_shoulder, rear_elbow, rear_wrist = rear_pose
+        limb(*rear_shoulder, *rear_elbow, 30, 24, 0, uy)
+        limb(*rear_elbow, *rear_wrist, 27, 21, 0, uy)
 
     torso = [(235, 184), (279, 183), (302, 209), (307, 257), (292, 300), (237, 298), (220, 254), (224, 211)]
     filled_poly(torso_points if torso_points is not None else torso, SKIN, 0, uy)
@@ -130,7 +134,7 @@ def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead
     limb(*shoulder, *elbow, 30, 24, 0, uy)
     limb(*elbow, *wrist, 27, 21, 0, uy)
 
-    if rear_pose is not None:
+    if rear_pose is not None and rear_in_front:
         rear_shoulder, rear_elbow, rear_wrist = rear_pose
         limb(*rear_shoulder, *rear_elbow, 30, 24, 0, uy)
         limb(*rear_elbow, *rear_wrist, 27, 21, 0, uy)
