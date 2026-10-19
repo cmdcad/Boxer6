@@ -155,3 +155,52 @@ this recording demonstrates the original failure, not validation of the fix.
 API reference used during review: Apple's Working with Sprites explains that
 base sprite size is subsequently scaled by xScale/yScale:
 https://developer-mdn.apple.com/library/archive/documentation/GraphicsAnimation/Conceptual/SpriteKit_PG/Sprites/Sprites.html
+
+
+## Second recording and corrective patch — 5A.2
+
+Reviewed img_0160-1792435008173.mov (21.34 seconds). It displays “5A.1”.
+The blue fighter is now much larger than orange and partly clipped above the
+scene. Target remains at orange's legs; all sampled results are still MISS.
+Readouts show Ax≈0.320 and Bx≈−0.102 despite the intended matching proportions.
+At close range, roots≈44.45 pt, Jab d49.99/r6.39/gap+43.60 pt and Cross
+d50.95/r5.75/gap+45.20 pt. The resulting MISS is internally correct for that
+misaligned geometry. It is not a counter or contact-marker failure.
+
+The previous in-playback size normalization introduced a visible sizing regression;
+its effect is withdrawn. These observations supersede any suggestion that 5A.1
+was ready for acceptance. The exact size/scale mutation order in the Mac runtime
+has not been independently inspected, but unequal rendered fighters and conversion
+scales are directly visible in the recording.
+
+Reworked the scene minimally to separate responsibilities:
+
+- rootA/rootB are plain SKNodes that own movement, scale and facing.
+- Each root has one SKSpriteNode child, initialized once with size512×512,
+  anchor(0.5,0.125), child position0 and child scales1.
+- Playback now changes textures only. Removed the size mutations from applyFrames.
+- All movement, baseline, origins, resizing and position diagnostics use the roots.
+- Contact conversion samples child-local unit vectors (1,0)/(0,1) through
+  SpriteKit into scene space. It no longer multiplies by node.size/512. One local
+  unit is one canvas pixel; only the parent applies fighter scale/mirroring.
+- Spacing, target, glove center and radius use that same converted basis.
+- All existing contact centers, radii, target and body-gap constants are unchanged.
+- Version is now “5A.2”. Canvas diagnostics report child widths and texture widths.
+
+Expected diagnostic at unchanged SE scene size: Ax≈+0.320, Bx≈−0.320, matching
+fighter sizes, target over upper body, roots≈55.8pt at the close boundary. Jab and
+Cross should both reach. The new root/child implementation still needs a rebuilt
+iPhone test; do not mark the defect resolved from numerical checks alone.
+
+Passed updated python Tests/validate_task5a1.py (source architecture checks and
+unchanged-geometry range checks). Added a real SpriteKit scene-graph check for
+macOS to cover the adapter gap missed by pure math tests:
+
+```sh
+swiftc Boxer0/JabPlayback.swift Boxer0/PunchContact.swift Tests/SpriteKitContactChecks.swift -o /tmp/sprite-contact-checks
+/tmp/sprite-contact-checks
+```
+
+That test verifies identical child canvas sizes, mirrored root scaling, actual
+SKNode.convert coordinates and both punches hitting at the computed close limit.
+It has not run on Windows because SpriteKit/Swift are unavailable.
