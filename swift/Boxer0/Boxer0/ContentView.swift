@@ -92,16 +92,20 @@ struct ContentView: View {
 
             VStack(spacing: 8) {
                 HStack(alignment: .bottom, spacing: 12) {
-                    PressHoldButton(title: "Retreat", pressed: playback.holdRetreat, action: playback.setRetreat)
+                    PressHoldButton(title: "Hold Retreat", pressed: playback.holdRetreat, action: playback.setRetreat)
                     Spacer()
                     statusLabel
                     Spacer()
-                    PressHoldButton(title: "Advance", pressed: playback.holdAdvance, action: playback.setAdvance)
+                    PressHoldButton(title: "Hold Advance", pressed: playback.holdAdvance, action: playback.setAdvance)
                 }
+                .frame(minHeight: 52)
                 debugControls
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 12)
             .padding(.bottom, 8)
+            .frame(maxWidth: .infinity)
+            .zIndex(1)
         }
         .preferredColorScheme(ColorScheme.light)
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
@@ -130,6 +134,9 @@ struct ContentView: View {
             }
             .padding(8)
         }
+        // A horizontal ScrollView otherwise accepts all available height and
+        // can push the movement row above the screen in the bottom VStack.
+        .frame(height: 54)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
@@ -153,8 +160,12 @@ struct PressHoldButton: View {
     var body: some View {
         Text(title)
             .font(.system(size: 16, weight: .bold, design: .rounded))
+            .foregroundColor(Color(red: 0.08, green: 0.20, blue: 0.36))
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
             .padding(.horizontal, 18)
             .padding(.vertical, 12)
+            .frame(minWidth: 132, minHeight: 52)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(pressed ? Color.accentColor.opacity(0.28) : Color.white.opacity(0.72))

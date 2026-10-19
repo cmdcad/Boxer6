@@ -103,3 +103,18 @@ Still requires Xcode on macOS / an iPhone:
   footwork is retained; absence of visible sliding has not been established.
 
 Task 3A is implemented but device acceptance remains pending.
+
+
+### Follow-up: movement controls missing on iPhone
+
+The bottom controls contained a horizontal ScrollView with no height constraint.
+That flexible view could consume the available vertical space and push the
+movement row offscreen. Constrained the debug strip to 54 points and the control
+stack to its content height. Added explicit 52-point movement targets labeled
+“Hold Retreat” and “Hold Advance”, with explicit dark text for contrast. The
+controls remain within the safe area while the SpriteKit background fills the
+screen. No fighter layout or input semantics changed.
+
+Source review confirms the bounded debug strip and both movement controls are
+included in ContentView. iPhone rendering and interaction still require a rebuilt
+app from Xcode; they cannot be verified on this Windows host.
