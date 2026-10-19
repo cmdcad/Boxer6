@@ -47,14 +47,21 @@ struct PunchContactGeometry {
     func center(for kind: PunchKind) -> CGPoint { kind == .jab ? jabCenter : crossCenter }
     func radius(for kind: PunchKind) -> CGFloat { kind == .jab ? jabRadius : crossRadius }
 
+    static func nearestPoint(to center: CGPoint, on target: CGRect) -> CGPoint {
+        CGPoint(x: min(max(center.x, target.minX), target.maxX),
+                y: min(max(center.y, target.minY), target.maxY))
+    }
+
+    static func distance(center: CGPoint, target: CGRect) -> CGFloat {
+        let nearest = nearestPoint(to: center, on: target)
+        return hypot(center.x - nearest.x, center.y - nearest.y)
+    }
+
     static func intersects(center: CGPoint, radius: CGFloat, target: CGRect) -> Bool {
         guard !target.isEmpty, radius >= 0 else { return false }
-        let x = min(max(center.x, target.minX), target.maxX)
-        let y = min(max(center.y, target.minY), target.maxY)
-        let dx = center.x - x
-        let dy = center.y - y
-        return dx * dx + dy * dy <= radius * radius + 1e-10
+        return distance(center: center, target: target) <= radius + 1e-10
     }
+
 }
 
 struct PunchContactEvent {
@@ -64,6 +71,34 @@ struct PunchContactEvent {
     let center: CGPoint
     let radius: CGFloat
     let target: CGRect
+    let attacker: SpriteCanvasTransform
+    let defender: SpriteCanvasTransform
+    var centerDistance: CGFloat { PunchContactGeometry.distance(center: center, target: target) }
+    // <=0 means intersection; >0 means actual separation between circle and target.
+    var signedGap: CGFloat { centerDistance - radius }
+}
+
+/// Uses the SAME rendered transforms as contact evaluation, not a parallel
+/// layout-scale estimate. Texture logical size cannot make reach impossible.
+struct FighterSpacing {
+    var bodyBounds = CGRect(x: 220, y: 183, width: 88, height: 117)
+    var visibleBounds = CGRect(x: 149, y: 0, width: 249, height: 512)
+    var minimumBodyGapFactor: CGFloat = 0.8
+
+    func horizontalLimits(attacker: SpriteCanvasTransform, defender: SpriteCanvasTransform,
+                          sceneWidth: CGFloat, edgePadding: CGFloat) -> ClosedRange<CGFloat> {
+        let aBody = attacker.sceneRect(fromImage: bodyBounds)
+        let bBody = defender.sceneRect(fromImage: bodyBounds)
+        let aVisible = attacker.sceneRect(fromImage: visibleBounds)
+        let rightOffset = aBody.maxX - attacker.rootPosition.x
+        let visibleLeft = aVisible.minX - attacker.rootPosition.x
+        let visibleRight = aVisible.maxX - attacker.rootPosition.x
+        let gap = max(aBody.width, bBody.width) * max(0, minimumBodyGapFactor)
+        let lower = edgePadding - visibleLeft
+        let upper = min(bBody.minX - gap - rightOffset,
+                        sceneWidth - edgePadding - visibleRight)
+        return lower...max(lower, upper)
+    }
 }
 
 /// Receives contact markers, never render-frame polling. One evaluation per
@@ -96,7 +131,8 @@ struct PunchContactTracker {
         let target = defender.sceneRect(fromImage: geometry.defenderTarget)
         let result: PunchContactResult = PunchContactGeometry.intersects(center: center, radius: radius, target: target) ? .hit : .miss
         let event = PunchContactEvent(sequence: sequence, kind: kind, result: result,
-                                      center: center, radius: radius, target: target)
+                                      center: center, radius: radius, target: target,
+                                      attacker: attacker, defender: defender)
         if kind == .jab { jabContacts += 1 } else { crossContacts += 1 }
         if result == .hit { hits += 1 } else { misses += 1 }
         latest = event

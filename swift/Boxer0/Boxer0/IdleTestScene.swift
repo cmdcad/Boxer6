@@ -77,6 +77,7 @@ final class IdleTestScene: SKScene {
     var hitCount: Int { contactTracker.hits }
     var missCount: Int { contactTracker.misses }
     var latestContact: PunchContactEvent? { contactTracker.latest }
+    private(set) var textureCanvasInfo = "Textures pending"
     var onPunchContact: ((PunchContactEvent) -> Void)?
     var canStartJab: Bool {
         jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
@@ -131,6 +132,7 @@ final class IdleTestScene: SKScene {
     private var targetGuide: SKShapeNode!
     private var gloveRadiusGuide: SKShapeNode!
     private var glovePointGuide: SKShapeNode!
+    private var contactDistanceGuide: SKShapeNode!
     private var originA: SKShapeNode!
     private var originB: SKShapeNode!
     private var lastTime: TimeInterval = 0
@@ -465,10 +467,16 @@ final class IdleTestScene: SKScene {
         glovePointGuide = SKShapeNode(circleOfRadius: 2)
         glovePointGuide.zPosition = 6
         addChild(glovePointGuide)
+        contactDistanceGuide = SKShapeNode()
+        contactDistanceGuide.lineWidth = 1
+        contactDistanceGuide.zPosition = 5
+        addChild(contactDistanceGuide)
     }
 
     private func makeBoxer(texture: SKTexture, mirrored: Bool) -> SKSpriteNode {
         let node = SKSpriteNode(texture: texture)
+        // Enforce the 512-point canvas contract independently of texture scale.
+        node.size = CGSize(width: Self.spriteCanvas, height: Self.spriteCanvas)
         node.anchorPoint = Self.originAnchor
         node.xScale = mirrored ? -1 : 1
         node.zPosition = 2
@@ -527,30 +535,25 @@ final class IdleTestScene: SKScene {
         updateContactGuides()
     }
 
-    private func extents() -> (left: CGFloat, right: CGFloat) {
-        let left = (Self.figureOriginX - Self.contentMinX) * fighterScale
-        let right = (Self.contentMaxX - Self.figureOriginX) * fighterScale
-        return (left, right)
+    private func movementLimits() -> ClosedRange<CGFloat> {
+        let spacing = FighterSpacing(
+            bodyBounds: CGRect(x: Self.bodyMinX, y: 183, width: Self.bodyMaxX - Self.bodyMinX, height: 117),
+            visibleBounds: CGRect(x: Self.contentMinX, y: 0, width: Self.contentMaxX - Self.contentMinX, height: Self.spriteCanvas),
+            minimumBodyGapFactor: minimumBodyGapFactor)
+        return spacing.horizontalLimits(attacker: canvasTransform(for: boxerA),
+            defender: canvasTransform(for: boxerB), sceneWidth: size.width,
+            edgePadding: Self.edgePaddingPoints)
     }
 
     @discardableResult
     private func clampBlue() -> Bool {
-        let box = extents()
-        let minX = Self.edgePaddingPoints + box.left
-        let bodyRight = (Self.bodyMaxX - Self.figureOriginX) * fighterScale
-        let bodyWidth = (Self.bodyMaxX - Self.bodyMinX) * fighterScale
-        let gap = bodyWidth * max(0, minimumBodyGapFactor)
-        // Mirroring turns orange's torso-right extent into its torso-left extent.
-        let orangeBodyLeft = boxerB.position.x - bodyRight
-        let maxX = min(orangeBodyLeft - gap - bodyRight,
-                       size.width - Self.edgePaddingPoints - box.right)
-        let upper = max(minX, maxX)
+        let limits = movementLimits()
         let proposedX = boxerA.position.x
-        boxerA.position.x = min(max(proposedX, minX), upper)
+        boxerA.position.x = min(max(proposedX, limits.lowerBound), limits.upperBound)
         boxerA.position.y = groundY
         let blocked = proposedX != boxerA.position.x
-            || (proposedX <= minX && motion.velocity < 0)
-            || (proposedX >= upper && motion.velocity > 0)
+            || (proposedX <= limits.lowerBound && motion.velocity < 0)
+            || (proposedX >= limits.upperBound && motion.velocity > 0)
         if blocked { motion.stop() }
         return blocked
     }
@@ -568,13 +571,21 @@ final class IdleTestScene: SKScene {
         guard !blueTextures.isEmpty, !idleB.isEmpty else { return }
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
         boxerB.texture = idleB[orangeFrame % idleB.count]
+        let canvasSize = CGSize(width: Self.spriteCanvas, height: Self.spriteCanvas)
+        if boxerA.size != canvasSize { boxerA.size = canvasSize }
+        if boxerB.size != canvasSize { boxerB.size = canvasSize }
+        textureCanvasInfo = "tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0)) · canvas 512"
         updateContactGuides()
     }
 
     private func canvasTransform(for node: SKSpriteNode) -> SpriteCanvasTransform {
-        SpriteCanvasTransform(rootPosition: node.position,
-            scaleX: node.xScale * node.size.width / Self.spriteCanvas,
-            scaleY: node.yScale * node.size.height / Self.spriteCanvas,
+        // Obtain the basis from SpriteKit itself. Nodes are axis aligned in this
+        // prototype; convert includes the real parent transform and signed scale.
+        let root = node.convert(.zero, to: self)
+        let xBasis = node.convert(CGPoint(x: node.size.width / Self.spriteCanvas, y: 0), to: self)
+        let yBasis = node.convert(CGPoint(x: 0, y: node.size.height / Self.spriteCanvas), to: self)
+        return SpriteCanvasTransform(rootPosition: root,
+            scaleX: xBasis.x - root.x, scaleY: yBasis.y - root.y,
             rootInImage: CGPoint(x: node.anchorPoint.x * Self.spriteCanvas,
                                  y: (1 - node.anchorPoint.y) * Self.spriteCanvas))
     }
@@ -589,6 +600,7 @@ final class IdleTestScene: SKScene {
         let contactVisible = visible && punch.isActive && punch.frameIndex == punch.kind.contactFrame
         gloveRadiusGuide.isHidden = !contactVisible
         glovePointGuide.isHidden = !contactVisible
+        contactDistanceGuide.isHidden = !contactVisible
         guard contactVisible else { return }
         let attacker = canvasTransform(for: boxerA)
         let center = attacker.scenePoint(fromImage: contactGeometry.center(for: punch.kind))
@@ -601,6 +613,12 @@ final class IdleTestScene: SKScene {
         glovePointGuide.position = center
         glovePointGuide.strokeColor = color
         glovePointGuide.fillColor = color
+        let nearest = PunchContactGeometry.nearestPoint(to: center, on: target)
+        let line = CGMutablePath()
+        line.move(to: center)
+        line.addLine(to: nearest)
+        contactDistanceGuide.path = line
+        contactDistanceGuide.strokeColor = color
     }
 
     private func applyGuideVisibility() {

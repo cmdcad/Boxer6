@@ -67,6 +67,38 @@ struct PunchContactChecks {
         tracker.begin(.cross)
         precondition(tracker.evaluate(.cross, attacker: leftAttacker, defender: leftDefender, geometry: geometry)?.result == .hit)
 
+        // Real rendered-canvas scaling, including a texture logical-size mismatch.
+        // Old spacing assumed 512 pixels while contact used 256/512 of that scale.
+        let spacing = FighterSpacing()
+        let textureFactors: [CGFloat] = [0.5, 1, 2]
+        for textureFactor in textureFactors {
+            let actualScale: CGFloat = 0.32 * textureFactor
+            let initialA = SpriteCanvasTransform(rootPosition: CGPoint(x: 170, y: 41), scaleX: actualScale, scaleY: actualScale)
+            let actualB = SpriteCanvasTransform(rootPosition: CGPoint(x: 397, y: 41), scaleX: -actualScale, scaleY: actualScale)
+            let limits = spacing.horizontalLimits(attacker: initialA, defender: actualB, sceneWidth: 568, edgePadding: 20)
+            let closeA = SpriteCanvasTransform(rootPosition: CGPoint(x: limits.upperBound, y: 41), scaleX: actualScale, scaleY: actualScale)
+            for kind in [PunchKind.jab, .cross] {
+                tracker.begin(kind)
+                let contact = tracker.evaluate(kind, attacker: closeA, defender: actualB, geometry: geometry)!
+                precondition(contact.result == .hit && contact.signedGap <= 0)
+                let maximumReach = kind == .jab ? CGFloat(200.5) : CGFloat(192)
+                for (offset,expected) in [(CGFloat(50),PunchContactResult.miss), (CGFloat(0.1),.miss),
+                                         (CGFloat(0),.hit), (CGFloat(-0.1),.hit), (CGFloat(-5),.hit)] {
+                    let a = SpriteCanvasTransform(rootPosition: CGPoint(x: 397 - (maximumReach + offset) * actualScale, y: 41),
+                                                  scaleX: actualScale, scaleY: actualScale)
+                    tracker.begin(kind)
+                    precondition(tracker.evaluate(kind, attacker: a, defender: actualB, geometry: geometry)?.result == expected)
+                }
+            }
+        }
+        // Reproduce the prior mixed-scale failure without changing hitboxes.
+        let halfA = SpriteCanvasTransform(rootPosition: CGPoint(x: 397 - 174.4 * 0.32, y: 41), scaleX: 0.16, scaleY: 0.16)
+        let halfB = SpriteCanvasTransform(rootPosition: CGPoint(x: 397, y: 41), scaleX: -0.16, scaleY: 0.16)
+        for kind in [PunchKind.jab, .cross] {
+            tracker.begin(kind)
+            precondition(tracker.evaluate(kind, attacker: halfA, defender: halfB, geometry: geometry)?.result == .miss)
+        }
+
         // Playback integration: marker entry, pause, step and repeated evaluation.
         for kind in [PunchKind.jab, .cross] {
             var punch = PunchPlayback()
