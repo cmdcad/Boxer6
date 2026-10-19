@@ -60,8 +60,7 @@ struct ContentView: View {
                 .padding(.horizontal, 12)
                 .padding(.bottom, 8)
         }
-        .statusBarHidden(true)
-        .preferredColorScheme(.light)
+        .preferredColorScheme(ColorScheme.light)
     }
 
     private var controls: some View {
