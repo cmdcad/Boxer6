@@ -262,3 +262,9 @@ for the new tuning). Rebuild the iOS target and verify the “3B” status, hold
 reversal, both-held neutral, both walls, pause while holding followed by resume,
 frame stepping and guides. Also test focus loss and judge sliding/transitions
 against the Task 3A recording. Record results before marking visual acceptance.
+
+
+## User acceptance — October 19, 2026
+
+User confirmed Task 3B validated while supplying Task 4A. Proceeding with Task 4A;
+this records device acceptance, not an assertion that Windows ran Swift tests.

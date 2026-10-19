@@ -18,6 +18,10 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var canJab = false
+    @Published var jabAssetsAvailable = false
+    @Published var jabContact = false
+    @Published var jabContactCount = 0
     @Published var holdAdvance = false
     @Published var holdRetreat = false
 
@@ -43,6 +47,15 @@ final class IdlePlayback: ObservableObject {
         holdAdvance = scene.advanceHeld
         holdRetreat = scene.retreatHeld
         inputGeneration = scene.inputGeneration
+        canJab = scene.canStartJab
+        jabAssetsAvailable = scene.jabAssetsAvailable
+        jabContact = scene.showsJabContact
+        jabContactCount = scene.jabContactCount
+    }
+
+    func jab() {
+        scene.startJab()
+        syncFromScene()
     }
 
     func togglePlayback() {
@@ -98,7 +111,11 @@ struct ContentView: View {
                     PressHoldButton(title: "Hold Advance", pressed: playback.holdAdvance, inputGeneration: playback.inputGeneration, action: playback.setAdvance)
                 }
                 .frame(minHeight: 52)
-                if showsDevelopmentDiagnostics { debugControls }
+                HStack(spacing: 8) {
+                    jabButton
+                    if showsDevelopmentDiagnostics { debugControls }
+                }
+                .frame(height: 54)
             }
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 12)
@@ -119,13 +136,35 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("3B · \(playback.clipName)")
+            Text("4A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
+            if !playback.jabAssetsAvailable {
+                Text("Jab assets missing").foregroundColor(.red)
+            } else {
+                Text("Contact · \(playback.jabContactCount)")
+                    .foregroundColor(playback.jabContact ? .orange : .secondary)
+            }
         }
             .font(.system(size: 13, weight: .semibold, design: .monospaced))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private var jabButton: some View {
+        Text("Jab")
+            .font(.system(size: 15, weight: .bold, design: .rounded))
+            .foregroundColor(playback.canJab ? Color.accentColor : Color.secondary)
+            .frame(width: 80, height: 46)
+            .background(Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                HoldTouchSurface(title: "Jab", inputGeneration: playback.inputGeneration,
+                                 hint: "Press once for one jab") { held in
+                    if held { playback.jab() }
+                }
+            )
+            .allowsHitTesting(playback.canJab)
+            .opacity(playback.canJab ? 1 : 0.55)
     }
 
     private var debugControls: some View {
@@ -186,6 +225,7 @@ struct PressHoldButton: View {
 private struct HoldTouchSurface: UIViewRepresentable {
     let title: String
     let inputGeneration: Int
+    var hint = "Touch and hold to move"
     let action: (Bool) -> Void
 
     func makeUIView(context: Context) -> HoldTouchView {
@@ -196,7 +236,7 @@ private struct HoldTouchSurface: UIViewRepresentable {
         view.action = action
         view.inputGeneration = inputGeneration
         view.accessibilityLabel = title
-        view.accessibilityHint = "Touch and hold to move"
+        view.accessibilityHint = hint
         return view
     }
 
@@ -204,6 +244,7 @@ private struct HoldTouchSurface: UIViewRepresentable {
         view.action = action
         view.inputGeneration = inputGeneration
         view.accessibilityLabel = title
+        view.accessibilityHint = hint
     }
 
     static func dismantleUIView(_ view: HoldTouchView, coordinator: ()) {
