@@ -24,6 +24,8 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var cpuEnabled = false
+    @Published var cpuStatus = "OFF"
     @Published var blockCount = 0
     @Published var latestWasBlock = false
     @Published var blockFeedbackLabel = "OFF"
@@ -95,6 +97,8 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        cpuEnabled = scene.cpuEnabled
+        cpuStatus = scene.cpuStatus
         blockCount = scene.blockCount
         blockFeedbackLabel = scene.blockFeedbackLabel
         blockRecoilAssetsAvailable = scene.blockRecoilAssetsAvailable
@@ -124,6 +128,11 @@ final class IdlePlayback: ObservableObject {
                 Double(abs(event.attacker.rootPosition.x - event.defender.rootPosition.x)),
                 Double(event.attacker.scaleX), Double(event.defender.scaleX))
         }
+    }
+
+    func toggleCPU() {
+        scene.toggleCPU()
+        syncFromScene()
     }
 
     func toggleGuard() {
@@ -211,7 +220,7 @@ struct ContentView: View {
                                 Text("Orange: reaction assets missing")
                             }
                             Text("Orange: \(playback.orangeCombatState.rawValue)")
-                            Text("Guard: \(playback.guardStatus)")
+                            Text("CPU: \(playback.cpuStatus) | Guard: \(playback.guardStatus)")
                             Text("Block FX: \(playback.blockFeedbackLabel)")
                             if !playback.blockRecoilAssetsAvailable {
                                 Text("Block recoil assets missing").foregroundColor(.red)
@@ -282,6 +291,10 @@ struct ContentView: View {
             healthIndicator("BLUE", state: playback.blueCombatState, value: playback.blueHealth,
                             maximum: playback.blueMaximumHealth, color: .blue)
             if showsDevelopmentDiagnostics {
+                Button(playback.cpuEnabled ? "CPU: ON" : "CPU: OFF", action: playback.toggleCPU)
+                    .font(.system(size: 12, weight: .semibold))
+                    .frame(minWidth: 60, minHeight: 44)
+                    .buttonStyle(.plain)
                 Button(playback.guardSelected ? "Guard on" : "Guard", action: playback.toggleGuard)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 54, minHeight: 44)
@@ -329,7 +342,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("7B.1 · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("8A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

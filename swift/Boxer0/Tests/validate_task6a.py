@@ -16,13 +16,13 @@ handler = scene[scene.index('private func handlePunchEvent'):scene.index('privat
 assert handler.index('contactTracker.evaluate(') < handler.index('health.receive(contact)') < handler.index('reaction.receive(')
 reset = scene[scene.index('func resetHealth()'):scene.index('var contactGeometry')]
 assert 'health.reset()' in reset
-# Task 7B.1 extends reset to cancel animations while preserving counters/positions.
+# Task 8A extends reset to cancel animations while preserving counters/positions.
 for forbidden in ['position =', 'contactTracker =', 'health =']:
     assert forbidden not in reset
 assert 'ProgressView(value: Double(value), total: Double(maximum))' in view
 assert 'Text("\\(value)/\\(maximum)")' in view
 assert 'Button("Reset Health", action: playback.resetHealth)' in view
-assert '7B.1 ' in view
+assert '8A ' in view
 assert view.index('healthHUD\n            SpriteView') > 0
 print('PASS: damage/contact wiring, deduplication guard, bounded health, isolated reset, numeric/proportional HUD source checks')
 compiler = shutil.which('swiftc')

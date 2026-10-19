@@ -18,6 +18,10 @@ struct PunchPlayback {
     private(set) var frameIndex = 0
     private(set) var reachedContact = false
     private var accumulator = 0.0
+    var timeUntilContact: Double? {
+        guard isActive, !reachedContact else { return nil }
+        return max(0, Double(kind.contactFrame - frameIndex) * kind.frameDuration - accumulator)
+    }
 
     @discardableResult
     mutating func start(_ kind: PunchKind = .jab) -> Bool {

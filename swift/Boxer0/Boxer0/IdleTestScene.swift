@@ -65,6 +65,17 @@ final class IdleTestScene: SKScene {
     private var reaction = HitReactionPlayback()
     private var knockdown = KnockdownPlayback()
     private var guardPlayback = GuardPlayback()
+    private var defensiveAI = DefensiveAI()
+    private var punchStartSequence = 0
+    private var guardEffectiveAtContact: Bool?
+    var cpuEnabled: Bool { defensiveAI.enabled }
+    var cpuStatus: String { defensiveAI.label }
+    func toggleCPU() {
+        defensiveAI.setEnabled(!defensiveAI.enabled)
+        requestGuard(false)
+        applyFrames()
+        onPlaybackChange?()
+    }
     private var blockFeedback = BlockFeedbackPlayback()
     var blockFeedbackLabel: String { blockFeedback.label }
     private(set) var blockRecoilAssetsAvailable = false
@@ -86,6 +97,7 @@ final class IdleTestScene: SKScene {
 
     func startRise() {
         guard canRise, knockdown.startRise() else { return }
+        defensiveAI.cancel()
         blockFeedback.cancel()
         lastTime = 0
         applyFrames()
@@ -94,18 +106,24 @@ final class IdleTestScene: SKScene {
     private(set) var guardAssetsAvailable = false
     var guardStatus: String { guardPlayback.status }
     var guardSelected: Bool { guardPlayback.isSelected }
-    var canToggleGuard: Bool {
+    private var canRequestGuard: Bool {
         guardAssetsAvailable && hasFocus && orangeCombatState == .standing
             && !reaction.isActive && !knockdown.hasStarted
     }
+    var canToggleGuard: Bool { !cpuEnabled && canRequestGuard }
     func toggleGuard() {
         guard canToggleGuard else { return }
+        requestGuard(!guardPlayback.isSelected)
+        applyFrames()
+        onPlaybackChange?()
+    }
+    private func requestGuard(_ selected: Bool) {
+        guard !selected || canRequestGuard else { return }
+        guard guardPlayback.isSelected != selected else { return }
         guardPlayback.toggle()
         if !guardPlayback.isSelected { blockFeedback.cancel() }
         orangeFrame = 0
         orangeAccumulator = 0
-        applyFrames()
-        onPlaybackChange?()
     }
     var orangeClip: DefenderClip {
         if knockdown.hasStarted { return knockdown.clip }
@@ -135,11 +153,13 @@ final class IdleTestScene: SKScene {
 
     func resetHealth() {
         health.reset()
+        defensiveAI.cancel(reseed: true)
         // End pending ownership, not the diagnostic counters or root positions.
         punch.cancel()
         contactTracker.finish()
         reaction.cancel()
         knockdown.cancel()
+        defensiveAI.cancel()
         guardPlayback.cancel()
         blockFeedback.cancel()
         orangeFrame = 0
@@ -269,6 +289,7 @@ final class IdleTestScene: SKScene {
         punch.cancel()
         reaction.cancel()
         knockdown.cancel()
+        defensiveAI.cancel()
         guardPlayback.cancel()
         blockFeedback.cancel()
         orangeFrame = 0
@@ -313,10 +334,18 @@ final class IdleTestScene: SKScene {
         // Advance the previous orange state before processing this tick's HIT.
         // A newly triggered recoil must still display frame zero at applyFrames.
         advanceBlockFeedback(dt)
-        advanceOrange(dt)
+        guardEffectiveAtContact = nil
+        if cpuEnabled, let contactTime = punch.timeUntilContact, contactTime <= dt {
+            advanceOrange(contactTime)
+            guardEffectiveAtContact = guardPlayback.isEffective
+            advanceOrange(max(0, dt - contactTime))
+        } else {
+            advanceOrange(dt)
+        }
         if punch.isActive {
             let event = punch.advance(dt, preserveContactPose: true)
             handlePunchEvent(event)
+            guardEffectiveAtContact = nil
             applyFrames()
             publishIfNeeded()
             return
@@ -460,6 +489,15 @@ final class IdleTestScene: SKScene {
         clearHeldInput()
         motion.stop()
         contactTracker.begin(kind)
+        punchStartSequence += 1
+        let attacker = canvasTransform(for: boxerA)
+        let defender = canvasTransform(for: boxerB)
+        let plausible = PunchContactGeometry.intersects(
+            center: attacker.scenePoint(fromImage: contactGeometry.center(for: kind)),
+            radius: attacker.sceneRadius(fromImage: contactGeometry.radius(for: kind)),
+            target: defender.sceneRect(fromImage: contactGeometry.defenderTarget))
+        defensiveAI.observe(sequence: punchStartSequence, kind: kind,
+                            inRange: plausible, eligible: canRequestGuard)
         setClip(kind == .jab ? .jab : .cross)
         // Present ready before consuming any of the punch frame intervals.
         lastTime = 0
@@ -472,9 +510,10 @@ final class IdleTestScene: SKScene {
             if let contact = contactTracker.evaluate(punch.kind,
                     attacker: canvasTransform(for: boxerA),
                     defender: canvasTransform(for: boxerB), geometry: contactGeometry,
-                    guardEffective: guardPlayback.isEffective) {
+                    guardEffective: guardEffectiveAtContact ?? guardPlayback.isEffective) {
                 health.receive(contact)
                 if contact.result == .hit {
+                    defensiveAI.cancel()
                     guardPlayback.cancel()
                     blockFeedback.cancel()
                 }
@@ -507,6 +546,7 @@ final class IdleTestScene: SKScene {
 
     private func completeOrangeRecovery() {
         guard health.recoverOrange() else { return }
+        defensiveAI.cancel()
         guardPlayback.cancel()
         blockFeedback.cancel()
         orangeFrame = 0
@@ -521,6 +561,29 @@ final class IdleTestScene: SKScene {
     }
 
     private func advanceOrange(_ dt: TimeInterval) {
+        // Split at AI decisions so a late activation receives only the remaining
+        // scene time, rather than a full tick of free guard-entry progression.
+        var remaining = dt
+        var transitions = 0
+        repeat {
+            let slice = min(remaining, defensiveAI.timeToTransition)
+            if slice > 0 { animateOrange(slice) }
+            let request = defensiveAI.advance(slice)
+            remaining = max(0, remaining - slice)
+            if let request = request {
+                switch request {
+                case .raise:
+                    if canRequestGuard { requestGuard(true) }
+                    else { defensiveAI.cancel() }
+                case .release: requestGuard(false)
+                }
+                onPlaybackChange?()
+            }
+            transitions += 1
+        } while remaining > 1e-10 && transitions < 4
+    }
+
+    private func animateOrange(_ dt: TimeInterval) {
         if knockdown.hasStarted {
             if knockdown.advance(dt) { completeOrangeRecovery() }
         } else if reaction.isActive {
@@ -541,6 +604,12 @@ final class IdleTestScene: SKScene {
     }
 
     private func stepOrange() {
+        if cpuEnabled && canRequestGuard {
+            let interval = punch.isActive ? punch.kind.frameDuration
+                : activeClip.cycleDuration / Double(activeClip.frameCount)
+            advanceOrange(interval)
+            return
+        }
         if knockdown.hasStarted {
             if knockdown.step() { completeOrangeRecovery() }
         } else if reaction.isActive {

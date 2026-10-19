@@ -226,3 +226,73 @@ struct BlockFeedbackPlayback {
         // Retain watermark so reset/repeated rendering cannot replay a BLOCK.
     }
 }
+
+struct DefensiveAIProfile {
+    var chance: Double
+    var reactionDelay: Double
+    var holdDuration: Double
+    static let jab = DefensiveAIProfile(chance: 0.60, reactionDelay: 0.10, holdDuration: 0.50)
+    static let cross = DefensiveAIProfile(chance: 0.75, reactionDelay: 0.14, holdDuration: 0.65)
+}
+
+enum DefensiveAIState: String { case idle, reacting, guarding }
+enum DefensiveAIRequest { case raise, release }
+
+/// Receives accepted punch-start identities, never random per-frame polling.
+struct DefensiveAI {
+    var jabProfile = DefensiveAIProfile.jab
+    var crossProfile = DefensiveAIProfile.cross
+    var maximumGuardDuration = 1.5
+    private(set) var enabled = false
+    private(set) var state: DefensiveAIState = .idle
+    private(set) var remaining = 0.0
+    private var pendingHold = 0.0
+    private var continuousGuardTime = 0.0
+    private var lastSequence = 0
+    private var randomState: UInt64
+    private let initialSeed: UInt64
+    init(seed: UInt64 = 12345) { initialSeed = seed; randomState = seed }
+    var label: String { enabled ? state.rawValue : "OFF" }
+    var timeToTransition: Double { state == .idle ? .infinity : remaining }
+
+    mutating func setEnabled(_ value: Bool) { enabled = value; cancel() }
+    mutating func cancel(reseed: Bool = false) {
+        state = .idle
+        remaining = 0
+        pendingHold = 0
+        continuousGuardTime = 0
+        if reseed { randomState = initialSeed }
+    }
+    mutating func observe(sequence: Int, kind: PunchKind, inRange: Bool, eligible: Bool) {
+        guard sequence > lastSequence else { return }
+        lastSequence = sequence
+        guard enabled, eligible, inRange else { return }
+        let profile = kind == .jab ? jabProfile : crossProfile
+        if state == .guarding {
+            remaining = min(max(remaining, profile.holdDuration),
+                            max(0, maximumGuardDuration - continuousGuardTime))
+            return
+        }
+        guard state == .idle else { return } // earliest pending reaction wins
+        randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
+        let draw = Double(randomState >> 11) / 9007199254740992.0
+        guard draw < min(1, max(0, profile.chance)) else { return }
+        state = .reacting
+        remaining = max(0, profile.reactionDelay)
+        pendingHold = max(0, profile.holdDuration)
+    }
+    mutating func advance(_ dt: Double) -> DefensiveAIRequest? {
+        guard enabled, state != .idle, dt.isFinite, dt >= 0 else { return nil }
+        if state == .guarding { continuousGuardTime += dt }
+        remaining = max(0, remaining - dt)
+        guard remaining <= 1e-10 else { return nil }
+        if state == .reacting {
+            state = .guarding
+            continuousGuardTime = 0
+            remaining = min(pendingHold, max(0, maximumGuardDuration))
+            return .raise
+        }
+        cancel()
+        return .release
+    }
+}
