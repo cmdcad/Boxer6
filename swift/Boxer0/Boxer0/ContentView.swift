@@ -221,53 +221,7 @@ struct ContentView: View {
                 .layoutPriority(0)
                 .overlay(alignment: .topLeading) {
                     if showsDevelopmentDiagnostics && playback.showsGuides {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(playback.latestResultText)
-                            if playback.reactionAssetsAvailable {
-                                if playback.orangeState == DefenderClip.down.rawValue {
-                                    Text("Orange: down")
-                                } else if playback.orangeProfile.isEmpty {
-                                    Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
-                                } else {
-                                    Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
-                                }
-                            } else {
-                                Text("Orange: reaction assets missing")
-                            }
-                            Text("Orange: \(playback.orangeCombatState.rawValue)")
-                            Text("CPU: \(playback.cpuStatus) · \(playback.cpuMovement) | Guard: \(playback.guardStatus)")
-                            Text("Block FX: \(playback.blockFeedbackLabel)")
-                            Text("CPU Attack: \(playback.cpuAttack) | \(playback.cpuLastResult)")
-                            Text(playback.cpuStats)
-                            Text("Blue: \(playback.blueAnimation)")
-                            if !playback.bidirectionalAssetsAvailable {
-                                Text("8C punch/recovery assets missing").foregroundColor(.red)
-                            }
-                            if !playback.blockRecoilAssetsAvailable {
-                                Text("Block recoil assets missing").foregroundColor(.red)
-                            }
-                            if !playback.guardAssetsAvailable {
-                                Text("Guard assets missing").foregroundColor(.red)
-                            }
-                            if !playback.riseAssetsAvailable {
-                                Text("Rise assets missing").foregroundColor(.red)
-                            }
-                            if !playback.knockdownAssetsAvailable {
-                                Text("Knockdown/down assets missing").foregroundColor(.red)
-                            }
-                            if playback.hasContactResult {
-                                Text(playback.latestDistanceText)
-                                Text(playback.latestTransformText)
-                                Text(playback.canvasInfo)
-                            }
-                        }
-                            .font(.system(size: 13, weight: .bold, design: .monospaced))
-                            .foregroundColor(playback.hasContactResult
-                                ? (playback.latestWasBlock ? .blue : (playback.latestWasHit ? .green : .red)) : .secondary)
-                            .padding(6)
-                            .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
-                            .padding(8)
-                            .allowsHitTesting(false)
+                        diagnosticsPanel
                     }
                     
                 }
@@ -303,6 +257,84 @@ struct ContentView: View {
         }
         .onDisappear {
             playback.cancelMovement()
+        }
+    }
+
+    private var diagnosticColor: Color {
+        guard playback.hasContactResult else { return Color.secondary }
+        if playback.latestWasBlock { return Color.blue }
+        return playback.latestWasHit ? Color.green : Color.red
+    }
+
+    private var diagnosticsPanel: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(playback.latestResultText)
+            orangeAnimationReadout
+            combatReadout
+            assetWarnings
+            contactGeometryReadout
+        }
+        .font(Font.system(size: 13, weight: .bold, design: .monospaced))
+        .foregroundColor(diagnosticColor)
+        .padding(6)
+        .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
+        .padding(8)
+        .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private var orangeAnimationReadout: some View {
+        if playback.reactionAssetsAvailable {
+            if playback.orangeState == DefenderClip.down.rawValue {
+                Text("Orange: down")
+            } else if playback.orangeProfile.isEmpty {
+                Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
+            } else {
+                Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
+            }
+        } else {
+            Text("Orange: reaction assets missing")
+        }
+    }
+
+    private var combatReadout: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Orange: \(playback.orangeCombatState.rawValue)")
+            Text("CPU: \(playback.cpuStatus) · \(playback.cpuMovement) | Guard: \(playback.guardStatus)")
+            Text("Block FX: \(playback.blockFeedbackLabel)")
+            Text("CPU Attack: \(playback.cpuAttack) | \(playback.cpuLastResult)")
+            Text(playback.cpuStats)
+            Text("Blue: \(playback.blueAnimation)")
+        }
+    }
+
+    @ViewBuilder
+    private var assetWarnings: some View {
+        if !playback.bidirectionalAssetsAvailable {
+            Text("8C punch/recovery assets missing").foregroundColor(Color.red)
+        }
+        if !playback.blockRecoilAssetsAvailable {
+            Text("Block recoil assets missing").foregroundColor(Color.red)
+        }
+        if !playback.guardAssetsAvailable {
+            Text("Guard assets missing").foregroundColor(Color.red)
+        }
+        if !playback.riseAssetsAvailable {
+            Text("Rise assets missing").foregroundColor(Color.red)
+        }
+        if !playback.knockdownAssetsAvailable {
+            Text("Knockdown/down assets missing").foregroundColor(Color.red)
+        }
+    }
+
+    @ViewBuilder
+    private var contactGeometryReadout: some View {
+        if playback.hasContactResult {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(playback.latestDistanceText)
+                Text(playback.latestTransformText)
+                Text(playback.canvasInfo)
+            }
         }
     }
 
