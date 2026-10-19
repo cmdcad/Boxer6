@@ -1,4 +1,6 @@
 import Foundation
+import CoreGraphics
+import UIKit
 
 /// Top-left image coordinates to axis-aligned SpriteKit scene coordinates.
 /// Signed scaleX handles mirroring. rootInImage comes from the sprite anchor.
