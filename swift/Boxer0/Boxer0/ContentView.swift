@@ -223,7 +223,6 @@ struct ContentView: View {
                                 Text(playback.canvasInfo)
                             }
                         }
-                        }
                             .font(.system(size: 13, weight: .bold, design: .monospaced))
                             .foregroundColor(playback.hasContactResult
                                 ? (playback.latestWasBlock ? .blue : (playback.latestWasHit ? .green : .red)) : .secondary)
@@ -381,6 +380,7 @@ struct ContentView: View {
         .buttonStyle(.bordered)
     }
 
+}
 
 struct PressHoldButton: View {
     let title: String
@@ -479,7 +479,6 @@ private final class HoldTouchView: UIView {
         heldTouches.removeAll()
         action?(false)
     }
-}
 }
 //struct ContentView_Previews: PreviewProvider {
 //    static var previews: some View {
