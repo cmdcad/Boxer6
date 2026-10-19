@@ -60,10 +60,10 @@ assert update.count('advanceOrange(dt)')==1
 step=scene[scene.index('func stepFrame()'):scene.index('func setSpeed(')]
 assert step.index('stepOrange()')<step.index('punch.step()')<step.index('handlePunchEvent(event)')<step.index('applyFrames()')
 handler=scene[scene.index('private func handlePunchEvent'):scene.index('private func advanceOrange')]
-assert handler.index('contactTracker.evaluate(')<handler.index('reaction.receive(contact.result)')<handler.index('onPunchContact?(contact)')
+assert handler.index('contactTracker.evaluate(')<handler.index('reaction.receive(contact.result, from: contact.kind)')<handler.index('onPunchContact?(contact)')
 assert 'DispatchQueue' not in handler and 'async' not in handler and 'SKAction' not in handler
 assert 'preserveContactPose &&' in clock
-assert 'Orange:' in view and '5B ·' in view
+assert 'Orange:' in view
 assert 'rootB.position = right' in scene
 assert scene.count('rootB.position =')==1
 project=(ROOT/'Boxer0.xcodeproj/project.pbxproj').read_text()

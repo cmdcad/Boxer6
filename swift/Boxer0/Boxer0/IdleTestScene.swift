@@ -2,7 +2,7 @@
 //  IdleTestScene.swift
 //  Boxer0
 //
-//  Idle playback, Task 3B footwork and Task 5B synchronized hit reactions.
+//  Idle playback, Task 3B footwork and Task 5C profiled hit feedback.
 //
 
 import SpriteKit
@@ -63,6 +63,12 @@ final class IdleTestScene: SKScene {
     private var motion = FootworkMotion()
     private var punch = PunchPlayback()
     private var reaction = HitReactionPlayback()
+    // Optional development tuning, off until readability is reviewed on device.
+    // Does not affect reaction timing, geometry, roots, or counters.
+    var impactEmphasisEnabled = false {
+        didSet { applyImpactEmphasis() }
+    }
+    var orangeProfileLabel: String { reaction.profile?.label ?? "" }
     private var hasFocus = true
     private(set) var jabAssetsAvailable = false
     private(set) var crossAssetsAvailable = false
@@ -375,7 +381,7 @@ final class IdleTestScene: SKScene {
             if let contact = contactTracker.evaluate(punch.kind,
                     attacker: canvasTransform(for: boxerA),
                     defender: canvasTransform(for: boxerB), geometry: contactGeometry) {
-                if reactionAssetsAvailable && reaction.receive(contact.result) {
+                if reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
                     orangeFrame = 0
                     orangeAccumulator = 0
                 }
@@ -627,8 +633,18 @@ final class IdleTestScene: SKScene {
         } else {
             boxerB.texture = idleB[orangeFrame % idleB.count]
         }
+        applyImpactEmphasis()
         textureCanvasInfo = "child A\(Int(boxerA.size.width)) B\(Int(boxerB.size.width)) · tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0))"
         updateContactGuides()
+    }
+
+    private func applyImpactEmphasis() {
+        guard boxerB != nil else { return }
+        // Texture-only white blend. It is independent of Guides and diagnostics,
+        // and uses the same paused/stepped reaction clock, not a wall-clock action.
+        boxerB.color = .white
+        boxerB.colorBlendFactor = impactEmphasisEnabled && reactionAssetsAvailable
+            ? CGFloat(reaction.emphasisAmount) : 0
     }
 
     private func canvasTransform(for node: SKSpriteNode) -> SpriteCanvasTransform {

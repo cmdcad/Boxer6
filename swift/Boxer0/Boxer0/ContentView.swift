@@ -27,6 +27,7 @@ final class IdlePlayback: ObservableObject {
     @Published var latestWasHit = false
     @Published var hasContactResult = false
     @Published var orangeState = DefenderClip.idle.rawValue
+    @Published var orangeProfile = ""
     @Published var orangeFrameIndex = 0
     @Published var reactionAssetsAvailable = false
     @Published var canJab = false
@@ -74,6 +75,7 @@ final class IdlePlayback: ObservableObject {
         missCount = scene.missCount
         canvasInfo = scene.textureCanvasInfo
         orangeState = scene.orangeClip.rawValue
+        orangeProfile = scene.orangeProfileLabel
         orangeFrameIndex = scene.orangeFrameIndex
         reactionAssetsAvailable = scene.reactionAssetsAvailable
         if let event = scene.latestContact {
@@ -146,7 +148,11 @@ struct ContentView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(playback.latestResultText)
                             if playback.reactionAssetsAvailable {
-                                Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/4")
+                                if playback.orangeProfile.isEmpty {
+                                    Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/4")
+                                } else {
+                                    Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/4")
+                                }
                             } else {
                                 Text("Orange: reaction assets missing")
                             }
@@ -202,7 +208,7 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("5B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("5C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
