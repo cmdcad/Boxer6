@@ -63,6 +63,7 @@ final class IdleTestScene: SKScene {
     private var motion = FootworkMotion()
     private var punch = PunchPlayback()
     private var reaction = HitReactionPlayback()
+    private var knockdown = KnockdownPlayback()
     // Optional development tuning, off until readability is reviewed on device.
     // Does not affect reaction timing, geometry, roots, or counters.
     var impactEmphasisEnabled = false {
@@ -73,8 +74,19 @@ final class IdleTestScene: SKScene {
     private(set) var jabAssetsAvailable = false
     private(set) var crossAssetsAvailable = false
     private(set) var reactionAssetsAvailable = false
-    var orangeClip: DefenderClip { reaction.clip }
-    var orangeFrameIndex: Int { reaction.isActive ? reaction.frameIndex : orangeFrame }
+    private(set) var knockdownAssetsAvailable = false
+    var orangeClip: DefenderClip { knockdown.hasStarted ? knockdown.clip : reaction.clip }
+    var orangeFrameCount: Int {
+        switch orangeClip {
+        case .idle, .hitReact: return 4
+        case .knockdown: return 8
+        case .down: return 1
+        }
+    }
+    var orangeFrameIndex: Int {
+        if knockdown.hasStarted { return knockdown.frameIndex }
+        return reaction.isActive ? reaction.frameIndex : orangeFrame
+    }
     private var contactTracker = PunchContactTracker()
     private var health = FighterHealthState()
     var blueHealth: FighterHealth { health.blue }
@@ -89,6 +101,7 @@ final class IdleTestScene: SKScene {
         punch.cancel()
         contactTracker.finish()
         reaction.cancel()
+        knockdown.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         clearHeldInput()
@@ -166,6 +179,8 @@ final class IdleTestScene: SKScene {
     private var jabA: [SKTexture] = []
     private var crossA: [SKTexture] = []
     private var hitReactB: [SKTexture] = []
+    private var knockdownB: [SKTexture] = []
+    private var downB: [SKTexture] = []
     private var groundLine: SKShapeNode!
     private var targetGuide: SKShapeNode!
     private var gloveRadiusGuide: SKShapeNode!
@@ -208,6 +223,7 @@ final class IdleTestScene: SKScene {
         cancelMovement()
         punch.cancel()
         reaction.cancel()
+        knockdown.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         contactTracker.finish()
@@ -407,14 +423,11 @@ final class IdleTestScene: SKScene {
                 health.receive(contact)
                 // Publish health even when this contact does not change a frame.
                 onPlaybackChange?()
-                if health.canExchangePunches && reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
+                if reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
                     orangeFrame = 0
                     orangeAccumulator = 0
                 }
-                if orangeCombatState == .defeated && !reaction.isActive {
-                    orangeFrame = 0
-                    orangeAccumulator = 0
-                }
+                startKnockdownIfReady()
                 onPunchContact?(contact)
             }
         }
@@ -428,11 +441,21 @@ final class IdleTestScene: SKScene {
         }
     }
 
+    private func startKnockdownIfReady() {
+        guard orangeCombatState == .defeated, !reaction.isActive,
+              knockdownAssetsAvailable else { return }
+        knockdown.start()
+    }
+
     private func advanceOrange(_ dt: TimeInterval) {
-        if reaction.isActive {
+        if knockdown.hasStarted {
+            knockdown.advance(dt)
+        } else if reaction.isActive {
             if reaction.advance(dt) {
                 orangeFrame = 0
                 orangeAccumulator = 0
+                // Display fall frame zero now; never consume this tick twice.
+                startKnockdownIfReady()
             }
         } else if orangeCombatState == .standing {
             animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
@@ -441,10 +464,14 @@ final class IdleTestScene: SKScene {
     }
 
     private func stepOrange() {
-        if reaction.isActive {
+        if knockdown.hasStarted {
+            knockdown.step()
+        } else if reaction.isActive {
             if reaction.step() {
                 orangeFrame = 0
                 orangeAccumulator = 0
+                // Display fall frame zero now; never consume this tick twice.
+                startKnockdownIfReady()
             }
         } else if orangeCombatState == .standing {
             orangeAccumulator = 0
@@ -501,6 +528,9 @@ final class IdleTestScene: SKScene {
         crossAssetsAvailable = crossA.count == PunchKind.cross.frameCount
         hitReactB = loadPunchTextures(prefix: "hit_react_b", count: HitReactionPlayback.frameCount)
         reactionAssetsAvailable = hitReactB.count == HitReactionPlayback.frameCount
+        knockdownB = loadPunchTextures(prefix: "knockdown_b", count: KnockdownPlayback.frameCount)
+        downB = loadPunchTextures(prefix: "down_b", count: 1)
+        knockdownAssetsAvailable = knockdownB.count == KnockdownPlayback.frameCount && downB.count == 1
     }
 
     private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
@@ -658,7 +688,11 @@ final class IdleTestScene: SKScene {
         }
         guard !blueTextures.isEmpty, !idleB.isEmpty else { return }
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
-        if reaction.isActive && reactionAssetsAvailable {
+        if knockdown.clip == .knockdown && knockdownAssetsAvailable {
+            boxerB.texture = knockdownB[knockdown.frameIndex]
+        } else if knockdown.clip == .down && knockdownAssetsAvailable {
+            boxerB.texture = downB[0]
+        } else if reaction.isActive && reactionAssetsAvailable {
             boxerB.texture = hitReactB[reaction.frameIndex]
         } else {
             boxerB.texture = idleB[orangeFrame % idleB.count]

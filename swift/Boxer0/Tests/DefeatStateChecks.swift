@@ -39,7 +39,7 @@ struct DefeatStateChecks {
         precondition(!combat.defeatRecorded && combat.state == .standing)
         precondition(combat.receiveHealth(zero))
 
-        // Final damage must not restart an existing reaction; it may finish.
+        // Task 6C extends the final HIT to play its own recoil before knockdown.
         var health = FighterHealthState()
         for i in 1...9 { health.receive(event(i, .cross)) }
         var reaction = HitReactionPlayback()
@@ -47,8 +47,8 @@ struct DefeatStateChecks {
         reaction.step()
         precondition(reaction.frameIndex == 1)
         health.receive(event(10, .cross))
-        if health.canExchangePunches { reaction.receive(.hit, from: .cross) }
-        precondition(reaction.frameIndex == 1 && reaction.profile?.punch == .jab)
+        reaction.receive(.hit, from: .cross)
+        precondition(reaction.frameIndex == 0 && reaction.profile?.punch == .cross)
         while reaction.isActive { reaction.step() }
         precondition(reaction.frameIndex == 0 && health.orangeCombat.state == .defeated)
         health.reset()
