@@ -183,7 +183,12 @@ struct ContentView: View {
                                     Text("Orange: down")
                                 } else if playback.orangeProfile.isEmpty {
                                     Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
+                                if playback.orangeState == DefenderClip.down.rawValue {
+                                    Text("Orange: down")
+                                } else if playback.orangeProfile.isEmpty {
+                                    Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                 } else {
+                                    Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                     Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                 }
                             } else {
