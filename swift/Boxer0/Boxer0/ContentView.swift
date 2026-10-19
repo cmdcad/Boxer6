@@ -35,6 +35,8 @@ final class IdlePlayback: ObservableObject {
     @Published var orangeState = DefenderClip.idle.rawValue
     @Published var orangeProfile = ""
     @Published var orangeFrameIndex = 0
+    @Published var orangeFrameCount = 4
+    @Published var knockdownAssetsAvailable = false
     @Published var reactionAssetsAvailable = false
     @Published var canJab = false
     @Published var canCross = false
@@ -89,6 +91,8 @@ final class IdlePlayback: ObservableObject {
         orangeState = scene.orangeClip.rawValue
         orangeProfile = scene.orangeProfileLabel
         orangeFrameIndex = scene.orangeFrameIndex
+        orangeFrameCount = scene.orangeFrameCount
+        knockdownAssetsAvailable = scene.knockdownAssetsAvailable
         reactionAssetsAvailable = scene.reactionAssetsAvailable
         if let event = scene.latestContact {
             latestResultText = "\(event.kind == .jab ? "JAB" : "CROSS") · \(event.result.rawValue)"
@@ -166,13 +170,18 @@ struct ContentView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(playback.latestResultText)
                             if playback.reactionAssetsAvailable {
-                                if playback.orangeProfile.isEmpty {
-                                    Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/4")
+                                if playback.orangeState == DefenderClip.down.rawValue {
+                                    Text("Orange: down")
+                                } else if playback.orangeProfile.isEmpty {
+                                    Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                 } else {
-                                    Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/4")
+                                    Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                 }
                             } else {
                                 Text("Orange: reaction assets missing")
+                            }
+                            if !playback.knockdownAssetsAvailable {
+                                Text("Knockdown/down assets missing").foregroundColor(.red)
                             }
                             if playback.hasContactResult {
                                 Text(playback.latestDistanceText)
@@ -264,7 +273,7 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("6B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("6C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

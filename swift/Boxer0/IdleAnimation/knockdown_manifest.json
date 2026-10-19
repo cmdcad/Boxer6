@@ -1,0 +1,34 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "palette": "orange",
+  "runtimeMirrored": true,
+  "knockdown": {
+    "frames": [
+      "knockdown_b_0",
+      "knockdown_b_1",
+      "knockdown_b_2",
+      "knockdown_b_3",
+      "knockdown_b_4",
+      "knockdown_b_5",
+      "knockdown_b_6",
+      "knockdown_b_7"
+    ],
+    "frameDurationMs": 80,
+    "durationMs": 640,
+    "loops": false
+  },
+  "down": {
+    "frames": [
+      "down_b_0"
+    ],
+    "holdUntilReset": true
+  }
+}
