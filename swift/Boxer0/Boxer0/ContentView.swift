@@ -164,7 +164,7 @@ final class IdlePlayback: ObservableObject {
 }
 
 struct ContentView: View {
-    @StateObject private var playback = IdlePlayback()
+    @StateObject internal var playback = IdlePlayback()
     // Development presentation only; hiding it does not change locomotion.
     var showsDevelopmentDiagnostics = true
 
@@ -207,6 +207,7 @@ struct ContentView: View {
                                 Text(playback.canvasInfo)
                             }
                         }
+                        }
                             .font(.system(size: 13, weight: .bold, design: .monospaced))
                             .foregroundColor(playback.hasContactResult
                                 ? (playback.latestWasHit ? .green : .red) : .secondary)
@@ -215,6 +216,7 @@ struct ContentView: View {
                             .padding(8)
                             .allowsHitTesting(false)
                     }
+                    
                 }
 
             VStack(spacing: 8) {
@@ -252,7 +254,7 @@ struct ContentView: View {
     }
 
     // Reserved top strip keeps health separate from fighter art and Guides.
-    private var healthHUD: some View {
+    var healthHUD: some View {
         HStack(spacing: 12) {
             healthIndicator("BLUE", state: playback.blueCombatState, value: playback.blueHealth,
                             maximum: playback.blueMaximumHealth, color: .blue)
@@ -274,7 +276,7 @@ struct ContentView: View {
         .background(Color(red: 0.91, green: 0.933, blue: 0.957))
     }
 
-    private func healthIndicator(_ name: String, state: FighterCombatState, value: Int, maximum: Int,
+    func healthIndicator(_ name: String, state: FighterCombatState, value: Int, maximum: Int,
                                  color: Color) -> some View {
         VStack(spacing: 2) {
             HStack {
@@ -294,7 +296,7 @@ struct ContentView: View {
         .frame(height: 44)
     }
 
-    private var statusLabel: some View {
+    var statusLabel: some View {
         VStack(spacing: 2) {
             Text("6D · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
@@ -315,7 +317,7 @@ struct ContentView: View {
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
-    private func punchButton(_ title: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+    func punchButton(_ title: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Text(title)
             .font(.system(size: 15, weight: .bold, design: .rounded))
             .foregroundColor(enabled ? Color.accentColor : Color.secondary)
@@ -331,7 +333,7 @@ struct ContentView: View {
             .opacity(enabled ? 1 : 0.55)
     }
 
-    private var debugControls: some View {
+    var debugControls: some View {
         HStack(spacing: 8) {
             controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
             controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
@@ -342,7 +344,7 @@ struct ContentView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
-    private func controlButton(_ title: String, action: @escaping () -> Void) -> some View {
+    func controlButton(_ title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -354,7 +356,7 @@ struct ContentView: View {
         }
         .buttonStyle(.bordered)
     }
-}
+
 
 struct PressHoldButton: View {
     let title: String
@@ -426,7 +428,7 @@ private final class HoldTouchView: UIView {
             if inputGeneration != oldValue { heldTouches.removeAll() }
         }
     }
-    private var heldTouches = Set<UITouch>()
+    internal var heldTouches = Set<UITouch>()
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let wasEmpty = heldTouches.isEmpty
@@ -454,7 +456,7 @@ private final class HoldTouchView: UIView {
         action?(false)
     }
 }
-
+}
 //struct ContentView_Previews: PreviewProvider {
 //    static var previews: some View {
 //        ContentView()
