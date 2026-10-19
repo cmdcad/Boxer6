@@ -37,6 +37,8 @@ final class IdlePlayback: ObservableObject {
     @Published var orangeFrameIndex = 0
     @Published var orangeFrameCount = 4
     @Published var knockdownAssetsAvailable = false
+    @Published var riseAssetsAvailable = false
+    @Published var canRise = false
     @Published var reactionAssetsAvailable = false
     @Published var canJab = false
     @Published var canCross = false
@@ -93,6 +95,8 @@ final class IdlePlayback: ObservableObject {
         orangeFrameIndex = scene.orangeFrameIndex
         orangeFrameCount = scene.orangeFrameCount
         knockdownAssetsAvailable = scene.knockdownAssetsAvailable
+        riseAssetsAvailable = scene.riseAssetsAvailable
+        canRise = scene.canRise
         reactionAssetsAvailable = scene.reactionAssetsAvailable
         if let event = scene.latestContact {
             latestResultText = "\(event.kind == .jab ? "JAB" : "CROSS") · \(event.result.rawValue)"
@@ -104,6 +108,11 @@ final class IdlePlayback: ObservableObject {
                 Double(abs(event.attacker.rootPosition.x - event.defender.rootPosition.x)),
                 Double(event.attacker.scaleX), Double(event.defender.scaleX))
         }
+    }
+
+    func rise() {
+        scene.startRise()
+        syncFromScene()
     }
 
     func resetHealth() {
@@ -180,6 +189,10 @@ struct ContentView: View {
                             } else {
                                 Text("Orange: reaction assets missing")
                             }
+                            Text("Orange: \(playback.orangeCombatState.rawValue)")
+                            if !playback.riseAssetsAvailable {
+                                Text("Rise assets missing").foregroundColor(.red)
+                            }
                             if !playback.knockdownAssetsAvailable {
                                 Text("Knockdown/down assets missing").foregroundColor(.red)
                             }
@@ -239,6 +252,11 @@ struct ContentView: View {
             healthIndicator("BLUE", state: playback.blueCombatState, value: playback.blueHealth,
                             maximum: playback.blueMaximumHealth, color: .blue)
             if showsDevelopmentDiagnostics {
+                Button("Rise", action: playback.rise)
+                    .font(.system(size: 12, weight: .semibold))
+                    .frame(minWidth: 44, minHeight: 44)
+                    .buttonStyle(.plain)
+                    .disabled(!playback.canRise)
                 Button("Reset Health", action: playback.resetHealth)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 84, minHeight: 44)
@@ -273,7 +291,7 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("6C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("6D · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

@@ -75,11 +75,22 @@ final class IdleTestScene: SKScene {
     private(set) var crossAssetsAvailable = false
     private(set) var reactionAssetsAvailable = false
     private(set) var knockdownAssetsAvailable = false
+    private(set) var riseAssetsAvailable = false
+    var canRise: Bool {
+        riseAssetsAvailable && hasFocus && orangeCombatState == .defeated && knockdown.clip == .down
+    }
+
+    func startRise() {
+        guard canRise, knockdown.startRise() else { return }
+        lastTime = 0
+        applyFrames()
+        onPlaybackChange?()
+    }
     var orangeClip: DefenderClip { knockdown.hasStarted ? knockdown.clip : reaction.clip }
     var orangeFrameCount: Int {
         switch orangeClip {
         case .idle, .hitReact: return 4
-        case .knockdown: return 8
+        case .knockdown, .rise: return 8
         case .down: return 1
         }
     }
@@ -181,6 +192,7 @@ final class IdleTestScene: SKScene {
     private var hitReactB: [SKTexture] = []
     private var knockdownB: [SKTexture] = []
     private var downB: [SKTexture] = []
+    private var riseB: [SKTexture] = []
     private var groundLine: SKShapeNode!
     private var targetGuide: SKShapeNode!
     private var gloveRadiusGuide: SKShapeNode!
@@ -441,6 +453,13 @@ final class IdleTestScene: SKScene {
         }
     }
 
+    private func completeOrangeRecovery() {
+        guard health.recoverOrange() else { return }
+        orangeFrame = 0
+        orangeAccumulator = 0
+        onPlaybackChange?()
+    }
+
     private func startKnockdownIfReady() {
         guard orangeCombatState == .defeated, !reaction.isActive,
               knockdownAssetsAvailable else { return }
@@ -449,7 +468,7 @@ final class IdleTestScene: SKScene {
 
     private func advanceOrange(_ dt: TimeInterval) {
         if knockdown.hasStarted {
-            knockdown.advance(dt)
+            if knockdown.advance(dt) { completeOrangeRecovery() }
         } else if reaction.isActive {
             if reaction.advance(dt) {
                 orangeFrame = 0
@@ -465,7 +484,7 @@ final class IdleTestScene: SKScene {
 
     private func stepOrange() {
         if knockdown.hasStarted {
-            knockdown.step()
+            if knockdown.step() { completeOrangeRecovery() }
         } else if reaction.isActive {
             if reaction.step() {
                 orangeFrame = 0
@@ -531,6 +550,8 @@ final class IdleTestScene: SKScene {
         knockdownB = loadPunchTextures(prefix: "knockdown_b", count: KnockdownPlayback.frameCount)
         downB = loadPunchTextures(prefix: "down_b", count: 1)
         knockdownAssetsAvailable = knockdownB.count == KnockdownPlayback.frameCount && downB.count == 1
+        riseB = loadPunchTextures(prefix: "rise_b", count: 8)
+        riseAssetsAvailable = riseB.count == 8
     }
 
     private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
@@ -690,6 +711,8 @@ final class IdleTestScene: SKScene {
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
         if knockdown.clip == .knockdown && knockdownAssetsAvailable {
             boxerB.texture = knockdownB[knockdown.frameIndex]
+        } else if knockdown.clip == .rise && riseAssetsAvailable {
+            boxerB.texture = riseB[knockdown.frameIndex]
         } else if knockdown.clip == .down && knockdownAssetsAvailable {
             boxerB.texture = downB[0]
         } else if reaction.isActive && reactionAssetsAvailable {

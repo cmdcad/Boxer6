@@ -35,12 +35,12 @@ def knee(hip, ankle, upper, lower):
     return (hip[0]+ux*along+uy*lift, hip[1]+uy*along-ux*lift)
 def render(root):
     return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=ET.tostring(root),output_width=2048,output_height=2048))).convert('RGBA').resize((512,512),Image.Resampling.LANCZOS)
-def create(index):
-    if index == 0:
+def create(index, pose=None, foot_progress=None):
+    if index == 0 and pose is None:
         return ET.parse(FRAMES/'idle_b_0.svg').getroot(), Image.open(FRAMES/'idle_b_0.png').convert('RGBA')
     root=ET.parse(FRAMES/'idle_b_0.svg').getroot()
-    angle,hx,hy=POSES[index]; target=(hx,hy)
-    t=index/7
+    angle,hx,hy=POSES[index] if pose is None else pose; target=(hx,hy)
+    t=index/7 if foot_progress is None else foot_progress
     upper=f'translate({hx} {hy}) rotate({angle}) translate(-264 -310)'
     for group in list(root):
         name=group.get('id','')

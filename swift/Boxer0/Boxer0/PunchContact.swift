@@ -203,6 +203,16 @@ struct FighterHealthState {
         return true
     }
 
+    /// Debug recovery policy: only orange is restored, only after visual completion.
+    /// Retains accepted-contact watermark and all scene diagnostics.
+    @discardableResult
+    mutating func recoverOrange() -> Bool {
+        guard orangeCombat.state == .defeated else { return false }
+        orange.reset()
+        orangeCombat.reset()
+        return true
+    }
+
     mutating func reset() {
         blue.reset()
         orange.reset()
