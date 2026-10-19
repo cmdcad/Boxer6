@@ -158,24 +158,57 @@ enum PunchDamage {
     }
 }
 
+enum FighterCombatState: String {
+    case standing
+    case defeated
+}
+
+/// Combat eligibility is independent of animation frame/clip selection.
+struct FighterCombatStatus {
+    private(set) var state: FighterCombatState = .standing
+    private(set) var defeatRecorded = false
+
+    @discardableResult
+    mutating func receiveHealth(_ health: FighterHealth) -> Bool {
+        guard state == .standing, health.current == 0 else { return false }
+        state = .defeated
+        defeatRecorded = true
+        return true
+    }
+
+    mutating func reset() {
+        state = .standing
+        defeatRecorded = false
+    }
+}
+
 struct FighterHealthState {
     private(set) var blue = FighterHealth()
     private(set) var orange = FighterHealth()
+    private(set) var blueCombat = FighterCombatStatus()
+    private(set) var orangeCombat = FighterCombatStatus()
+    var canExchangePunches: Bool {
+        blueCombat.state == .standing && orangeCombat.state == .standing
+    }
     private var lastContactSequence = 0
 
     // Tracker sequences are monotonic for this scene. Resetting health must
     // retain this watermark so replaying an old event cannot damage again.
     @discardableResult
     mutating func receive(_ event: PunchContactEvent) -> Bool {
+        guard canExchangePunches else { return false }
         guard event.sequence > lastContactSequence else { return false }
         lastContactSequence = event.sequence
         guard event.result == .hit else { return false }
         orange.applyDamage(PunchDamage.amount(for: event.kind))
+        orangeCombat.receiveHealth(orange)
         return true
     }
 
     mutating func reset() {
         blue.reset()
         orange.reset()
+        blueCombat.reset()
+        orangeCombat.reset()
     }
 }

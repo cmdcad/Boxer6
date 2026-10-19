@@ -79,9 +79,24 @@ final class IdleTestScene: SKScene {
     private var health = FighterHealthState()
     var blueHealth: FighterHealth { health.blue }
     var orangeHealth: FighterHealth { health.orange }
+    var blueCombatState: FighterCombatState { health.blueCombat.state }
+    var orangeCombatState: FighterCombatState { health.orangeCombat.state }
+    var orangeDefeatRecorded: Bool { health.orangeCombat.defeatRecorded }
 
     func resetHealth() {
         health.reset()
+        // End pending ownership, not the diagnostic counters or root positions.
+        punch.cancel()
+        contactTracker.finish()
+        reaction.cancel()
+        orangeFrame = 0
+        orangeAccumulator = 0
+        clearHeldInput()
+        motion.stop()
+        settleIdle()
+        blueAccumulator = 0
+        lastTime = 0
+        applyFrames()
         onPlaybackChange?()
     }
     var contactGeometry = PunchContactGeometry() {
@@ -98,10 +113,10 @@ final class IdleTestScene: SKScene {
     private(set) var textureCanvasInfo = "Textures pending"
     var onPunchContact: ((PunchContactEvent) -> Void)?
     var canStartJab: Bool {
-        jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
+        health.canExchangePunches && jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
     }
     var canStartCross: Bool {
-        crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
+        health.canExchangePunches && crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
     }
     var showsJabContact: Bool {
         punch.isActive && punch.kind == .jab && punch.frameIndex == punch.kind.contactFrame
@@ -385,14 +400,18 @@ final class IdleTestScene: SKScene {
     }
 
     private func handlePunchEvent(_ event: (contact: Bool, completed: Bool)) {
-        if event.contact {
+        if event.contact && health.canExchangePunches {
             if let contact = contactTracker.evaluate(punch.kind,
                     attacker: canvasTransform(for: boxerA),
                     defender: canvasTransform(for: boxerB), geometry: contactGeometry) {
                 health.receive(contact)
                 // Publish health even when this contact does not change a frame.
                 onPlaybackChange?()
-                if reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
+                if health.canExchangePunches && reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
+                    orangeFrame = 0
+                    orangeAccumulator = 0
+                }
+                if orangeCombatState == .defeated && !reaction.isActive {
                     orangeFrame = 0
                     orangeAccumulator = 0
                 }
@@ -415,7 +434,7 @@ final class IdleTestScene: SKScene {
                 orangeFrame = 0
                 orangeAccumulator = 0
             }
-        } else {
+        } else if orangeCombatState == .standing {
             animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
                          speed: playbackSpeed.rawValue, dt: dt)
         }
@@ -427,7 +446,7 @@ final class IdleTestScene: SKScene {
                 orangeFrame = 0
                 orangeAccumulator = 0
             }
-        } else {
+        } else if orangeCombatState == .standing {
             orangeAccumulator = 0
             orangeFrame = (orangeFrame + 1) % FighterClip.idle.frameCount
         }
