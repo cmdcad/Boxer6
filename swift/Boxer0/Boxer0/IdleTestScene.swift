@@ -2,7 +2,7 @@
 //  IdleTestScene.swift
 //  Boxer0
 //
-//  Task 2 idle playback plus Task 3A horizontal footwork for the blue boxer.
+//  Task 2 idle playback plus Task 3B velocity-driven footwork.
 //
 
 import SpriteKit
@@ -44,7 +44,27 @@ final class IdleTestScene: SKScene {
     static let minSeparationFactor: CGFloat = 0.22
     static let defaultMoveSpeed: CGFloat = 100
 
-    var movementSpeed: CGFloat = IdleTestScene.defaultMoveSpeed
+    private var motion = FootworkMotion()
+    var movementSpeed: CGFloat {
+        get { CGFloat(motion.maximumSpeed) }
+        set { motion.maximumSpeed = max(0, Double(newValue)) }
+    }
+    var acceleration: Double {
+        get { motion.acceleration }
+        set { motion.acceleration = max(1, newValue) }
+    }
+    var deceleration: Double {
+        get { motion.deceleration }
+        set { motion.deceleration = max(1, newValue) }
+    }
+    var velocityDeadZone: Double {
+        get { motion.deadZone }
+        set { motion.deadZone = max(0, newValue) }
+    }
+    private(set) var inputGeneration = 0
+    var advanceHeld: Bool { holdAdvance }
+    var retreatHeld: Bool { holdRetreat }
+    var horizontalVelocity: Double { motion.velocity }
     var isPlaying = true
     var playbackSpeed: IdlePlaybackSpeed = .normal
     var showsGuides = true {
@@ -124,16 +144,35 @@ final class IdleTestScene: SKScene {
         }
         guard isPlaying else { return }
 
-        resolveClip()
-        animateBoxer(&blueAccumulator, frame: &frameIndex, clip: activeClip, speed: playbackSpeed.rawValue, dt: dt)
-        animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle, speed: playbackSpeed.rawValue, dt: dt)
-
-        if let direction = movementDirection {
-            boxerA.position.x += direction * movementSpeed * CGFloat(dt)
-            clampBlue()
-            blueXFraction = boxerA.position.x / max(size.width, 1)
-            originA.position = boxerA.position
+        let segments = motion.advance(duration: dt, direction: Double(movementDirection ?? 0))
+        for segment in segments {
+            let oldX = boxerA.position.x
+            boxerA.position.x += CGFloat(segment.displacement)
+            let hitBoundary = clampBlue()
+            let travel = Double(boxerA.position.x - oldX)
+            if abs(travel) > 1e-8 {
+                // Follow travel, not input: a reversal still plays the old clip
+                // throughout braking. At full speed a cycle remains 480 ms.
+                setClip(travel > 0 ? .advance : .retreat)
+                let animationTime = abs(travel) / max(motion.maximumSpeed, 1)
+                animateBoxer(&blueAccumulator, frame: &frameIndex, clip: activeClip,
+                             speed: playbackSpeed.rawValue, dt: animationTime)
+            } else {
+                settleIdle()
+                animateBoxer(&blueAccumulator, frame: &frameIndex, clip: .idle,
+                             speed: playbackSpeed.rawValue, dt: segment.duration)
+            }
+            if hitBoundary {
+                motion.stop()
+                settleIdle()
+                break
+            }
         }
+        if motion.velocity == 0 { settleIdle() }
+        animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
+                     speed: playbackSpeed.rawValue, dt: dt)
+        blueXFraction = boxerA.position.x / max(size.width, 1)
+        originA.position = boxerA.position
 
         applyFrames()
         publishIfNeeded()
@@ -142,30 +181,41 @@ final class IdleTestScene: SKScene {
     private var lastPublishedFrame = -1
     private var lastPublishedX: CGFloat = .nan
     private var lastPublishedClip: FighterClip?
+    private var lastPublishedVelocity: Double = .nan
 
     private func publishIfNeeded() {
         let x = boxerA.position.x
         if frameIndex != lastPublishedFrame
             || activeClip != lastPublishedClip
             || lastPublishedX.isNaN
-            || abs(x - lastPublishedX) >= 1 {
+            || abs(x - lastPublishedX) >= 1
+            || lastPublishedVelocity.isNaN
+            || abs(motion.velocity - lastPublishedVelocity) >= 1 {
             lastPublishedFrame = frameIndex
             lastPublishedClip = activeClip
             lastPublishedX = x
+            lastPublishedVelocity = motion.velocity
             onPlaybackChange?()
         }
     }
 
     func togglePlayback() {
         isPlaying.toggle()
+        clearHeldInput()
+        motion.stop()
+        lastTime = 0
         if isPlaying {
-            lastTime = 0
+            settleIdle()
+            applyFrames()
         }
         onPlaybackChange?()
     }
 
     func stepFrame() {
         isPlaying = false
+        clearHeldInput()
+        motion.stop()
+        lastTime = 0
         blueAccumulator = 0
         frameIndex = (frameIndex + 1) % activeClip.frameCount
         orangeAccumulator = 0
@@ -185,29 +235,25 @@ final class IdleTestScene: SKScene {
     }
 
     func setAdvanceHeld(_ held: Bool) {
-        holdAdvance = held
-        if !held && !holdRetreat {
-            settleIdle()
-        }
-        resolveClip()
-        applyFrames()
+        holdAdvance = held && isPlaying
         onPlaybackChange?()
     }
 
     func setRetreatHeld(_ held: Bool) {
-        holdRetreat = held
-        if !held && !holdAdvance {
-            settleIdle()
-        }
-        resolveClip()
-        applyFrames()
+        holdRetreat = held && isPlaying
         onPlaybackChange?()
+    }
+
+    private func clearHeldInput() {
+        holdAdvance = false
+        holdRetreat = false
+        inputGeneration += 1
     }
 
     func cancelMovement() {
         lastTime = 0
-        holdAdvance = false
-        holdRetreat = false
+        clearHeldInput()
+        motion.stop()
         settleIdle()
         applyFrames()
         onPlaybackChange?()
@@ -219,28 +265,16 @@ final class IdleTestScene: SKScene {
         return nil
     }
 
-    private func settleIdle() {
-        if activeClip != .idle {
-            activeClip = .idle
-            frameIndex = 0
-            blueAccumulator = 0
-        }
-    }
+    private func settleIdle() { setClip(.idle) }
 
-    private func resolveClip() {
-        let next: FighterClip
-        if holdAdvance && !holdRetreat {
-            next = .advance
-        } else if holdRetreat && !holdAdvance {
-            next = .retreat
-        } else {
-            next = .idle
-        }
-        if next != activeClip {
-            activeClip = next
-            frameIndex = 0
-            blueAccumulator = 0
-        }
+    private func setClip(_ next: FighterClip) {
+        guard next != activeClip else { return }
+        // Frame zero is the shared rest/guard pose in all three clips.
+        // Keep phase untouched while staying in a clip; only reset on a real
+        // state change. Direction changes occur after braking through zero.
+        activeClip = next
+        frameIndex = 0
+        blueAccumulator = 0
     }
 
     private func animateBoxer(
@@ -250,10 +284,14 @@ final class IdleTestScene: SKScene {
         speed: Double,
         dt: TimeInterval
     ) {
-        let frameDuration = clip.cycleDuration / TimeInterval(clip.frameCount)
+        // Shorten the double-planted holds, lengthen the lifted-foot poses.
+        // Total footwork timing remains 480 ms. Idle timing is unchanged.
+        let durations: [TimeInterval] = clip == .idle
+            ? [0.2, 0.2, 0.2, 0.2]
+            : [0.04, 0.14, 0.04, 0.14, 0.06, 0.06]
         accumulator += dt * speed
-        while accumulator >= frameDuration {
-            accumulator -= frameDuration
+        while accumulator >= durations[frame] {
+            accumulator -= durations[frame]
             frame = (frame + 1) % clip.frameCount
         }
     }
@@ -355,14 +393,22 @@ final class IdleTestScene: SKScene {
         return (left, right, stance * Self.minSeparationFactor)
     }
 
-    private func clampBlue() {
+    @discardableResult
+    private func clampBlue() -> Bool {
         let box = extents()
         // Mirrored orange: visual left edge uses the unmirrored right extent.
         let minX = Self.edgePaddingPoints + box.left
         let orangeLeft = boxerB.position.x - box.right
         let maxX = orangeLeft - box.separation - box.right
-        boxerA.position.x = min(max(boxerA.position.x, minX), max(minX, maxX))
+        let upper = max(minX, maxX)
+        let proposedX = boxerA.position.x
+        boxerA.position.x = min(max(proposedX, minX), upper)
         boxerA.position.y = groundY
+        let blocked = proposedX != boxerA.position.x
+            || (proposedX <= minX && motion.velocity < 0)
+            || (proposedX >= upper && motion.velocity > 0)
+        if blocked { motion.stop() }
+        return blocked
     }
 
     private func applyFrames() {
