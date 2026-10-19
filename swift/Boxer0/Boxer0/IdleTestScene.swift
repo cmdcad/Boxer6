@@ -120,6 +120,10 @@ final class IdleTestScene: SKScene {
     var activeClip: FighterClip = .idle
     var onPlaybackChange: (() -> Void)?
 
+    // Only these roots own placement, scale and facing. Sprite children remain
+    // on the unscaled 512-point canvas throughout texture playback.
+    private let rootA = SKNode()
+    private let rootB = SKNode()
     private var boxerA: SKSpriteNode!
     private var boxerB: SKSpriteNode!
     private var idleA: [SKTexture] = []
@@ -148,7 +152,7 @@ final class IdleTestScene: SKScene {
     private var resignObserver: NSObjectProtocol?
     private var activeObserver: NSObjectProtocol?
 
-    var bluePositionX: CGFloat { boxerA?.position.x ?? 0 }
+    var bluePositionX: CGFloat { rootA.position.x }
 
     override func didMove(to view: SKView) {
         lastTime = 0
@@ -218,10 +222,10 @@ final class IdleTestScene: SKScene {
 
         let segments = motion.advance(duration: dt, direction: Double(movementDirection ?? 0))
         for segment in segments {
-            let oldX = boxerA.position.x
-            boxerA.position.x += CGFloat(segment.displacement)
+            let oldX = rootA.position.x
+            rootA.position.x += CGFloat(segment.displacement)
             let hitBoundary = clampBlue()
-            let travel = Double(boxerA.position.x - oldX)
+            let travel = Double(rootA.position.x - oldX)
             if abs(travel) > 1e-8 {
                 // Follow travel, not input: a reversal still plays the old clip
                 // throughout braking. At full speed a cycle remains 480 ms.
@@ -243,8 +247,8 @@ final class IdleTestScene: SKScene {
         if motion.velocity == 0 { settleIdle() }
         animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
                      speed: playbackSpeed.rawValue, dt: dt)
-        blueXFraction = boxerA.position.x / max(size.width, 1)
-        originA.position = boxerA.position
+        blueXFraction = rootA.position.x / max(size.width, 1)
+        originA.position = rootA.position
 
         applyFrames()
         publishIfNeeded()
@@ -256,7 +260,7 @@ final class IdleTestScene: SKScene {
     private var lastPublishedVelocity: Double = .nan
 
     private func publishIfNeeded() {
-        let x = boxerA.position.x
+        let x = rootA.position.x
         if frameIndex != lastPublishedFrame
             || activeClip != lastPublishedClip
             || lastPublishedX.isNaN
@@ -449,10 +453,12 @@ final class IdleTestScene: SKScene {
         addChild(originA)
         addChild(originB)
 
-        boxerA = makeBoxer(texture: idleA[0], mirrored: false)
-        boxerB = makeBoxer(texture: idleB[0], mirrored: true)
-        addChild(boxerA)
-        addChild(boxerB)
+        boxerA = makeBoxer(texture: idleA[0])
+        boxerB = makeBoxer(texture: idleB[0])
+        rootA.addChild(boxerA)
+        rootB.addChild(boxerB)
+        addChild(rootA)
+        addChild(rootB)
 
         targetGuide = SKShapeNode()
         targetGuide.lineWidth = 1.5
@@ -473,12 +479,14 @@ final class IdleTestScene: SKScene {
         addChild(contactDistanceGuide)
     }
 
-    private func makeBoxer(texture: SKTexture, mirrored: Bool) -> SKSpriteNode {
+    private func makeBoxer(texture: SKTexture) -> SKSpriteNode {
         let node = SKSpriteNode(texture: texture)
-        // Enforce the 512-point canvas contract independently of texture scale.
+        // Set child geometry once, before its parent is scaled. Never resize
+        // a scaled fighter during playback.
         node.size = CGSize(width: Self.spriteCanvas, height: Self.spriteCanvas)
         node.anchorPoint = Self.originAnchor
-        node.xScale = mirrored ? -1 : 1
+        node.xScale = 1
+        node.yScale = 1
         node.zPosition = 2
         return node
     }
@@ -510,28 +518,28 @@ final class IdleTestScene: SKScene {
         fighterScale = spriteSide / Self.spriteCanvas
         let right = CGPoint(x: size.width * 0.70, y: groundY)
 
-        boxerB.position = right
-        boxerA.yScale = fighterScale
-        boxerB.yScale = fighterScale
-        boxerA.xScale = fighterScale
-        boxerB.xScale = -fighterScale
+        rootB.position = right
+        rootA.yScale = fighterScale
+        rootB.yScale = fighterScale
+        rootA.xScale = fighterScale
+        rootB.xScale = -fighterScale
 
         if !didInitialLayout {
-            boxerA.position = CGPoint(x: size.width * 0.30, y: groundY)
+            rootA.position = CGPoint(x: size.width * 0.30, y: groundY)
             didInitialLayout = true
         } else {
-            boxerA.position = CGPoint(x: size.width * blueXFraction, y: groundY)
+            rootA.position = CGPoint(x: size.width * blueXFraction, y: groundY)
         }
 
         clampBlue()
-        blueXFraction = boxerA.position.x / size.width
+        blueXFraction = rootA.position.x / size.width
 
         let path = CGMutablePath()
         path.move(to: CGPoint(x: Self.edgePaddingPoints, y: groundY))
         path.addLine(to: CGPoint(x: size.width - Self.edgePaddingPoints, y: groundY))
         groundLine.path = path
-        originA.position = boxerA.position
-        originB.position = boxerB.position
+        originA.position = rootA.position
+        originB.position = rootB.position
         updateContactGuides()
     }
 
@@ -548,10 +556,10 @@ final class IdleTestScene: SKScene {
     @discardableResult
     private func clampBlue() -> Bool {
         let limits = movementLimits()
-        let proposedX = boxerA.position.x
-        boxerA.position.x = min(max(proposedX, limits.lowerBound), limits.upperBound)
-        boxerA.position.y = groundY
-        let blocked = proposedX != boxerA.position.x
+        let proposedX = rootA.position.x
+        rootA.position.x = min(max(proposedX, limits.lowerBound), limits.upperBound)
+        rootA.position.y = groundY
+        let blocked = proposedX != rootA.position.x
             || (proposedX <= limits.lowerBound && motion.velocity < 0)
             || (proposedX >= limits.upperBound && motion.velocity > 0)
         if blocked { motion.stop() }
@@ -571,19 +579,16 @@ final class IdleTestScene: SKScene {
         guard !blueTextures.isEmpty, !idleB.isEmpty else { return }
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
         boxerB.texture = idleB[orangeFrame % idleB.count]
-        let canvasSize = CGSize(width: Self.spriteCanvas, height: Self.spriteCanvas)
-        if boxerA.size != canvasSize { boxerA.size = canvasSize }
-        if boxerB.size != canvasSize { boxerB.size = canvasSize }
-        textureCanvasInfo = "tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0)) · canvas 512"
+        textureCanvasInfo = "child A\(Int(boxerA.size.width)) B\(Int(boxerB.size.width)) · tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0))"
         updateContactGuides()
     }
 
     private func canvasTransform(for node: SKSpriteNode) -> SpriteCanvasTransform {
-        // Obtain the basis from SpriteKit itself. Nodes are axis aligned in this
-        // prototype; convert includes the real parent transform and signed scale.
+        // Child-local units ARE canvas pixels. Convert a single unit, not an
+        // already-scaled size, through the parent root exactly once.
         let root = node.convert(.zero, to: self)
-        let xBasis = node.convert(CGPoint(x: node.size.width / Self.spriteCanvas, y: 0), to: self)
-        let yBasis = node.convert(CGPoint(x: 0, y: node.size.height / Self.spriteCanvas), to: self)
+        let xBasis = node.convert(CGPoint(x: 1, y: 0), to: self)
+        let yBasis = node.convert(CGPoint(x: 0, y: 1), to: self)
         return SpriteCanvasTransform(rootPosition: root,
             scaleX: xBasis.x - root.x, scaleY: yBasis.y - root.y,
             rootInImage: CGPoint(x: node.anchorPoint.x * Self.spriteCanvas,
