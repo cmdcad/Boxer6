@@ -1,0 +1,30 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "palette": "orange",
+  "runtimeMirrored": true,
+  "rise": {
+    "frames": [
+      "rise_b_0",
+      "rise_b_1",
+      "rise_b_2",
+      "rise_b_3",
+      "rise_b_4",
+      "rise_b_5",
+      "rise_b_6",
+      "rise_b_7"
+    ],
+    "frameDurationMs": 100,
+    "durationMs": 800,
+    "loops": false,
+    "firstMatches": "down_b_0",
+    "lastMatches": "idle_b_0"
+  }
+}

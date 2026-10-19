@@ -5,6 +5,7 @@ enum DefenderClip: String {
     case hitReact = "hit_react"
     case knockdown
     case down
+    case rise
 }
 
 /// Profile metadata does not deform complete-character textures.
@@ -85,6 +86,8 @@ struct KnockdownPlayback {
     static let frameCount = 8
     static let frameDuration = 0.08
     static let duration = 0.64
+    static let riseFrameDuration = 0.10
+    static let riseDuration = 0.80
     private(set) var clip: DefenderClip = .idle
     private(set) var frameIndex = 0
     private var accumulator = 0.0
@@ -99,26 +102,43 @@ struct KnockdownPlayback {
         return true
     }
 
-    mutating func advance(_ dt: Double) {
-        guard clip == .knockdown, dt.isFinite, dt >= 0 else { return }
+    @discardableResult
+    mutating func startRise() -> Bool {
+        guard clip == .down else { return false }
+        clip = .rise
+        frameIndex = 0
+        accumulator = 0
+        return true
+    }
+
+    /// Returns true once, only on manual rise completion.
+    @discardableResult
+    mutating func advance(_ dt: Double) -> Bool {
+        guard clip == .knockdown || clip == .rise,
+              dt.isFinite, dt >= 0 else { return false }
+        let interval = clip == .rise ? Self.riseFrameDuration : Self.frameDuration
         accumulator += dt
-        guard accumulator + 1e-10 >= Self.frameDuration else { return }
-        accumulator = max(0, accumulator - Self.frameDuration)
-        // Under a hitch present every pose rather than skip intermediate fall
-        // frames. Nominal duration is 640 ms; a slow render loop can extend it.
-        if accumulator + 1e-10 >= Self.frameDuration { accumulator = 0 }
+        guard accumulator + 1e-10 >= interval else { return false }
+        accumulator = max(0, accumulator - interval)
+        // Under a hitch present every fall/recovery pose rather than skip it.
+        // Nominal durations are 640/800 ms; a slow render loop can extend them.
+        if accumulator + 1e-10 >= interval { accumulator = 0 }
         if frameIndex == Self.frameCount - 1 {
-            clip = .down
+            let recovered = clip == .rise
+            clip = recovered ? .idle : .down
             frameIndex = 0
             accumulator = 0
+            return recovered
         } else {
             frameIndex += 1
         }
+        return false
     }
 
-    mutating func step() {
+    @discardableResult
+    mutating func step() -> Bool {
         accumulator = 0
-        advance(Self.frameDuration)
+        return advance(clip == .rise ? Self.riseFrameDuration : Self.frameDuration)
     }
 
     mutating func cancel() {
