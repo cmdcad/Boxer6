@@ -10,6 +10,8 @@ import UIKit
 final class IdlePlayback: ObservableObject {
     let scene: IdleTestScene
 
+    @Published var blueCombatState = FighterCombatState.standing
+    @Published var orangeCombatState = FighterCombatState.standing
     @Published var blueHealth = 100
     @Published var orangeHealth = 100
     @Published var blueMaximumHealth = 100
@@ -57,6 +59,8 @@ final class IdlePlayback: ObservableObject {
     }
 
     func syncFromScene() {
+        blueCombatState = scene.blueCombatState
+        orangeCombatState = scene.orangeCombatState
         blueHealth = scene.blueHealth.current
         orangeHealth = scene.orangeHealth.current
         blueMaximumHealth = scene.blueHealth.maximum
@@ -223,7 +227,7 @@ struct ContentView: View {
     // Reserved top strip keeps health separate from fighter art and Guides.
     private var healthHUD: some View {
         HStack(spacing: 12) {
-            healthIndicator("BLUE", value: playback.blueHealth,
+            healthIndicator("BLUE", state: playback.blueCombatState, value: playback.blueHealth,
                             maximum: playback.blueMaximumHealth, color: .blue)
             if showsDevelopmentDiagnostics {
                 Button("Reset Health", action: playback.resetHealth)
@@ -231,18 +235,20 @@ struct ContentView: View {
                     .frame(minWidth: 84, minHeight: 44)
                     .buttonStyle(.plain)
             }
-            healthIndicator("ORANGE", value: playback.orangeHealth,
+            healthIndicator("ORANGE", state: playback.orangeCombatState, value: playback.orangeHealth,
                             maximum: playback.orangeMaximumHealth, color: .orange)
         }
         .padding(.horizontal, 12)
         .background(Color(red: 0.91, green: 0.933, blue: 0.957))
     }
 
-    private func healthIndicator(_ name: String, value: Int, maximum: Int,
+    private func healthIndicator(_ name: String, state: FighterCombatState, value: Int, maximum: Int,
                                  color: Color) -> some View {
         VStack(spacing: 2) {
             HStack {
-                Text(name)
+                Text(state == .defeated ? "\(name) - DEFEATED" : name)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 Spacer(minLength: 4)
                 Text("\(value)/\(maximum)")
             }
@@ -258,7 +264,7 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("6A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("6B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
