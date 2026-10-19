@@ -32,15 +32,15 @@ assert 'health.canExchangePunches && reactionAssetsAvailable' not in handler
 start=scene[scene.index('private func startKnockdownIfReady'):scene.index('private func advanceOrange')]
 assert 'orangeCombatState == .defeated, !reaction.isActive' in start
 orange=scene[scene.index('private func advanceOrange'):scene.index('private var movementDirection')]
-assert orange.count('startKnockdownIfReady()')==2
-assert 'knockdown.advance(dt)' in orange and 'knockdown.step()' in orange
-fixed_pose=scene[scene.index('private func animateOrange'):scene.index('private func advanceCPUFootwork')]+scene[scene.index('private func stepOrange'):scene.index('private var movementDirection')]
+assert orange.count('startKnockdownIfReady()')==1
+assert 'knockdown.advance(dt)' in orange
+fixed_pose=scene[scene.index('private func animateOrange'):scene.index('private func advanceCPUFootwork')]
 for forbidden in ['rootA.', 'rootB.', '.position', '.xScale', '.yScale', 'Timer', 'SKAction', 'DispatchQueue']:
     assert forbidden not in fixed_pose
 reset=scene[scene.index('func resetHealth()'):scene.index('var contactGeometry')]
 assert 'knockdown.cancel()' in reset and 'reaction.cancel()' in reset
 assert 'Text("Orange: down")' in view and 'playback.orangeFrameCount' in view
-assert '8D ' in view
+assert '9A ' in view
 print('PASS: all nine integrated RGBA assets, baseline448, matching down pose, manifest, scene-clock sequence, final recoil, reset, diagnostics and unchanged transforms')
 compiler=shutil.which('swiftc')
 if compiler:

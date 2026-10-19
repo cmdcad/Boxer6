@@ -58,7 +58,7 @@ update=scene[scene.index('override func update'):scene.index('private var lastPu
 assert update.index('guard isPlaying, hasFocus')<update.index('advanceOrange(dt)')<update.index('punch.advance(dt, preserveContactPose: true)')<update.index('handlePunchEvent(event)')<update.index('applyFrames()')
 assert update.count('advanceOrange(dt)')==1
 step=scene[scene.index('func stepFrame()'):scene.index('func setSpeed(')]
-assert step.index('stepOrange()')<step.index('punch.step()')<step.index('handlePunchEvent(event)')<step.index('applyFrames()')
+assert step.index('advanceOrange(effectStep)')<step.index('punch.advance(effectStep, preserveContactPose: true)')<step.index('handlePunchEvent(event)')<step.index('applyFrames()')
 handler=scene[scene.index('private func resolveContact'):scene.index('private func advanceOrange')]
 assert handler.index('tracker.evaluate(')<handler.index('reaction.receive(.hit, from: event.kind)')<handler.index('onPunchContact?(event)')
 assert 'DispatchQueue' not in handler and 'async' not in handler and 'SKAction' not in handler

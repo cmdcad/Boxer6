@@ -32,7 +32,7 @@ control=view[view.index('private var playerGuardControl'):view.index('func punch
 assert 'HoldTouchSurface(title: "Guard"' in control
 assert 'inputGeneration: playback.guardInputGeneration' in control
 assert 'playback.setGuardHeld(held)' in control and 'Button(' not in control
-assert 'Blue Guard:' in view and '8D ' in view
+assert 'Blue Guard:' in view and '9A ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

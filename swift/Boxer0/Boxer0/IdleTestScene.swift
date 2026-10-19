@@ -79,6 +79,26 @@ final class IdleTestScene: SKScene {
             orangeAccumulator = 0
         }
     }
+    private var blueRecovery = PunchRecovery()
+    private var orangeRecovery = PunchRecovery()
+    var blueActionLabel: String {
+        if blueVisualBusy { return blueKnockdown.hasStarted ? blueKnockdown.clip.rawValue.uppercased() : "HIT REACTION" }
+        if blueBlockFeedback.isActive { return "BLOCK REACTION" }
+        if blueRecovery.phase != .ready { return blueRecovery.label }
+        return blueGuard.isSelected ? "GUARD" : "READY"
+    }
+    var orangeActionLabel: String {
+        if knockdown.hasStarted { return knockdown.clip.rawValue.uppercased() }
+        if reaction.isActive { return "HIT REACTION" }
+        if blockFeedback.isActive { return "BLOCK REACTION" }
+        if orangeRecovery.phase != .ready { return orangeRecovery.label }
+        return guardPlayback.isSelected ? "GUARD" : "READY"
+    }
+    private func advancePhysicalRecovery(_ dt: Double) {
+        let blueReady = blueRecovery.advance(dt)
+        let orangeReady = orangeRecovery.advance(dt)
+        if blueReady || orangeReady { onPlaybackChange?() }
+    }
     private var punch = PunchPlayback()
     private var orangePunch = PunchPlayback()
     private var blueGuard = GuardPlayback()
@@ -107,10 +127,11 @@ final class IdleTestScene: SKScene {
         blueGuardEffectiveAtContact = nil
     }
     private func syncBlueGuard() {
-        let eligible = guardHeld && canHoldGuard && !punch.isActive && !blueVisualBusy
+        let eligible = guardHeld && canHoldGuard && !punch.isActive && !blueVisualBusy && !blueRecovery.isRecovering
         if !eligible {
-            blueGuard.cancel(); blueBlockFeedback.cancel()
-        } else if !blueGuard.isSelected {
+            blueGuard.cancel()
+            if blueVisualBusy || punch.isActive || blueCombatState == .defeated { blueBlockFeedback.cancel() }
+        } else if !blueGuard.isSelected && !blueBlockFeedback.isActive {
             blueGuard.toggle()
         }
     }
@@ -139,7 +160,7 @@ final class IdleTestScene: SKScene {
         health.canExchangePunches && !reaction.isActive && !knockdown.hasStarted
             && !guardPlayback.isSelected && !blockFeedback.isActive && !orangePunch.isActive
             && defensiveAI.state == .idle
-            && orangePunchAssetsAvailable && blueRecoveryAssetsAvailable
+            && orangePunchAssetsAvailable && blueRecoveryAssetsAvailable && !orangeRecovery.isRecovering
     }
     private(set) var orangePunchAssetsAvailable = false
     private(set) var blueRecoveryAssetsAvailable = false
@@ -159,6 +180,7 @@ final class IdleTestScene: SKScene {
     }
     func startBlueRise() {
         guard canBlueRise, blueKnockdown.startRise() else { return }
+        blueRecovery.cancel()
         cpuOffense.cancel(); defensiveAI.cancel()
         clearHeldInput(); clearBlueGuardInput(); motion.stop()
         lastTime = 0
@@ -201,6 +223,7 @@ final class IdleTestScene: SKScene {
 
     func startRise() {
         guard canRise, knockdown.startRise() else { return }
+        orangeRecovery.cancel()
         cpuOffense.cancel()
         defensiveAI.cancel()
         blockFeedback.cancel()
@@ -214,8 +237,9 @@ final class IdleTestScene: SKScene {
     private var canRequestGuard: Bool {
         guardAssetsAvailable && hasFocus && orangeCombatState == .standing
             && !reaction.isActive && !knockdown.hasStarted && !orangePunch.isActive
+            && !orangeRecovery.isRecovering && !blockFeedback.isActive
     }
-    var canToggleGuard: Bool { !cpuEnabled && canRequestGuard }
+    var canToggleGuard: Bool { !cpuEnabled && (canRequestGuard || guardPlayback.isSelected) }
     func toggleGuard() {
         guard canToggleGuard else { return }
         requestGuard(!guardPlayback.isSelected)
@@ -228,9 +252,10 @@ final class IdleTestScene: SKScene {
         guardPlayback.toggle()
         if selected {
             stopCPUFootwork()
-            cpuOffense.disable()
+            cpuOffense.cancelPreparation()
         }
-        if !guardPlayback.isSelected { blockFeedback.cancel() }
+        // Releasing guard ends protection immediately; an existing block recoil
+        // finishes before idle/movement/another attack resumes.
         orangeFrame = 0
         orangeAccumulator = 0
     }
@@ -268,6 +293,7 @@ final class IdleTestScene: SKScene {
 
     func resetHealth() {
         health.reset()
+        blueRecovery.cancel(); orangeRecovery.cancel()
         clearBlueGuardInput()
         orangePunch.cancel(); cpuContactTracker.finish()
         blueReaction.cancel(); blueKnockdown.cancel()
@@ -307,10 +333,10 @@ final class IdleTestScene: SKScene {
     private(set) var textureCanvasInfo = "Textures pending"
     var onPunchContact: ((PunchContactEvent) -> Void)?
     var canStartJab: Bool {
-        health.canExchangePunches && jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected
+        health.canExchangePunches && jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && !blueBlockFeedback.isActive && !guardHeld
     }
     var canStartCross: Bool {
-        health.canExchangePunches && crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected
+        health.canExchangePunches && crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && !blueBlockFeedback.isActive && !guardHeld
     }
     var showsJabContact: Bool {
         punch.isActive && punch.kind == .jab && punch.frameIndex == punch.kind.contactFrame
@@ -417,6 +443,7 @@ final class IdleTestScene: SKScene {
 
     override func willMove(from view: SKView) {
         cancelMovement()
+        blueRecovery.cancel(); orangeRecovery.cancel()
         clearBlueGuardInput()
         punch.cancel()
         reaction.cancel()
@@ -467,6 +494,7 @@ final class IdleTestScene: SKScene {
         }
         guard isPlaying, hasFocus else { return }
         simulationTime += dt
+        advancePhysicalRecovery(dt)
         advanceBlueRecovery(dt)
         advanceBlueDefense(dt)
         advanceCPUOffense(dt)
@@ -491,7 +519,8 @@ final class IdleTestScene: SKScene {
             return
         }
 
-        if blueVisualBusy || blueCombatState == .defeated {
+        if blueVisualBusy || blueCombatState == .defeated || blueRecovery.isRecovering || blueBlockFeedback.isActive {
+            motion.stop()
             advanceCPUAttack(dt)
             applyFrames(); publishIfNeeded()
             return
@@ -537,6 +566,7 @@ final class IdleTestScene: SKScene {
     private var lastPublishedVelocity: Double = .nan
     private var lastPublishedOrangeFrame = -1
     private var lastPublishedOrangeClip: DefenderClip?
+    private var lastPublishedActions = ""
     private var lastPublishedBlueGuard = ""
     private var lastPublishedBlueFX = ""
     private var lastPublishedCPUAttack = ""
@@ -552,6 +582,7 @@ final class IdleTestScene: SKScene {
             || abs(motion.velocity - lastPublishedVelocity) >= 1
             || orangeFrameIndex != lastPublishedOrangeFrame
             || orangeClip != lastPublishedOrangeClip
+            || blueActionLabel + orangeActionLabel != lastPublishedActions
             || blueGuardStatus != lastPublishedBlueGuard
             || blueBlockFeedbackLabel != lastPublishedBlueFX
             || cpuAttackLabel != lastPublishedCPUAttack
@@ -562,6 +593,7 @@ final class IdleTestScene: SKScene {
             lastPublishedVelocity = motion.velocity
             lastPublishedOrangeFrame = orangeFrameIndex
             lastPublishedOrangeClip = orangeClip
+            lastPublishedActions = blueActionLabel + orangeActionLabel
             lastPublishedBlueGuard = blueGuardStatus
             lastPublishedBlueFX = blueBlockFeedbackLabel
             lastPublishedCPUAttack = cpuAttackLabel
@@ -582,36 +614,43 @@ final class IdleTestScene: SKScene {
         onPlaybackChange?()
     }
 
+    private var simulationStepDuration: Double {
+        var duration = activeClip.cycleDuration / Double(activeClip.frameCount)
+        if punch.isActive { duration = min(duration, punch.kind.frameDuration) }
+        if orangePunch.isActive { duration = min(duration, orangePunch.kind.frameDuration) }
+        if blueReaction.isActive || reaction.isActive { duration = min(duration, HitReactionPlayback.frameDuration) }
+        if blueKnockdown.clip == .knockdown || knockdown.clip == .knockdown { duration = min(duration, KnockdownPlayback.frameDuration) }
+        if blueKnockdown.clip == .rise || knockdown.clip == .rise { duration = min(duration, KnockdownPlayback.riseFrameDuration) }
+        if blueGuard.isSelected || guardPlayback.isSelected { duration = min(duration, GuardPlayback.frameDuration) }
+        if blueBlockFeedback.isActive { duration = min(duration, blueBlockFeedback.frameDuration) }
+        if blockFeedback.isActive { duration = min(duration, blockFeedback.frameDuration) }
+        if blueRecovery.isRecovering { duration = min(min(duration, 0.04), blueRecovery.remaining) }
+        if orangeRecovery.isRecovering { duration = min(min(duration, 0.04), orangeRecovery.remaining) }
+        return max(1e-6, duration)
+    }
+
     func stepFrame() {
         isPlaying = false
-        clearHeldInput()
-        motion.stop()
-        lastTime = 0
-        blueAccumulator = 0
-        // As in update: step old orange state first, then a new HIT may restart
-        // frame zero. Never step a reaction again in the tick it is triggered.
-        // Expire only an old effect; a BLOCK created below starts at elapsed zero.
-        let blueStep = punch.isActive ? punch.kind.frameDuration : Double.infinity
-        let orangeStep = orangePunch.isActive ? orangePunch.kind.frameDuration : Double.infinity
-        let guardStep = blueGuard.isSelected ? GuardPlayback.frameDuration : Double.infinity
-        let attackStep = min(min(blueStep, orangeStep), guardStep)
-        let effectStep = attackStep.isFinite ? attackStep
-            : activeClip.cycleDuration / Double(activeClip.frameCount)
+        clearHeldInput(); motion.stop(); lastTime = 0
+        let effectStep = simulationStepDuration
         simulationTime += effectStep
-        advanceBlueRecovery(effectStep, stepping: true)
+        advancePhysicalRecovery(effectStep)
+        advanceBlueRecovery(effectStep)
         advanceBlueDefense(effectStep)
         advanceCPUOffense(effectStep)
         advanceBlockFeedback(effectStep)
-        stepOrange()
+        // Every action receives the same simulation duration; step does not
+        // silently advance a50ms Jab while only40ms elapses for guard/recovery.
+        advanceOrange(effectStep)
         if punch.isActive {
-            let event = punch.step()
+            let event = punch.advance(effectStep, preserveContactPose: true)
             handlePunchEvent(event)
-        } else if !blueVisualBusy && blueCombatState == .standing {
-            frameIndex = (frameIndex + 1) % activeClip.frameCount
+        } else if !blueVisualBusy && blueCombatState == .standing && !blueRecovery.isRecovering {
+            animateBoxer(&blueAccumulator, frame: &frameIndex, clip: activeClip,
+                         speed: playbackSpeed.rawValue, dt: effectStep)
         }
         advanceCPUAttack(effectStep)
-        applyFrames()
-        onPlaybackChange?()
+        applyFrames(); onPlaybackChange?()
     }
 
     func setSpeed(_ speed: IdlePlaybackSpeed) {
@@ -625,12 +664,12 @@ final class IdleTestScene: SKScene {
     }
 
     func setAdvanceHeld(_ held: Bool) {
-        holdAdvance = held && isPlaying && hasFocus && !punch.isActive && !blueVisualBusy && blueCombatState == .standing
+        holdAdvance = held && isPlaying && hasFocus && !blueVisualBusy && blueCombatState == .standing
         onPlaybackChange?()
     }
 
     func setRetreatHeld(_ held: Bool) {
-        holdRetreat = held && isPlaying && hasFocus && !punch.isActive && !blueVisualBusy && blueCombatState == .standing
+        holdRetreat = held && isPlaying && hasFocus && !blueVisualBusy && blueCombatState == .standing
         onPlaybackChange?()
     }
 
@@ -659,6 +698,7 @@ final class IdleTestScene: SKScene {
     private func beginAttack(_ attacker: FighterID, kind: PunchKind) -> Bool {
         if attacker == .orange {
             guard cpuEnabled, canCPUAttack, orangePunch.start(kind) else { return false }
+            orangeRecovery.begin(kind)
             attackSequence += 1
             cpuContactTracker.begin(kind, attackerID: .orange, attackID: attackSequence, startTime: simulationTime)
             stopCPUFootwork()
@@ -669,13 +709,14 @@ final class IdleTestScene: SKScene {
         }
         let available = kind == .jab ? canStartJab : canStartCross
         guard available, punch.start(kind) else { return false }
-        clearHeldInput(); motion.stop()
+        blueRecovery.begin(kind)
+        motion.stop()
         attackSequence += 1
         contactTracker.begin(kind, attackerID: .blue, attackID: attackSequence, startTime: simulationTime)
         punchStartSequence += 1
         defensiveAI.observe(sequence: punchStartSequence, kind: kind,
                             inRange: predictedContact(.blue, kind: kind), eligible: canRequestGuard)
-        if defensiveAI.state == .reacting && !orangePunch.isActive { cpuOffense.disable() }
+        if defensiveAI.state == .reacting && !orangePunch.isActive { cpuOffense.cancelPreparation() }
         setClip(kind == .jab ? .jab : .cross)
         lastTime = 0
         applyFrames(); onPlaybackChange?()
@@ -704,15 +745,17 @@ final class IdleTestScene: SKScene {
         health.receive(event)
         if event.result == .hit {
             if event.defenderID == .orange {
+                orangeRecovery.cancel()
                 defensiveAI.cancel(); stopCPUFootwork()
                 guardPlayback.cancel(); blockFeedback.cancel()
                 if orangePunch.isActive {
                     orangePunch.cancel(); cpuContactTracker.finish(); cpuOffense.finished()
-                } else { cpuOffense.disable() }
+                } else { cpuOffense.cancelPreparation() }
                 if reactionAssetsAvailable { reaction.receive(.hit, from: event.kind) }
                 orangeFrame = 0; orangeAccumulator = 0
                 startKnockdownIfReady()
             } else {
+                blueRecovery.cancel()
                 punch.cancel(); contactTracker.finish()
                 blueGuard.cancel(); blueBlockFeedback.cancel()
                 clearHeldInput(); motion.stop(); settleIdle()
@@ -733,7 +776,8 @@ final class IdleTestScene: SKScene {
     private func handlePunchEvent(_ event: (contact: Bool, completed: Bool)) {
         if event.contact { resolveContact(.blue, kind: punch.kind) }
         if event.completed {
-            contactTracker.finish(); clearHeldInput(); motion.stop(); settleIdle()
+            contactTracker.finish(); motion.stop(); settleIdle()
+            blueRecovery.completeAttack()
             syncBlueGuard()
         } else if punch.isActive { frameIndex = punch.frameIndex }
     }
@@ -753,20 +797,22 @@ final class IdleTestScene: SKScene {
         if event.contact { resolveContact(.orange, kind: kind) }
         if event.completed {
             cpuContactTracker.finish(); cpuOffense.finished()
+            orangeRecovery.completeAttack()
             orangeFrame = 0; orangeAccumulator = 0
         }
     }
-    private func advanceBlueRecovery(_ dt: Double, stepping: Bool = false) {
+    private func advanceBlueRecovery(_ dt: Double) {
         if blueKnockdown.hasStarted {
-            let completed = stepping ? blueKnockdown.step() : blueKnockdown.advance(dt)
+            let completed = blueKnockdown.advance(dt)
             if completed {
+                blueRecovery.cancel()
                 health.recoverBlue(); clearHeldInput(); clearBlueGuardInput(); motion.stop(); settleIdle()
                 frameIndex = 0; blueAccumulator = 0
                 cpuOffense.cancel(); defensiveAI.cancel()
                 onPlaybackChange?()
             }
         } else if blueReaction.isActive {
-            let completed = stepping ? blueReaction.step() : blueReaction.advance(dt)
+            let completed = blueReaction.advance(dt)
             if completed {
                 if blueCombatState == .defeated && blueRecoveryAssetsAvailable { blueKnockdown.start() }
                 else { settleIdle(); frameIndex = 0; blueAccumulator = 0 }
@@ -784,6 +830,7 @@ final class IdleTestScene: SKScene {
 
     private func completeOrangeRecovery() {
         guard health.recoverOrange() else { return }
+        orangeRecovery.cancel()
         cpuOffense.cancel()
         defensiveAI.cancel()
         guardPlayback.cancel()
@@ -824,6 +871,10 @@ final class IdleTestScene: SKScene {
 
     private func animateOrange(_ dt: TimeInterval) {
         if orangePunch.isActive { return }
+        if orangeRecovery.isRecovering || blockFeedback.isActive {
+            stopCPUFootwork()
+            return
+        }
         if knockdown.hasStarted {
             if knockdown.advance(dt) { completeOrangeRecovery() }
         } else if reaction.isActive {
@@ -897,31 +948,6 @@ final class IdleTestScene: SKScene {
         let lower = aBody.maxX + gap - (bBody.minX-b.rootPosition.x)
         let upper = size.width-Self.edgePaddingPoints-(visible.maxX-b.rootPosition.x)
         return min(lower,upper)...upper
-    }
-
-    private func stepOrange() {
-        if orangePunch.isActive { return }
-        if cpuEnabled && canRequestGuard {
-            let interval = punch.isActive ? punch.kind.frameDuration
-                : activeClip.cycleDuration / Double(activeClip.frameCount)
-            advanceOrange(interval)
-            return
-        }
-        if knockdown.hasStarted {
-            if knockdown.step() { completeOrangeRecovery() }
-        } else if reaction.isActive {
-            if reaction.step() {
-                orangeFrame = 0
-                orangeAccumulator = 0
-                // Display fall frame zero now; never consume this tick twice.
-                startKnockdownIfReady()
-            }
-        } else if guardPlayback.isSelected {
-            guardPlayback.step()
-        } else if orangeCombatState == .standing {
-            orangeAccumulator = 0
-            orangeFrame = (orangeFrame + 1) % FighterClip.idle.frameCount
-        }
     }
 
     private var movementDirection: CGFloat? {
@@ -1165,7 +1191,7 @@ final class IdleTestScene: SKScene {
             boxerA.texture = riseA[blueKnockdown.frameIndex]
         } else if blueReaction.isActive && blueRecoveryAssetsAvailable {
             boxerA.texture = hitReactA[blueReaction.frameIndex]
-        } else if blueBlockFeedback.isActive && blueGuard.isEffective && playerGuardAssetsAvailable {
+        } else if blueBlockFeedback.isActive && playerGuardAssetsAvailable {
             let textures = blueBlockFeedback.kind == .cross ? blockCrossA : blockJabA
             boxerA.texture = textures[blueBlockFeedback.frameIndex]
         } else if blueGuard.isSelected && playerGuardAssetsAvailable {
@@ -1182,7 +1208,7 @@ final class IdleTestScene: SKScene {
         } else if orangePunch.isActive && orangePunchAssetsAvailable {
             let textures = orangePunch.kind == .jab ? jabB : crossB
             boxerB.texture = textures[orangePunch.frameIndex]
-        } else if blockFeedback.isActive && blockRecoilAssetsAvailable && guardPlayback.isEffective {
+        } else if blockFeedback.isActive && blockRecoilAssetsAvailable {
             let textures = blockFeedback.kind == .cross ? blockCrossB : blockJabB
             boxerB.texture = textures[blockFeedback.frameIndex]
         } else if guardPlayback.isSelected && guardAssetsAvailable {

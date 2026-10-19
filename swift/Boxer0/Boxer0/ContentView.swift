@@ -24,6 +24,8 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var blueAction = "READY"
+    @Published var orangeAction = "READY"
     @Published var guardHeld = false
     @Published var guardInputGeneration = 0
     @Published var canHoldGuard = false
@@ -110,6 +112,8 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        blueAction = scene.blueActionLabel
+        orangeAction = scene.orangeActionLabel
         guardHeld = scene.guardHeld
         guardInputGeneration = scene.guardInputGeneration
         canHoldGuard = scene.canHoldGuard
@@ -324,6 +328,7 @@ struct ContentView: View {
             Text(playback.cpuStats)
             Text("Blue: \(playback.blueAnimation)")
             Text("Blue Guard: \(playback.blueGuardStatus) | FX: \(playback.blueBlockFX)")
+            Text("Blue Action: \(playback.blueAction) | Orange Action: \(playback.orangeAction)")
         }
     }
 
@@ -417,7 +422,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("8D · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("9A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

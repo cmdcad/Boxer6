@@ -119,6 +119,7 @@ struct CPUOffense {
         if reseed { randomState = 98765 }
     }
     mutating func disable() { if state != .attacking { cancel() } }
+    mutating func cancelPreparation() { if state == .preparing { cancel() } }
     mutating func finished() {
         state = .cooldown
         remaining = max(minimumCompletedInterval, kind == .jab ? jabCooldown : crossCooldown)
@@ -148,4 +149,38 @@ struct CPUOffense {
         remaining = kind == .jab ? jabPreparation : crossPreparation
         return nil
     }
+}
+
+enum PhysicalActionPhase { case ready, attacking, recovering }
+
+/// Shared physical action lock, independent of CPU tactical pacing.
+struct PunchRecovery {
+    var jabDuration = 0.12
+    var crossDuration = 0.22
+    private(set) var phase: PhysicalActionPhase = .ready
+    private(set) var kind: PunchKind = .jab
+    private(set) var remaining = 0.0
+    var isRecovering: Bool { phase == .recovering }
+    var label: String {
+        switch phase {
+        case .ready: return "READY"
+        case .attacking: return kind == .jab ? "JAB" : "CROSS"
+        case .recovering: return kind == .jab ? "RECOVERING JAB" : "RECOVERING CROSS"
+        }
+    }
+    mutating func begin(_ punch: PunchKind) { kind = punch; phase = .attacking; remaining = 0 }
+    mutating func completeAttack() {
+        guard phase == .attacking else { return }
+        phase = .recovering
+        remaining = kind == .jab ? jabDuration : crossDuration
+    }
+    @discardableResult
+    mutating func advance(_ dt: Double) -> Bool {
+        guard isRecovering, dt.isFinite, dt >= 0 else { return false }
+        remaining = max(0, remaining-dt)
+        guard remaining <= 1e-10 else { return false }
+        cancel()
+        return true
+    }
+    mutating func cancel() { phase = .ready; remaining = 0 }
 }

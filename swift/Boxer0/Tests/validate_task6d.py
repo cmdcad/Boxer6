@@ -31,14 +31,14 @@ assert 'guard canRise, knockdown.startRise()' in can
 assert 'health.' not in can and '.position' not in can
 assert scene.count('health.recoverOrange()')==1
 assert 'if knockdown.advance(dt) { completeOrangeRecovery() }' in scene
-assert 'if knockdown.step() { completeOrangeRecovery() }' in scene
+assert 'advanceOrange(effectStep)' in scene
 recover=health[health.index('mutating func recoverOrange'):health.index('mutating func recoverBlue')]
 assert 'orange.reset()' in recover and 'orangeCombat.reset()' in recover
 assert 'blue.reset()' not in recover and 'lastContactSequence =' not in recover
 reset=scene[scene.index('func resetHealth()'):scene.index('var contactGeometry')]
 assert 'knockdown.cancel()' in reset
 assert 'Blue Rise' in view and '.disabled(!playback.canRise)' in view
-assert 'playback.orangeCombatState.rawValue' in view and '8D ' in view
+assert 'playback.orangeCombatState.rawValue' in view and '9A ' in view
 print('PASS: eight integrated transparent poses, baseline/root contract, exact down/idle endpoints, down-only Rise, shared clock, orange-only completion health policy, reset and HUD source checks')
 compiler=shutil.which('swiftc')
 if compiler:

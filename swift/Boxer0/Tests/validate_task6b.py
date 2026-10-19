@@ -16,15 +16,15 @@ assert handler.index('guard health.canExchangePunches else { return }') < handle
 # 8A now allows the accepted final HIT recoil before the fall.
 assert 'if reactionAssetsAvailable { reaction.receive' in handler
 orange = scene[scene.index('private func advanceOrange'):scene.index('private var movementDirection')]
-assert orange.count('else if orangeCombatState == .standing') == 2
-assert orange.count('if reaction.isActive') == 2
+assert orange.count('else if orangeCombatState == .standing') == 1
+assert orange.count('if reaction.isActive') == 1
 reset = scene[scene.index('func resetHealth()'):scene.index('var contactGeometry')]
 for expected in ['health.reset()', 'punch.cancel()', 'contactTracker.finish()', 'reaction.cancel()', 'orangeFrame = 0', 'applyFrames()']:
     assert expected in reset
 for forbidden in ['rootA.', 'rootB.', 'contactTracker =', 'isPlaying =']:
     assert forbidden not in reset
 assert 'DEFEATED' in view and 'state == .defeated' in view
-assert '8D ' in view
+assert '9A ' in view
 print('PASS: eligibility before contact counters, one-shot defeat model, blocked post-defeat contacts, standing-only idle/step, clean reset, HUD source checks')
 compiler = shutil.which('swiftc')
 if compiler:

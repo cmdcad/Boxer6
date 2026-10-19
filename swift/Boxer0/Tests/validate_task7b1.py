@@ -36,7 +36,7 @@ for forbidden in ['boxerB.position','rootB.position','boxerB.xScale','boxerB.ySc
     assert forbidden not in render
 assert 'blockFeedbackNode' not in scene and 'applyBlockFeedback()' not in scene
 assert 'if event.defenderID == .orange && blockRecoilAssetsAvailable' in scene
-assert 'Block recoil assets missing' in view and '8D ' in view
+assert 'Block recoil assets missing' in view and '9A ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

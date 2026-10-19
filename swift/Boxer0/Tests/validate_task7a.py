@@ -33,7 +33,7 @@ assert 'case .block: blocks += 1' in contact
 assert ': (blueGuardEffectiveAtContact ?? blueGuard.isEffective)' in scene
 assert 'if event.result == .hit {' in scene and 'guardPlayback.cancel()' in scene
 assert scene.count('tracker.evaluate(')==1
-assert 'guardPlayback.advance(dt)' in scene and 'guardPlayback.step()' in scene
+assert 'guardPlayback.advance(dt)' in scene and 'advanceOrange(effectStep)' in scene
 for start,end in [('func resetHealth()','var contactGeometry'),('private func completeOrangeRecovery','private func startKnockdownIfReady')]:
     assert 'guardPlayback.cancel()' in scene[scene.index(start):scene.index(end)]
 assert '.disabled(!playback.canToggleGuard)' in view and 'playback.guardStatus' in view
