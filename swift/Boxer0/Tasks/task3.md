@@ -118,3 +118,18 @@ screen. No fighter layout or input semantics changed.
 Source review confirms the bounded debug strip and both movement controls are
 included in ContentView. iPhone rendering and interaction still require a rebuilt
 app from Xcode; they cannot be verified on this Windows host.
+
+
+### Screenshot follow-up: reserve space for controls on iPhone SE
+
+The supplied 1136×640 screenshot shows the debug strip but no movement row or
+animation status. Replaced the scene-overlay layout with a vertical scene and
+content-sized bottom panel. The scene receives the remaining height; both control
+rows receive layout priority and remain inside the safe area. Removed the debug
+ScrollView in favor of four equally flexible controls. The status now starts with
+“3A” so the updated build is identifiable. This supersedes the earlier overlay
+layout fix. The screenshot alone cannot establish whether the phone was running
+the latest source; rebuild this project's Boxer0 target to install these changes.
+
+Source checks pass (both movement controls present, no debug ScrollView, balanced
+braces). Actual iOS layout and compilation remain unverified on Windows.

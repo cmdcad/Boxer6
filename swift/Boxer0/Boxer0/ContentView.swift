@@ -86,9 +86,10 @@ struct ContentView: View {
     @StateObject private var playback = IdlePlayback()
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: 0) {
             SpriteView(scene: playback.scene)
-                .ignoresSafeArea()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .layoutPriority(0)
 
             VStack(spacing: 8) {
                 HStack(alignment: .bottom, spacing: 12) {
@@ -105,8 +106,10 @@ struct ContentView: View {
             .padding(.horizontal, 12)
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity)
-            .zIndex(1)
+            .background(Color(red: 0.85, green: 0.89, blue: 0.93))
+            .layoutPriority(1)
         }
+        .background(Color(red: 0.91, green: 0.933, blue: 0.957).ignoresSafeArea())
         .preferredColorScheme(ColorScheme.light)
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             playback.cancelMovement()
@@ -117,7 +120,7 @@ struct ContentView: View {
     }
 
     private var statusLabel: some View {
-        Text("\(playback.clipName)  \(playback.positionX)")
+        Text("3A · \(playback.clipName)  \(playback.positionX)")
             .font(.system(size: 13, weight: .semibold, design: .monospaced))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
@@ -125,17 +128,13 @@ struct ContentView: View {
     }
 
     private var debugControls: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
-                controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
-                controlButton(playback.speed.label, action: playback.cycleSpeed)
-                controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
-            }
-            .padding(8)
+        HStack(spacing: 8) {
+            controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
+            controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
+            controlButton(playback.speed.label, action: playback.cycleSpeed)
+            controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
         }
-        // A horizontal ScrollView otherwise accepts all available height and
-        // can push the movement row above the screen in the bottom VStack.
+        .padding(.horizontal, 8)
         .frame(height: 54)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -146,7 +145,9 @@ struct ContentView: View {
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
-                .frame(minWidth: 72)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, minHeight: 36)
         }
         .buttonStyle(.bordered)
     }
