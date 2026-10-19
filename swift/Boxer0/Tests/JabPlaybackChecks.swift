@@ -3,7 +3,7 @@ import Foundation
 @main
 struct JabPlaybackChecks {
     static func main() {
-        var jab = JabPlayback()
+        var jab = PunchPlayback()
         precondition(jab.start() && jab.frameIndex == 0)
         precondition(!jab.start(), "No self interruption or queued press")
         precondition(!jab.advance(0.149).contact && jab.frameIndex == 2)

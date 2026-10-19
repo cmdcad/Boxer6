@@ -19,6 +19,10 @@ final class IdlePlayback: ObservableObject {
     @Published var velocityX = 0
     @Published var inputGeneration = 0
     @Published var canJab = false
+    @Published var canCross = false
+    @Published var crossAssetsAvailable = false
+    @Published var crossContact = false
+    @Published var crossContactCount = 0
     @Published var jabAssetsAvailable = false
     @Published var jabContact = false
     @Published var jabContactCount = 0
@@ -48,9 +52,18 @@ final class IdlePlayback: ObservableObject {
         holdRetreat = scene.retreatHeld
         inputGeneration = scene.inputGeneration
         canJab = scene.canStartJab
+        canCross = scene.canStartCross
+        crossAssetsAvailable = scene.crossAssetsAvailable
+        crossContact = scene.showsCrossContact
+        crossContactCount = scene.crossContactCount
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+    }
+
+    func cross() {
+        scene.startCross()
+        syncFromScene()
     }
 
     func jab() {
@@ -112,7 +125,8 @@ struct ContentView: View {
                 }
                 .frame(minHeight: 52)
                 HStack(spacing: 8) {
-                    jabButton
+                    punchButton("Jab", enabled: playback.canJab, action: playback.jab)
+                    punchButton("Cross", enabled: playback.canCross, action: playback.cross)
                     if showsDevelopmentDiagnostics { debugControls }
                 }
                 .frame(height: 54)
@@ -136,35 +150,39 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("4A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("4B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
+            } else if !playback.crossAssetsAvailable {
+                Text("Cross assets missing").foregroundColor(.red)
             } else {
-                Text("Contact · \(playback.jabContactCount)")
-                    .foregroundColor(playback.jabContact ? .orange : .secondary)
+                Text("Contact J\(playback.jabContactCount) C\(playback.crossContactCount)")
+                    .foregroundColor(playback.jabContact || playback.crossContact ? .orange : .secondary)
             }
         }
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
             .font(.system(size: 13, weight: .semibold, design: .monospaced))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
-    private var jabButton: some View {
-        Text("Jab")
+    private func punchButton(_ title: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Text(title)
             .font(.system(size: 15, weight: .bold, design: .rounded))
-            .foregroundColor(playback.canJab ? Color.accentColor : Color.secondary)
-            .frame(width: 80, height: 46)
+            .foregroundColor(enabled ? Color.accentColor : Color.secondary)
+            .frame(width: 64, height: 46)
             .background(Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 10))
             .overlay(
-                HoldTouchSurface(title: "Jab", inputGeneration: playback.inputGeneration,
-                                 hint: "Press once for one jab") { held in
-                    if held { playback.jab() }
+                HoldTouchSurface(title: title, inputGeneration: playback.inputGeneration,
+                                 hint: "Press once for one punch") { held in
+                    if held { action() }
                 }
             )
-            .allowsHitTesting(playback.canJab)
-            .opacity(playback.canJab ? 1 : 0.55)
+            .allowsHitTesting(enabled)
+            .opacity(enabled ? 1 : 0.55)
     }
 
     private var debugControls: some View {

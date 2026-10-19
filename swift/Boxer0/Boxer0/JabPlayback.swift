@@ -1,18 +1,28 @@
 import Foundation
 
-/// Six 50 ms frames. No input queue, loops, movement, or gameplay effects.
-struct JabPlayback {
-    static let frameCount = 6
-    static let frameDuration = 0.05
-    static let contactFrame = 3 // Artist frame 4, zero-based in code.
+enum PunchKind {
+    case jab
+    case cross
+
+    var frameCount: Int { self == .jab ? 6 : 8 }
+    var frameDuration: Double { self == .jab ? 0.05 : 0.06 }
+    var contactFrame: Int { self == .jab ? 3 : 4 }
+    var duration: Double { Double(frameCount) * frameDuration }
+}
+
+/// Shared one-shot clock; kept in the existing project source file.
+/// No input queue, loops, movement, or gameplay effects.
+struct PunchPlayback {
+    private(set) var kind: PunchKind = .jab
     private(set) var isActive = false
     private(set) var frameIndex = 0
     private(set) var reachedContact = false
     private var accumulator = 0.0
 
     @discardableResult
-    mutating func start() -> Bool {
+    mutating func start(_ kind: PunchKind = .jab) -> Bool {
         guard !isActive else { return false }
+        self.kind = kind
         isActive = true
         frameIndex = 0
         reachedContact = false
@@ -24,19 +34,19 @@ struct JabPlayback {
         guard isActive, duration.isFinite, duration >= 0 else { return (false, false) }
         accumulator += duration
         var contact = false
-        while accumulator + 1e-10 >= Self.frameDuration {
-            accumulator = max(0, accumulator - Self.frameDuration)
-            if frameIndex == Self.frameCount - 1 {
+        while accumulator + 1e-10 >= kind.frameDuration {
+            accumulator = max(0, accumulator - kind.frameDuration)
+            if frameIndex == kind.frameCount - 1 {
                 isActive = false
                 accumulator = 0
                 return (contact, true)
             }
             frameIndex += 1
-            if frameIndex == Self.contactFrame && !reachedContact {
+            if frameIndex == kind.contactFrame && !reachedContact {
                 reachedContact = true
                 contact = true
             }
-            if frameIndex == Self.frameCount - 1 && accumulator + 1e-10 >= Self.frameDuration {
+            if frameIndex == kind.frameCount - 1 && accumulator + 1e-10 >= kind.frameDuration {
                 // A delayed render tick must still present recovery, rather
                 // than consuming the entire final pose offscreen.
                 accumulator = 0
@@ -48,7 +58,7 @@ struct JabPlayback {
 
     mutating func step() -> (contact: Bool, completed: Bool) {
         accumulator = 0
-        return advance(Self.frameDuration)
+        return advance(kind.frameDuration)
     }
 
     mutating func cancel() {

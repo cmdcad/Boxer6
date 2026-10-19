@@ -244,3 +244,9 @@ taps, moving-then-Jab, holding a direction across completion, pause/step/resume
 mid-jab, focus loss, contact count and orange idle. Inspect joint connection and
 readability at phone size. No damage, health, stamina, AI or combat collisions
 have been added. Task 4A is implemented; device validation is not yet recorded.
+
+
+## User acceptance — October 19, 2026
+
+User confirmed Task 4A validated and requested Task 4B. New Swift code must use
+explicit optional binding (if let value = value), not shorthand if let value.

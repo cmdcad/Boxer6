@@ -2,7 +2,7 @@
 //  IdleTestScene.swift
 //  Boxer0
 //
-//  Idle playback, Task 3B footwork and Task 4A non-looping jab.
+//  Idle playback, Task 3B footwork and Task 4B shared punch playback.
 //
 
 import SpriteKit
@@ -25,14 +25,22 @@ enum FighterClip: String {
     case advance
     case retreat
     case jab
+    case cross
 
-    var frameCount: Int { self == .idle ? 4 : 6 }
+    var frameCount: Int {
+        switch self {
+        case .idle: return 4
+        case .advance, .retreat, .jab: return 6
+        case .cross: return 8
+        }
+    }
 
     var cycleDuration: TimeInterval {
         switch self {
         case .idle: return 0.8
         case .advance, .retreat: return 0.48
-        case .jab: return 0.3
+        case .jab: return PunchKind.jab.duration
+        case .cross: return PunchKind.cross.duration
         }
     }
 }
@@ -50,14 +58,24 @@ final class IdleTestScene: SKScene {
     static let defaultMoveSpeed: CGFloat = 100
 
     private var motion = FootworkMotion()
-    private var jab = JabPlayback()
+    private var punch = PunchPlayback()
     private var hasFocus = true
     private(set) var jabAssetsAvailable = false
+    private(set) var crossAssetsAvailable = false
     private(set) var jabContactCount = 0
+    private(set) var crossContactCount = 0
     var canStartJab: Bool {
-        jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !jab.isActive
+        jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
     }
-    var showsJabContact: Bool { jab.isActive && jab.frameIndex == JabPlayback.contactFrame }
+    var canStartCross: Bool {
+        crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
+    }
+    var showsJabContact: Bool {
+        punch.isActive && punch.kind == .jab && punch.frameIndex == punch.kind.contactFrame
+    }
+    var showsCrossContact: Bool {
+        punch.isActive && punch.kind == .cross && punch.frameIndex == punch.kind.contactFrame
+    }
     var movementSpeed: CGFloat {
         get { CGFloat(motion.maximumSpeed) }
         set { motion.maximumSpeed = max(0, Double(newValue)) }
@@ -94,6 +112,7 @@ final class IdleTestScene: SKScene {
     private var advanceA: [SKTexture] = []
     private var retreatA: [SKTexture] = []
     private var jabA: [SKTexture] = []
+    private var crossA: [SKTexture] = []
     private var groundLine: SKShapeNode!
     private var originA: SKShapeNode!
     private var originB: SKShapeNode!
@@ -130,14 +149,14 @@ final class IdleTestScene: SKScene {
 
     override func willMove(from view: SKView) {
         cancelMovement()
-        jab.cancel()
+        punch.cancel()
         settleIdle()
         applyFrames()
-        if let activeObserver {
+        if let activeObserver = activeObserver {
             NotificationCenter.default.removeObserver(activeObserver)
             self.activeObserver = nil
         }
-        if let resignObserver {
+        if let resignObserver = resignObserver {
             NotificationCenter.default.removeObserver(resignObserver)
             self.resignObserver = nil
         }
@@ -167,9 +186,9 @@ final class IdleTestScene: SKScene {
             return
         }
         guard isPlaying, hasFocus else { return }
-        if jab.isActive {
-            let event = jab.advance(dt)
-            handleJabEvent(event)
+        if punch.isActive {
+            let event = punch.advance(dt)
+            handlePunchEvent(event)
             animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
                          speed: playbackSpeed.rawValue, dt: dt)
             applyFrames()
@@ -238,7 +257,7 @@ final class IdleTestScene: SKScene {
         motion.stop()
         lastTime = 0
         if isPlaying {
-            if !jab.isActive { settleIdle() }
+            if !punch.isActive { settleIdle() }
             applyFrames()
         }
         onPlaybackChange?()
@@ -250,9 +269,9 @@ final class IdleTestScene: SKScene {
         motion.stop()
         lastTime = 0
         blueAccumulator = 0
-        if jab.isActive {
-            let event = jab.step()
-            handleJabEvent(event)
+        if punch.isActive {
+            let event = punch.step()
+            handlePunchEvent(event)
         } else {
             frameIndex = (frameIndex + 1) % activeClip.frameCount
         }
@@ -273,12 +292,12 @@ final class IdleTestScene: SKScene {
     }
 
     func setAdvanceHeld(_ held: Bool) {
-        holdAdvance = held && isPlaying && hasFocus && !jab.isActive
+        holdAdvance = held && isPlaying && hasFocus && !punch.isActive
         onPlaybackChange?()
     }
 
     func setRetreatHeld(_ held: Bool) {
-        holdRetreat = held && isPlaying && hasFocus && !jab.isActive
+        holdRetreat = held && isPlaying && hasFocus && !punch.isActive
         onPlaybackChange?()
     }
 
@@ -292,31 +311,37 @@ final class IdleTestScene: SKScene {
         lastTime = 0
         clearHeldInput()
         motion.stop()
-        if !jab.isActive { settleIdle() }
+        if !punch.isActive { settleIdle() }
         applyFrames()
         onPlaybackChange?()
     }
 
-    func startJab() {
-        guard canStartJab, jab.start() else { return }
+    func startJab() { startPunch(.jab) }
+    func startCross() { startPunch(.cross) }
+
+    private func startPunch(_ kind: PunchKind) {
+        let available = kind == .jab ? canStartJab : canStartCross
+        guard available, punch.start(kind) else { return }
         clearHeldInput()
         motion.stop()
-        setClip(.jab)
-        // Seed timing at the next render tick so the ready frame is presented
-        // before consuming any of the six 50 ms frame intervals.
+        setClip(kind == .jab ? .jab : .cross)
+        // Present ready before consuming any of the punch frame intervals.
         lastTime = 0
         applyFrames()
         onPlaybackChange?()
     }
 
-    private func handleJabEvent(_ event: (contact: Bool, completed: Bool)) {
-        if event.contact { jabContactCount += 1 }
+    private func handlePunchEvent(_ event: (contact: Bool, completed: Bool)) {
+        if event.contact {
+            if punch.kind == .jab { jabContactCount += 1 }
+            else { crossContactCount += 1 }
+        }
         if event.completed {
             clearHeldInput()
             motion.stop()
             settleIdle()
         } else {
-            frameIndex = jab.frameIndex
+            frameIndex = punch.frameIndex
         }
     }
 
@@ -362,16 +387,23 @@ final class IdleTestScene: SKScene {
         idleB = (0..<4).map { makeTexture(named: "idle_b_\($0)") }
         advanceA = (0..<6).map { makeTexture(named: "advance_a_\($0)") }
         retreatA = (0..<6).map { makeTexture(named: "retreat_a_\($0)") }
-        // Never use SpriteKit's missing-image placeholder as a punch pose.
-        let images = (0..<6).compactMap { UIImage(named: "jab_a_\($0)") }
-        jabAssetsAvailable = images.count == 6 && images.allSatisfy {
+        // Never substitute another clip or a missing-image placeholder.
+        jabA = loadPunchTextures(prefix: "jab_a", count: PunchKind.jab.frameCount)
+        crossA = loadPunchTextures(prefix: "cross_a", count: PunchKind.cross.frameCount)
+        jabAssetsAvailable = jabA.count == PunchKind.jab.frameCount
+        crossAssetsAvailable = crossA.count == PunchKind.cross.frameCount
+    }
+
+    private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
+        let images = (0..<count).compactMap { UIImage(named: "\(prefix)_\($0)") }
+        guard images.count == count, images.allSatisfy({
             $0.cgImage?.width == 512 && $0.cgImage?.height == 512
-        }
-        jabA = jabAssetsAvailable ? images.map {
+        }) else { return [] }
+        return images.map {
             let texture = SKTexture(image: $0)
             texture.filteringMode = .linear
             return texture
-        } : []
+        }
     }
 
     private func makeTexture(named name: String) -> SKTexture {
@@ -490,6 +522,7 @@ final class IdleTestScene: SKScene {
         case .advance: blueTextures = advanceA
         case .retreat: blueTextures = retreatA
         case .jab: blueTextures = jabA
+        case .cross: blueTextures = crossA
         }
         guard !blueTextures.isEmpty, !idleB.isEmpty else { return }
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
