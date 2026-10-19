@@ -3,6 +3,8 @@ import Foundation
 enum DefenderClip: String {
     case idle
     case hitReact = "hit_react"
+    case knockdown
+    case down
 }
 
 /// Profile metadata does not deform complete-character textures.
@@ -75,5 +77,53 @@ struct HitReactionPlayback {
         accumulator = 0
         elapsed = 0
         profile = nil
+    }
+}
+
+/// Shares the scene clock with punches/recoil; no timers or completion closures.
+struct KnockdownPlayback {
+    static let frameCount = 8
+    static let frameDuration = 0.08
+    static let duration = 0.64
+    private(set) var clip: DefenderClip = .idle
+    private(set) var frameIndex = 0
+    private var accumulator = 0.0
+    var hasStarted: Bool { clip != .idle }
+
+    @discardableResult
+    mutating func start() -> Bool {
+        guard !hasStarted else { return false }
+        clip = .knockdown
+        frameIndex = 0
+        accumulator = 0
+        return true
+    }
+
+    mutating func advance(_ dt: Double) {
+        guard clip == .knockdown, dt.isFinite, dt >= 0 else { return }
+        accumulator += dt
+        guard accumulator + 1e-10 >= Self.frameDuration else { return }
+        accumulator = max(0, accumulator - Self.frameDuration)
+        // Under a hitch present every pose rather than skip intermediate fall
+        // frames. Nominal duration is 640 ms; a slow render loop can extend it.
+        if accumulator + 1e-10 >= Self.frameDuration { accumulator = 0 }
+        if frameIndex == Self.frameCount - 1 {
+            clip = .down
+            frameIndex = 0
+            accumulator = 0
+        } else {
+            frameIndex += 1
+        }
+    }
+
+    mutating func step() {
+        accumulator = 0
+        advance(Self.frameDuration)
+    }
+
+    mutating func cancel() {
+        clip = .idle
+        frameIndex = 0
+        accumulator = 0
     }
 }
