@@ -65,6 +65,8 @@ final class IdleTestScene: SKScene {
     private var reaction = HitReactionPlayback()
     private var knockdown = KnockdownPlayback()
     private var guardPlayback = GuardPlayback()
+    private var blockFeedback = BlockFeedbackPlayback()
+    var blockFeedbackLabel: String { blockFeedback.label }
     // Optional development tuning, off until readability is reviewed on device.
     // Does not affect reaction timing, geometry, roots, or counters.
     var impactEmphasisEnabled = false {
@@ -83,6 +85,7 @@ final class IdleTestScene: SKScene {
 
     func startRise() {
         guard canRise, knockdown.startRise() else { return }
+        blockFeedback.cancel()
         lastTime = 0
         applyFrames()
         onPlaybackChange?()
@@ -97,6 +100,7 @@ final class IdleTestScene: SKScene {
     func toggleGuard() {
         guard canToggleGuard else { return }
         guardPlayback.toggle()
+        if !guardPlayback.isSelected { blockFeedback.cancel() }
         orangeFrame = 0
         orangeAccumulator = 0
         applyFrames()
@@ -136,6 +140,7 @@ final class IdleTestScene: SKScene {
         reaction.cancel()
         knockdown.cancel()
         guardPlayback.cancel()
+        blockFeedback.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         clearHeldInput()
@@ -219,6 +224,7 @@ final class IdleTestScene: SKScene {
     private var riseB: [SKTexture] = []
     private var guardB: [SKTexture] = []
     private var groundLine: SKShapeNode!
+    private var blockFeedbackNode: SKShapeNode!
     private var targetGuide: SKShapeNode!
     private var gloveRadiusGuide: SKShapeNode!
     private var glovePointGuide: SKShapeNode!
@@ -262,6 +268,7 @@ final class IdleTestScene: SKScene {
         reaction.cancel()
         knockdown.cancel()
         guardPlayback.cancel()
+        blockFeedback.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         contactTracker.finish()
@@ -303,6 +310,7 @@ final class IdleTestScene: SKScene {
         guard isPlaying, hasFocus else { return }
         // Advance the previous orange state before processing this tick's HIT.
         // A newly triggered recoil must still display frame zero at applyFrames.
+        advanceBlockFeedback(dt)
         advanceOrange(dt)
         if punch.isActive {
             let event = punch.advance(dt, preserveContactPose: true)
@@ -391,6 +399,10 @@ final class IdleTestScene: SKScene {
         blueAccumulator = 0
         // As in update: step old orange state first, then a new HIT may restart
         // frame zero. Never step a reaction again in the tick it is triggered.
+        // Expire only an old effect; a BLOCK created below starts at elapsed zero.
+        let effectStep = punch.isActive ? punch.kind.frameDuration
+            : activeClip.cycleDuration / Double(activeClip.frameCount)
+        advanceBlockFeedback(effectStep)
         stepOrange()
         if punch.isActive {
             let event = punch.step()
@@ -460,7 +472,11 @@ final class IdleTestScene: SKScene {
                     defender: canvasTransform(for: boxerB), geometry: contactGeometry,
                     guardEffective: guardPlayback.isEffective) {
                 health.receive(contact)
-                if contact.result == .hit { guardPlayback.cancel() }
+                if contact.result == .hit {
+                    guardPlayback.cancel()
+                    blockFeedback.cancel()
+                }
+                blockFeedback.receive(contact)
                 // Publish health even when this contact does not change a frame.
                 onPlaybackChange?()
                 if reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
@@ -481,9 +497,16 @@ final class IdleTestScene: SKScene {
         }
     }
 
+    private func advanceBlockFeedback(_ dt: TimeInterval) {
+        let oldLabel = blockFeedback.label
+        blockFeedback.advance(dt)
+        if oldLabel != blockFeedback.label { onPlaybackChange?() }
+    }
+
     private func completeOrangeRecovery() {
         guard health.recoverOrange() else { return }
         guardPlayback.cancel()
+        blockFeedback.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         onPlaybackChange?()
@@ -628,6 +651,14 @@ final class IdleTestScene: SKScene {
         addChild(rootA)
         addChild(rootB)
 
+        blockFeedbackNode = SKShapeNode()
+        blockFeedbackNode.strokeColor = SKColor(red: 1, green: 0.78, blue: 0.25, alpha: 1)
+        blockFeedbackNode.fillColor = .clear
+        blockFeedbackNode.lineWidth = 1.5
+        blockFeedbackNode.zPosition = 7
+        blockFeedbackNode.isHidden = true
+        addChild(blockFeedbackNode)
+
         targetGuide = SKShapeNode()
         targetGuide.lineWidth = 1.5
         targetGuide.strokeColor = .orange
@@ -709,6 +740,7 @@ final class IdleTestScene: SKScene {
         originA.position = rootA.position
         originB.position = rootB.position
         updateContactGuides()
+        applyBlockFeedback()
     }
 
     private func movementLimits() -> ClosedRange<CGFloat> {
@@ -760,8 +792,34 @@ final class IdleTestScene: SKScene {
             boxerB.texture = idleB[orangeFrame % idleB.count]
         }
         applyImpactEmphasis()
+        applyBlockFeedback()
         textureCanvasInfo = "child A\(Int(boxerA.size.width)) B\(Int(boxerB.size.width)) · tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0))"
         updateContactGuides()
+    }
+
+    private func applyBlockFeedback() {
+        guard let node = blockFeedbackNode, boxerB != nil else { return }
+        guard blockFeedback.isActive, guardPlayback.isEffective,
+              orangeCombatState == .standing else {
+            node.isHidden = true
+            node.alpha = 0
+            node.path = nil
+            return
+        }
+        // Anchored in the full-frame guard artwork; live conversion handles
+        // layout scaling and mirrored facing without screen-space offsets.
+        let transform = canvasTransform(for: boxerB)
+        node.position = transform.scenePoint(fromImage: blockFeedback.imageAnchor)
+        let radius = transform.sceneRadius(fromImage: blockFeedback.profile.radius)
+        let path = CGMutablePath()
+        path.addEllipse(in: CGRect(x: -radius, y: -radius, width: 2 * radius, height: 2 * radius))
+        for sign in [-1.0, 1.0] {
+            path.move(to: CGPoint(x: CGFloat(sign) * radius * 1.25, y: 0))
+            path.addLine(to: CGPoint(x: CGFloat(sign) * radius * 1.65, y: 0))
+        }
+        node.path = path
+        node.alpha = CGFloat(blockFeedback.opacity)
+        node.isHidden = false
     }
 
     private func applyImpactEmphasis() {

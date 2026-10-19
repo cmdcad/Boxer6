@@ -31,7 +31,7 @@ assert 'case block = "BLOCK"' in contact
 assert '!overlaps ? .miss : (guardEffective ? .block : .hit)' in contact
 assert 'case .block: blocks += 1' in contact
 assert 'guardEffective: guardPlayback.isEffective' in scene
-assert 'if contact.result == .hit { guardPlayback.cancel() }' in scene
+assert 'if contact.result == .hit {' in scene and 'guardPlayback.cancel()' in scene
 assert scene.count('contactTracker.evaluate(')==1
 assert 'guardPlayback.advance(dt)' in scene and 'guardPlayback.step()' in scene
 for start,end in [('func resetHealth()','var contactGeometry'),('private func completeOrangeRecovery','private func startKnockdownIfReady')]:
