@@ -21,6 +21,9 @@ final class IdlePlayback: ObservableObject {
     @Published var hitCount = 0
     @Published var missCount = 0
     @Published var latestResultText = "No contact yet"
+    @Published var latestDistanceText = ""
+    @Published var latestTransformText = ""
+    @Published var canvasInfo = ""
     @Published var latestWasHit = false
     @Published var hasContactResult = false
     @Published var canJab = false
@@ -66,10 +69,16 @@ final class IdlePlayback: ObservableObject {
         jabContactCount = scene.jabContactCount
         hitCount = scene.hitCount
         missCount = scene.missCount
+        canvasInfo = scene.textureCanvasInfo
         if let event = scene.latestContact {
             latestResultText = "\(event.kind == .jab ? "JAB" : "CROSS") · \(event.result.rawValue)"
             latestWasHit = event.result == .hit
             hasContactResult = true
+            latestDistanceText = String(format: "d %.2f r %.2f gap %+.2f pt",
+                Double(event.centerDistance), Double(event.radius), Double(event.signedGap))
+            latestTransformText = String(format: "roots %.2f · Ax %.3f Bx %.3f",
+                Double(abs(event.attacker.rootPosition.x - event.defender.rootPosition.x)),
+                Double(event.attacker.scaleX), Double(event.defender.scaleX))
         }
     }
 
@@ -128,7 +137,14 @@ struct ContentView: View {
                 .layoutPriority(0)
                 .overlay(alignment: .topLeading) {
                     if showsDevelopmentDiagnostics && playback.showsGuides {
-                        Text(playback.latestResultText)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(playback.latestResultText)
+                            if playback.hasContactResult {
+                                Text(playback.latestDistanceText)
+                                Text(playback.latestTransformText)
+                                Text(playback.canvasInfo)
+                            }
+                        }
                             .font(.system(size: 13, weight: .bold, design: .monospaced))
                             .foregroundColor(playback.hasContactResult
                                 ? (playback.latestWasHit ? .green : .red) : .secondary)
@@ -175,7 +191,7 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("5A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("5A.1 · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
