@@ -10,6 +10,10 @@ import UIKit
 final class IdlePlayback: ObservableObject {
     let scene: IdleTestScene
 
+    @Published var blueHealth = 100
+    @Published var orangeHealth = 100
+    @Published var blueMaximumHealth = 100
+    @Published var orangeMaximumHealth = 100
     @Published var isPlaying = true
     @Published var frameIndex = 0
     @Published var frameCount = 4
@@ -53,6 +57,10 @@ final class IdlePlayback: ObservableObject {
     }
 
     func syncFromScene() {
+        blueHealth = scene.blueHealth.current
+        orangeHealth = scene.orangeHealth.current
+        blueMaximumHealth = scene.blueHealth.maximum
+        orangeMaximumHealth = scene.orangeHealth.maximum
         isPlaying = scene.isPlaying
         frameIndex = scene.frameIndex
         frameCount = scene.activeClip.frameCount
@@ -88,6 +96,11 @@ final class IdlePlayback: ObservableObject {
                 Double(abs(event.attacker.rootPosition.x - event.defender.rootPosition.x)),
                 Double(event.attacker.scaleX), Double(event.defender.scaleX))
         }
+    }
+
+    func resetHealth() {
+        scene.resetHealth()
+        syncFromScene()
     }
 
     func cross() {
@@ -140,6 +153,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            healthHUD
             SpriteView(scene: playback.scene)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .layoutPriority(0)
@@ -206,9 +220,45 @@ struct ContentView: View {
         }
     }
 
+    // Reserved top strip keeps health separate from fighter art and Guides.
+    private var healthHUD: some View {
+        HStack(spacing: 12) {
+            healthIndicator("BLUE", value: playback.blueHealth,
+                            maximum: playback.blueMaximumHealth, color: .blue)
+            if showsDevelopmentDiagnostics {
+                Button("Reset Health", action: playback.resetHealth)
+                    .font(.system(size: 12, weight: .semibold))
+                    .frame(minWidth: 84, minHeight: 44)
+                    .buttonStyle(.plain)
+            }
+            healthIndicator("ORANGE", value: playback.orangeHealth,
+                            maximum: playback.orangeMaximumHealth, color: .orange)
+        }
+        .padding(.horizontal, 12)
+        .background(Color(red: 0.91, green: 0.933, blue: 0.957))
+    }
+
+    private func healthIndicator(_ name: String, value: Int, maximum: Int,
+                                 color: Color) -> some View {
+        VStack(spacing: 2) {
+            HStack {
+                Text(name)
+                Spacer(minLength: 4)
+                Text("\(value)/\(maximum)")
+            }
+            .font(.system(size: 12, weight: .bold, design: .monospaced))
+            ProgressView(value: Double(value), total: Double(maximum))
+                .tint(color)
+                .accessibilityLabel("\(name) health")
+                .accessibilityValue("\(value) of \(maximum)")
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 44)
+    }
+
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("5C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("6A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

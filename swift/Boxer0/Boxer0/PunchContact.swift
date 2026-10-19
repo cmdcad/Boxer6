@@ -139,3 +139,43 @@ struct PunchContactTracker {
         return event
     }
 }
+
+// Task 6A gameplay state. Kept with contact types to preserve target membership.
+struct FighterHealth {
+    let maximum = 100
+    private(set) var current = 100
+    mutating func applyDamage(_ amount: Int) {
+        current -= min(current, max(0, amount))
+    }
+    mutating func reset() { current = maximum }
+}
+
+enum PunchDamage {
+    static let jab = 5
+    static let cross = 10
+    static func amount(for kind: PunchKind) -> Int {
+        return kind == .jab ? jab : cross
+    }
+}
+
+struct FighterHealthState {
+    private(set) var blue = FighterHealth()
+    private(set) var orange = FighterHealth()
+    private var lastContactSequence = 0
+
+    // Tracker sequences are monotonic for this scene. Resetting health must
+    // retain this watermark so replaying an old event cannot damage again.
+    @discardableResult
+    mutating func receive(_ event: PunchContactEvent) -> Bool {
+        guard event.sequence > lastContactSequence else { return false }
+        lastContactSequence = event.sequence
+        guard event.result == .hit else { return false }
+        orange.applyDamage(PunchDamage.amount(for: event.kind))
+        return true
+    }
+
+    mutating func reset() {
+        blue.reset()
+        orange.reset()
+    }
+}
