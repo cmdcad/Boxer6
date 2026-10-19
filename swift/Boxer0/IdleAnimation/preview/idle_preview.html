@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boxer0 idle preview</title>
+  <style>
+    :root { color-scheme: light; }
+    html, body { margin: 0; height: 100%; background: #1c2430; font-family: ui-rounded, system-ui, sans-serif; }
+    .stage {
+      position: relative;
+      width: min(100vw, 1100px);
+      aspect-ratio: 844 / 390;
+      margin: 24px auto 12px;
+      background: #e8eef4;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    .ground {
+      position: absolute;
+      left: 20px; right: 20px;
+      top: 78%;
+      height: 2px;
+      background: #7890a0;
+    }
+    .boxer {
+      position: absolute;
+      width: 38.5%;
+      height: auto;
+      top: 78%;
+      transform: translate(-50%, -87.5%);
+    }
+    .boxer.a { left: 30%; }
+    .boxer.b { left: 70%; transform: translate(-50%, -87.5%) scaleX(-1); }
+    .origin {
+      position: absolute;
+      width: 10px; height: 10px;
+      border: 2px solid;
+      border-radius: 50%;
+      top: 78%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .origin::before, .origin::after {
+      content: "";
+      position: absolute;
+      background: currentColor;
+    }
+    .origin::before { width: 16px; height: 1px; left: -5px; top: 3px; }
+    .origin::after { width: 1px; height: 16px; left: 3px; top: -5px; }
+    .origin.a { left: 30%; color: #2876d2; }
+    .origin.b { left: 70%; color: #e77728; }
+    .hidden { display: none; }
+    .bar {
+      width: min(100vw, 1100px);
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      color: #e8eef4;
+    }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .note { text-align: center; color: #9aa8b8; font-size: 13px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="ground" id="ground"></div>
+    <img class="boxer a" id="boxerA" alt="Boxer A">
+    <img class="boxer b" id="boxerB" alt="Boxer B">
+    <div class="origin a" id="originA"></div>
+    <div class="origin b" id="originB"></div>
+  </div>
+  <div class="bar">
+    <button id="play">Pause</button>
+    <button id="step">Step 1/4</button>
+    <button id="speed">1× speed</button>
+    <button id="guides">Guides on</button>
+  </div>
+  <p class="note">HTML stand-in for the SpriteKit idle scene. Cycle is 800ms. Feet stay on the shared baseline; boxer B is mirrored.</p>
+  <script>
+    const framesA = ["../frames/idle_a_0.png","../frames/idle_a_1.png","../frames/idle_a_2.png","../frames/idle_a_3.png"];
+    const framesB = ["../frames/idle_b_0.png","../frames/idle_b_1.png","../frames/idle_b_2.png","../frames/idle_b_3.png"];
+    const boxerA = document.getElementById("boxerA");
+    const boxerB = document.getElementById("boxerB");
+    let index = 0, playing = true, speed = 1, guides = true, acc = 0, last = performance.now();
+
+    function apply() {
+      boxerA.src = framesA[index];
+      boxerB.src = framesB[index];
+      document.getElementById("step").textContent = `Step ${index + 1}/4`;
+    }
+    function tick(now) {
+      const dt = now - last;
+      last = now;
+      if (playing) {
+        acc += dt * speed;
+        while (acc >= 200) {
+          acc -= 200;
+          index = (index + 1) % 4;
+          apply();
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+    document.getElementById("play").onclick = () => {
+      playing = !playing;
+      document.getElementById("play").textContent = playing ? "Pause" : "Resume";
+    };
+    document.getElementById("step").onclick = () => {
+      playing = false;
+      document.getElementById("play").textContent = "Resume";
+      index = (index + 1) % 4;
+      apply();
+    };
+    document.getElementById("speed").onclick = () => {
+      speed = speed === 1 ? 0.25 : 1;
+      document.getElementById("speed").textContent = speed === 1 ? "1× speed" : "1/4 speed";
+    };
+    document.getElementById("guides").onclick = () => {
+      guides = !guides;
+      document.getElementById("guides").textContent = guides ? "Guides on" : "Guides off";
+      for (const id of ["ground","originA","originB"]) {
+        document.getElementById(id).classList.toggle("hidden", !guides);
+      }
+    };
+    apply();
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>

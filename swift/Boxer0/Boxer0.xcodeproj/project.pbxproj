@@ -11,12 +11,14 @@
 		4E9E6D043085A68100DAD680 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D033085A68100DAD680 /* ContentView.swift */; };
 		4E9E6D063085A68700DAD680 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E9E6D053085A68700DAD680 /* Assets.xcassets */; };
 		4E9E6D093085A68700DAD680 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E9E6D083085A68700DAD680 /* Preview Assets.xcassets */; };
+		4E9E6D113085A90000DAD680 /* IdleTestScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D103085A90000DAD680 /* IdleTestScene.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		4E9E6CFE3085A68000DAD680 /* Boxer0.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Boxer0.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E9E6D013085A68100DAD680 /* Boxer0App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Boxer0App.swift; sourceTree = "<group>"; };
 		4E9E6D033085A68100DAD680 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		4E9E6D103085A90000DAD680 /* IdleTestScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleTestScene.swift; sourceTree = "<group>"; };
 		4E9E6D053085A68700DAD680 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4E9E6D083085A68700DAD680 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -53,6 +55,7 @@
 			children = (
 				4E9E6D013085A68100DAD680 /* Boxer0App.swift */,
 				4E9E6D033085A68100DAD680 /* ContentView.swift */,
+				4E9E6D103085A90000DAD680 /* IdleTestScene.swift */,
 				4E9E6D053085A68700DAD680 /* Assets.xcassets */,
 				4E9E6D073085A68700DAD680 /* Preview Content */,
 			);
@@ -138,6 +141,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4E9E6D043085A68100DAD680 /* ContentView.swift in Sources */,
+				4E9E6D113085A90000DAD680 /* IdleTestScene.swift in Sources */,
 				4E9E6D023085A68100DAD680 /* Boxer0App.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -274,7 +278,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -303,7 +307,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
