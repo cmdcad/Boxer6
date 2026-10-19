@@ -134,12 +134,11 @@ final class IdleTestScene: SKScene {
         jab.cancel()
         settleIdle()
         applyFrames()
-        if let activeObserver {
+        if let activeObserver = activeObserver {
             NotificationCenter.default.removeObserver(activeObserver)
             self.activeObserver = nil
         }
-        if let resignObserver {
-            
+        if let resignObserver = resignObserver { 
             NotificationCenter.default.removeObserver(resignObserver)
             self.resignObserver = nil
         }
