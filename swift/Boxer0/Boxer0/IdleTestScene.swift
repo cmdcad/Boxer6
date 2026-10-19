@@ -64,6 +64,7 @@ final class IdleTestScene: SKScene {
     private var punch = PunchPlayback()
     private var reaction = HitReactionPlayback()
     private var knockdown = KnockdownPlayback()
+    private var guardPlayback = GuardPlayback()
     // Optional development tuning, off until readability is reviewed on device.
     // Does not affect reaction timing, geometry, roots, or counters.
     var impactEmphasisEnabled = false {
@@ -86,17 +87,38 @@ final class IdleTestScene: SKScene {
         applyFrames()
         onPlaybackChange?()
     }
-    var orangeClip: DefenderClip { knockdown.hasStarted ? knockdown.clip : reaction.clip }
+    private(set) var guardAssetsAvailable = false
+    var guardStatus: String { guardPlayback.status }
+    var guardSelected: Bool { guardPlayback.isSelected }
+    var canToggleGuard: Bool {
+        guardAssetsAvailable && hasFocus && orangeCombatState == .standing
+            && !reaction.isActive && !knockdown.hasStarted
+    }
+    func toggleGuard() {
+        guard canToggleGuard else { return }
+        guardPlayback.toggle()
+        orangeFrame = 0
+        orangeAccumulator = 0
+        applyFrames()
+        onPlaybackChange?()
+    }
+    var orangeClip: DefenderClip {
+        if knockdown.hasStarted { return knockdown.clip }
+        if reaction.isActive { return reaction.clip }
+        return guardPlayback.isSelected ? .guardPose : .idle
+    }
     var orangeFrameCount: Int {
         switch orangeClip {
         case .idle, .hitReact: return 4
         case .knockdown, .rise: return 8
         case .down: return 1
+        case .guardPose: return 3
         }
     }
     var orangeFrameIndex: Int {
         if knockdown.hasStarted { return knockdown.frameIndex }
-        return reaction.isActive ? reaction.frameIndex : orangeFrame
+        if reaction.isActive { return reaction.frameIndex }
+        return guardPlayback.isSelected ? guardPlayback.frameIndex : orangeFrame
     }
     private var contactTracker = PunchContactTracker()
     private var health = FighterHealthState()
@@ -113,6 +135,7 @@ final class IdleTestScene: SKScene {
         contactTracker.finish()
         reaction.cancel()
         knockdown.cancel()
+        guardPlayback.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         clearHeldInput()
@@ -133,6 +156,7 @@ final class IdleTestScene: SKScene {
     var crossContactCount: Int { contactTracker.crossContacts }
     var hitCount: Int { contactTracker.hits }
     var missCount: Int { contactTracker.misses }
+    var blockCount: Int { contactTracker.blocks }
     var latestContact: PunchContactEvent? { contactTracker.latest }
     private(set) var textureCanvasInfo = "Textures pending"
     var onPunchContact: ((PunchContactEvent) -> Void)?
@@ -193,6 +217,7 @@ final class IdleTestScene: SKScene {
     private var knockdownB: [SKTexture] = []
     private var downB: [SKTexture] = []
     private var riseB: [SKTexture] = []
+    private var guardB: [SKTexture] = []
     private var groundLine: SKShapeNode!
     private var targetGuide: SKShapeNode!
     private var gloveRadiusGuide: SKShapeNode!
@@ -236,6 +261,7 @@ final class IdleTestScene: SKScene {
         punch.cancel()
         reaction.cancel()
         knockdown.cancel()
+        guardPlayback.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         contactTracker.finish()
@@ -431,8 +457,10 @@ final class IdleTestScene: SKScene {
         if event.contact && health.canExchangePunches {
             if let contact = contactTracker.evaluate(punch.kind,
                     attacker: canvasTransform(for: boxerA),
-                    defender: canvasTransform(for: boxerB), geometry: contactGeometry) {
+                    defender: canvasTransform(for: boxerB), geometry: contactGeometry,
+                    guardEffective: guardPlayback.isEffective) {
                 health.receive(contact)
+                if contact.result == .hit { guardPlayback.cancel() }
                 // Publish health even when this contact does not change a frame.
                 onPlaybackChange?()
                 if reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
@@ -455,6 +483,7 @@ final class IdleTestScene: SKScene {
 
     private func completeOrangeRecovery() {
         guard health.recoverOrange() else { return }
+        guardPlayback.cancel()
         orangeFrame = 0
         orangeAccumulator = 0
         onPlaybackChange?()
@@ -476,6 +505,10 @@ final class IdleTestScene: SKScene {
                 // Display fall frame zero now; never consume this tick twice.
                 startKnockdownIfReady()
             }
+        } else if guardPlayback.isSelected {
+            let wasEffective = guardPlayback.isEffective
+            guardPlayback.advance(dt)
+            if wasEffective != guardPlayback.isEffective { onPlaybackChange?() }
         } else if orangeCombatState == .standing {
             animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
                          speed: playbackSpeed.rawValue, dt: dt)
@@ -492,6 +525,8 @@ final class IdleTestScene: SKScene {
                 // Display fall frame zero now; never consume this tick twice.
                 startKnockdownIfReady()
             }
+        } else if guardPlayback.isSelected {
+            guardPlayback.step()
         } else if orangeCombatState == .standing {
             orangeAccumulator = 0
             orangeFrame = (orangeFrame + 1) % FighterClip.idle.frameCount
@@ -552,6 +587,8 @@ final class IdleTestScene: SKScene {
         knockdownAssetsAvailable = knockdownB.count == KnockdownPlayback.frameCount && downB.count == 1
         riseB = loadPunchTextures(prefix: "rise_b", count: 8)
         riseAssetsAvailable = riseB.count == 8
+        guardB = loadPunchTextures(prefix: "guard_b", count: GuardPlayback.frameCount)
+        guardAssetsAvailable = guardB.count == GuardPlayback.frameCount
     }
 
     private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
@@ -717,6 +754,8 @@ final class IdleTestScene: SKScene {
             boxerB.texture = downB[0]
         } else if reaction.isActive && reactionAssetsAvailable {
             boxerB.texture = hitReactB[reaction.frameIndex]
+        } else if guardPlayback.isSelected && guardAssetsAvailable {
+            boxerB.texture = guardB[guardPlayback.frameIndex]
         } else {
             boxerB.texture = idleB[orangeFrame % idleB.count]
         }
@@ -761,7 +800,12 @@ final class IdleTestScene: SKScene {
         let attacker = canvasTransform(for: boxerA)
         let center = attacker.scenePoint(fromImage: contactGeometry.center(for: punch.kind))
         let radius = attacker.sceneRadius(fromImage: contactGeometry.radius(for: punch.kind))
-        let color: SKColor = contactTracker.latest?.result == .hit ? .systemGreen : .systemRed
+        let color: SKColor
+        switch contactTracker.latest?.result {
+        case .hit?: color = .systemGreen
+        case .block?: color = .systemBlue
+        default: color = .systemRed
+        }
         gloveRadiusGuide.path = CGPath(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius,
             width: radius * 2, height: radius * 2), transform: nil)
         gloveRadiusGuide.strokeColor = color

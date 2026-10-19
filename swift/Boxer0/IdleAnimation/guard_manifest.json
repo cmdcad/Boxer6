@@ -1,0 +1,22 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "guard": {
+    "frames": [
+      "guard_b_0",
+      "guard_b_1",
+      "guard_b_2"
+    ],
+    "frameDurationMs": 40,
+    "entryDurationMs": 120,
+    "effectiveAtMs": 120,
+    "holdFinal": true
+  }
+}

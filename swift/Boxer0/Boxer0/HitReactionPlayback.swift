@@ -6,6 +6,7 @@ enum DefenderClip: String {
     case knockdown
     case down
     case rise
+    case guardPose = "guard"
 }
 
 /// Profile metadata does not deform complete-character textures.
@@ -146,4 +147,33 @@ struct KnockdownPlayback {
         frameIndex = 0
         accumulator = 0
     }
+}
+
+/// Selected defense is separate from combat eligibility and displayed clip.
+enum FighterDefenseState {
+    case unguarded
+    case guarding
+}
+
+struct GuardPlayback {
+    static let frameCount = 3
+    static let frameDuration = 0.04
+    static let entryDuration = 0.12
+    private(set) var state: FighterDefenseState = .unguarded
+    private var elapsed = 0.0
+    var isSelected: Bool { state == .guarding }
+    var frameIndex: Int { min(2, Int((elapsed + 1e-10) / Self.frameDuration)) }
+    // All three 40 ms entry intervals must elapse; final pose then holds.
+    var isEffective: Bool { isSelected && elapsed + 1e-10 >= Self.entryDuration }
+    var status: String { !isSelected ? "OFF" : (isEffective ? "ACTIVE" : "RAISING") }
+
+    mutating func toggle() {
+        if isSelected { cancel() } else { state = .guarding; elapsed = 0 }
+    }
+    mutating func advance(_ dt: Double) {
+        guard isSelected, dt.isFinite, dt >= 0 else { return }
+        elapsed = min(Self.entryDuration, elapsed + dt)
+    }
+    mutating func step() { advance(Self.frameDuration) }
+    mutating func cancel() { state = .unguarded; elapsed = 0 }
 }

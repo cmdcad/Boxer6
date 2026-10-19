@@ -30,6 +30,7 @@ struct SpriteCanvasTransform {
 enum PunchContactResult: String {
     case hit = "HIT"
     case miss = "MISS"
+    case block = "BLOCK"
 }
 
 struct PunchContactGeometry {
@@ -106,6 +107,7 @@ struct PunchContactTracker {
     private(set) var crossContacts = 0
     private(set) var hits = 0
     private(set) var misses = 0
+    private(set) var blocks = 0
     private(set) var latest: PunchContactEvent?
     private var sequence = 0
     private var activeKind: PunchKind?
@@ -121,18 +123,23 @@ struct PunchContactTracker {
 
     @discardableResult
     mutating func evaluate(_ kind: PunchKind, attacker: SpriteCanvasTransform,
-                           defender: SpriteCanvasTransform, geometry: PunchContactGeometry) -> PunchContactEvent? {
+                           defender: SpriteCanvasTransform, geometry: PunchContactGeometry, guardEffective: Bool = false) -> PunchContactEvent? {
         guard let activeKind = activeKind, activeKind == kind, !evaluated else { return nil }
         evaluated = true
         let center = attacker.scenePoint(fromImage: geometry.center(for: kind))
         let radius = attacker.sceneRadius(fromImage: geometry.radius(for: kind))
         let target = defender.sceneRect(fromImage: geometry.defenderTarget)
-        let result: PunchContactResult = PunchContactGeometry.intersects(center: center, radius: radius, target: target) ? .hit : .miss
+        let overlaps = PunchContactGeometry.intersects(center: center, radius: radius, target: target)
+        let result: PunchContactResult = !overlaps ? .miss : (guardEffective ? .block : .hit)
         let event = PunchContactEvent(sequence: sequence, kind: kind, result: result,
                                       center: center, radius: radius, target: target,
                                       attacker: attacker, defender: defender)
         if kind == .jab { jabContacts += 1 } else { crossContacts += 1 }
-        if result == .hit { hits += 1 } else { misses += 1 }
+        switch result {
+        case .hit: hits += 1
+        case .block: blocks += 1
+        case .miss: misses += 1
+        }
         latest = event
         return event
     }

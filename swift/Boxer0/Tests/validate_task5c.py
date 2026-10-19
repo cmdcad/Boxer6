@@ -22,7 +22,7 @@ helper=scene[scene.index('private func applyImpactEmphasis'):scene.index('privat
 assert 'colorBlendFactor' in helper and 'reaction.emphasisAmount' in helper
 for forbidden in ['.position', '.xScale', '.yScale', '.size', 'SKAction', 'DispatchQueue']:
     assert forbidden not in helper
-assert '6D ·' in view and 'playback.orangeProfile' in view
+assert '7A ·' in view and 'playback.orangeProfile' in view
 assert scene.count('contactTracker.evaluate(')==1
 print('PASS: profiles, 240 ms shared clip, default-off 60 ms emphasis, no transform/geometry mutation, once-only contact and triggering punch HUD')
 compiler=shutil.which('swiftc')

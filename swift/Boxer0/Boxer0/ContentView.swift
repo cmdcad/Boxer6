@@ -24,6 +24,12 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var blockCount = 0
+    @Published var latestWasBlock = false
+    @Published var guardStatus = "OFF"
+    @Published var guardSelected = false
+    @Published var canToggleGuard = false
+    @Published var guardAssetsAvailable = false
     @Published var hitCount = 0
     @Published var missCount = 0
     @Published var latestResultText = "No contact yet"
@@ -87,6 +93,11 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        blockCount = scene.blockCount
+        guardStatus = scene.guardStatus
+        guardSelected = scene.guardSelected
+        canToggleGuard = scene.canToggleGuard
+        guardAssetsAvailable = scene.guardAssetsAvailable
         hitCount = scene.hitCount
         missCount = scene.missCount
         canvasInfo = scene.textureCanvasInfo
@@ -101,6 +112,7 @@ final class IdlePlayback: ObservableObject {
         if let event = scene.latestContact {
             latestResultText = "\(event.kind == .jab ? "JAB" : "CROSS") · \(event.result.rawValue)"
             latestWasHit = event.result == .hit
+            latestWasBlock = event.result == .block
             hasContactResult = true
             latestDistanceText = String(format: "d %.2f r %.2f gap %+.2f pt",
                 Double(event.centerDistance), Double(event.radius), Double(event.signedGap))
@@ -108,6 +120,11 @@ final class IdlePlayback: ObservableObject {
                 Double(abs(event.attacker.rootPosition.x - event.defender.rootPosition.x)),
                 Double(event.attacker.scaleX), Double(event.defender.scaleX))
         }
+    }
+
+    func toggleGuard() {
+        scene.toggleGuard()
+        syncFromScene()
     }
 
     func rise() {
@@ -183,18 +200,17 @@ struct ContentView: View {
                                     Text("Orange: down")
                                 } else if playback.orangeProfile.isEmpty {
                                     Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
-                                if playback.orangeState == DefenderClip.down.rawValue {
-                                    Text("Orange: down")
-                                } else if playback.orangeProfile.isEmpty {
-                                    Text("Orange: \(playback.orangeState) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                 } else {
-                                    Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                     Text("Orange: \(playback.orangeState) (\(playback.orangeProfile)) \(playback.orangeFrameIndex + 1)/\(playback.orangeFrameCount)")
                                 }
                             } else {
                                 Text("Orange: reaction assets missing")
                             }
                             Text("Orange: \(playback.orangeCombatState.rawValue)")
+                            Text("Guard: \(playback.guardStatus)")
+                            if !playback.guardAssetsAvailable {
+                                Text("Guard assets missing").foregroundColor(.red)
+                            }
                             if !playback.riseAssetsAvailable {
                                 Text("Rise assets missing").foregroundColor(.red)
                             }
@@ -209,7 +225,7 @@ struct ContentView: View {
                         }
                             .font(.system(size: 13, weight: .bold, design: .monospaced))
                             .foregroundColor(playback.hasContactResult
-                                ? (playback.latestWasHit ? .green : .red) : .secondary)
+                                ? (playback.latestWasBlock ? .blue : (playback.latestWasHit ? .green : .red)) : .secondary)
                             .padding(6)
                             .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
                             .padding(8)
@@ -257,6 +273,14 @@ struct ContentView: View {
             healthIndicator("BLUE", state: playback.blueCombatState, value: playback.blueHealth,
                             maximum: playback.blueMaximumHealth, color: .blue)
             if showsDevelopmentDiagnostics {
+                Button(playback.guardSelected ? "Guard on" : "Guard", action: playback.toggleGuard)
+                    .font(.system(size: 12, weight: .semibold))
+                    .frame(minWidth: 54, minHeight: 44)
+                    .background(playback.guardSelected ? Color.blue.opacity(0.2) : Color.clear,
+                                in: RoundedRectangle(cornerRadius: 6))
+                    .buttonStyle(.plain)
+                    .disabled(!playback.canToggleGuard)
+                    .accessibilityValue(playback.guardStatus)
                 Button("Rise", action: playback.rise)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 44, minHeight: 44)
@@ -296,14 +320,14 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("6D · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("7A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
             } else if !playback.crossAssetsAvailable {
                 Text("Cross assets missing").foregroundColor(.red)
             } else {
-                Text("J\(playback.jabContactCount) C\(playback.crossContactCount) H\(playback.hitCount) M\(playback.missCount)")
+                Text("J\(playback.jabContactCount) C\(playback.crossContactCount) H\(playback.hitCount) B\(playback.blockCount) M\(playback.missCount)")
                     .foregroundColor(playback.jabContact || playback.crossContact ? .orange : .secondary)
             }
         }
