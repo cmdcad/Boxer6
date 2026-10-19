@@ -174,7 +174,7 @@ final class IdleTestScene: SKScene {
             NotificationCenter.default.removeObserver(activeObserver)
             self.activeObserver = nil
         }
-        if let resignObserver = resignObserver {
+        if let resignObserver = resignObserver { 
             NotificationCenter.default.removeObserver(resignObserver)
             self.resignObserver = nil
         }
