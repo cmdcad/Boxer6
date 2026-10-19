@@ -103,3 +103,9 @@ contact count at frame 5, jab regression, independent taps, holding, mixed rapid
 taps, no queued actions, fresh movement input after recovery, pause/step/resume
 for each punch and background/foreground. Confirm orange idle and phone-size
 visual quality. Task 4B is implemented; device validation is not yet recorded.
+
+
+## User acceptance — October 19, 2026
+
+User confirmed Task 4B validated while supplying Task 5A. Device acceptance is
+recorded; this does not assert that Swift tests executed on this Windows host.

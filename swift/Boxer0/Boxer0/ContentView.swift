@@ -18,6 +18,11 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var hitCount = 0
+    @Published var missCount = 0
+    @Published var latestResultText = "No contact yet"
+    @Published var latestWasHit = false
+    @Published var hasContactResult = false
     @Published var canJab = false
     @Published var canCross = false
     @Published var crossAssetsAvailable = false
@@ -59,6 +64,13 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        hitCount = scene.hitCount
+        missCount = scene.missCount
+        if let event = scene.latestContact {
+            latestResultText = "\(event.kind == .jab ? "JAB" : "CROSS") · \(event.result.rawValue)"
+            latestWasHit = event.result == .hit
+            hasContactResult = true
+        }
     }
 
     func cross() {
@@ -114,6 +126,18 @@ struct ContentView: View {
             SpriteView(scene: playback.scene)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .layoutPriority(0)
+                .overlay(alignment: .topLeading) {
+                    if showsDevelopmentDiagnostics && playback.showsGuides {
+                        Text(playback.latestResultText)
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(playback.hasContactResult
+                                ? (playback.latestWasHit ? .green : .red) : .secondary)
+                            .padding(6)
+                            .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
+                            .padding(8)
+                            .allowsHitTesting(false)
+                    }
+                }
 
             VStack(spacing: 8) {
                 HStack(alignment: .bottom, spacing: 12) {
@@ -140,6 +164,7 @@ struct ContentView: View {
         }
         .background(Color(red: 0.91, green: 0.933, blue: 0.957).ignoresSafeArea())
         .preferredColorScheme(ColorScheme.light)
+        .onAppear { playback.scene.debugOverlaysEnabled = showsDevelopmentDiagnostics }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             playback.cancelMovement()
         }
@@ -150,14 +175,14 @@ struct ContentView: View {
 
     private var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("4B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("5A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
             } else if !playback.crossAssetsAvailable {
                 Text("Cross assets missing").foregroundColor(.red)
             } else {
-                Text("Contact J\(playback.jabContactCount) C\(playback.crossContactCount)")
+                Text("J\(playback.jabContactCount) C\(playback.crossContactCount) H\(playback.hitCount) M\(playback.missCount)")
                     .foregroundColor(playback.jabContact || playback.crossContact ? .orange : .secondary)
             }
         }

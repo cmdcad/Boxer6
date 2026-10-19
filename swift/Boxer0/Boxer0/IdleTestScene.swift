@@ -2,7 +2,7 @@
 //  IdleTestScene.swift
 //  Boxer0
 //
-//  Idle playback, Task 3B footwork and Task 4B shared punch playback.
+//  Idle playback, Task 3B footwork and Task 5A spatial punch contact.
 //
 
 import SpriteKit
@@ -54,7 +54,10 @@ final class IdleTestScene: SKScene {
     static let contentMinX: CGFloat = 149
     static let contentMaxX: CGFloat = 398
     static let edgePaddingPoints: CGFloat = 20
-    static let minSeparationFactor: CGFloat = 0.22
+    // User-approved Task 5A spacing: physical torso widths, not idle glove reach.
+    static let bodyMinX: CGFloat = 220
+    static let bodyMaxX: CGFloat = 308
+    var minimumBodyGapFactor: CGFloat = 0.8
     static let defaultMoveSpeed: CGFloat = 100
 
     private var motion = FootworkMotion()
@@ -62,8 +65,19 @@ final class IdleTestScene: SKScene {
     private var hasFocus = true
     private(set) var jabAssetsAvailable = false
     private(set) var crossAssetsAvailable = false
-    private(set) var jabContactCount = 0
-    private(set) var crossContactCount = 0
+    private var contactTracker = PunchContactTracker()
+    var contactGeometry = PunchContactGeometry() {
+        didSet { updateContactGuides() }
+    }
+    var debugOverlaysEnabled = true {
+        didSet { applyGuideVisibility() }
+    }
+    var jabContactCount: Int { contactTracker.jabContacts }
+    var crossContactCount: Int { contactTracker.crossContacts }
+    var hitCount: Int { contactTracker.hits }
+    var missCount: Int { contactTracker.misses }
+    var latestContact: PunchContactEvent? { contactTracker.latest }
+    var onPunchContact: ((PunchContactEvent) -> Void)?
     var canStartJab: Bool {
         jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive
     }
@@ -114,6 +128,9 @@ final class IdleTestScene: SKScene {
     private var jabA: [SKTexture] = []
     private var crossA: [SKTexture] = []
     private var groundLine: SKShapeNode!
+    private var targetGuide: SKShapeNode!
+    private var gloveRadiusGuide: SKShapeNode!
+    private var glovePointGuide: SKShapeNode!
     private var originA: SKShapeNode!
     private var originB: SKShapeNode!
     private var lastTime: TimeInterval = 0
@@ -150,6 +167,7 @@ final class IdleTestScene: SKScene {
     override func willMove(from view: SKView) {
         cancelMovement()
         punch.cancel()
+        contactTracker.finish()
         settleIdle()
         applyFrames()
         if let activeObserver = activeObserver {
@@ -324,6 +342,7 @@ final class IdleTestScene: SKScene {
         guard available, punch.start(kind) else { return }
         clearHeldInput()
         motion.stop()
+        contactTracker.begin(kind)
         setClip(kind == .jab ? .jab : .cross)
         // Present ready before consuming any of the punch frame intervals.
         lastTime = 0
@@ -333,10 +352,14 @@ final class IdleTestScene: SKScene {
 
     private func handlePunchEvent(_ event: (contact: Bool, completed: Bool)) {
         if event.contact {
-            if punch.kind == .jab { jabContactCount += 1 }
-            else { crossContactCount += 1 }
+            if let contact = contactTracker.evaluate(punch.kind,
+                    attacker: canvasTransform(for: boxerA),
+                    defender: canvasTransform(for: boxerB), geometry: contactGeometry) {
+                onPunchContact?(contact)
+            }
         }
         if event.completed {
+            contactTracker.finish()
             clearHeldInput()
             motion.stop()
             settleIdle()
@@ -428,6 +451,20 @@ final class IdleTestScene: SKScene {
         boxerB = makeBoxer(texture: idleB[0], mirrored: true)
         addChild(boxerA)
         addChild(boxerB)
+
+        targetGuide = SKShapeNode()
+        targetGuide.lineWidth = 1.5
+        targetGuide.strokeColor = .orange
+        targetGuide.fillColor = SKColor.orange.withAlphaComponent(0.08)
+        targetGuide.zPosition = 4
+        addChild(targetGuide)
+        gloveRadiusGuide = SKShapeNode()
+        gloveRadiusGuide.lineWidth = 1.5
+        gloveRadiusGuide.zPosition = 5
+        addChild(gloveRadiusGuide)
+        glovePointGuide = SKShapeNode(circleOfRadius: 2)
+        glovePointGuide.zPosition = 6
+        addChild(glovePointGuide)
     }
 
     private func makeBoxer(texture: SKTexture, mirrored: Bool) -> SKSpriteNode {
@@ -487,22 +524,26 @@ final class IdleTestScene: SKScene {
         groundLine.path = path
         originA.position = boxerA.position
         originB.position = boxerB.position
+        updateContactGuides()
     }
 
-    private func extents() -> (left: CGFloat, right: CGFloat, separation: CGFloat) {
+    private func extents() -> (left: CGFloat, right: CGFloat) {
         let left = (Self.figureOriginX - Self.contentMinX) * fighterScale
         let right = (Self.contentMaxX - Self.figureOriginX) * fighterScale
-        let stance = (Self.contentMaxX - Self.contentMinX) * fighterScale
-        return (left, right, stance * Self.minSeparationFactor)
+        return (left, right)
     }
 
     @discardableResult
     private func clampBlue() -> Bool {
         let box = extents()
-        // Mirrored orange: visual left edge uses the unmirrored right extent.
         let minX = Self.edgePaddingPoints + box.left
-        let orangeLeft = boxerB.position.x - box.right
-        let maxX = orangeLeft - box.separation - box.right
+        let bodyRight = (Self.bodyMaxX - Self.figureOriginX) * fighterScale
+        let bodyWidth = (Self.bodyMaxX - Self.bodyMinX) * fighterScale
+        let gap = bodyWidth * max(0, minimumBodyGapFactor)
+        // Mirroring turns orange's torso-right extent into its torso-left extent.
+        let orangeBodyLeft = boxerB.position.x - bodyRight
+        let maxX = min(orangeBodyLeft - gap - bodyRight,
+                       size.width - Self.edgePaddingPoints - box.right)
         let upper = max(minX, maxX)
         let proposedX = boxerA.position.x
         boxerA.position.x = min(max(proposedX, minX), upper)
@@ -527,12 +568,47 @@ final class IdleTestScene: SKScene {
         guard !blueTextures.isEmpty, !idleB.isEmpty else { return }
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
         boxerB.texture = idleB[orangeFrame % idleB.count]
+        updateContactGuides()
+    }
+
+    private func canvasTransform(for node: SKSpriteNode) -> SpriteCanvasTransform {
+        SpriteCanvasTransform(rootPosition: node.position,
+            scaleX: node.xScale * node.size.width / Self.spriteCanvas,
+            scaleY: node.yScale * node.size.height / Self.spriteCanvas,
+            rootInImage: CGPoint(x: node.anchorPoint.x * Self.spriteCanvas,
+                                 y: (1 - node.anchorPoint.y) * Self.spriteCanvas))
+    }
+
+    private func updateContactGuides() {
+        guard boxerA != nil, boxerB != nil, targetGuide != nil else { return }
+        let visible = showsGuides && debugOverlaysEnabled
+        let target = canvasTransform(for: boxerB).sceneRect(fromImage: contactGeometry.defenderTarget)
+        targetGuide.path = CGPath(rect: target, transform: nil)
+        targetGuide.isHidden = !visible
+        // Show the attacking point only while its actual contact pose is visible.
+        let contactVisible = visible && punch.isActive && punch.frameIndex == punch.kind.contactFrame
+        gloveRadiusGuide.isHidden = !contactVisible
+        glovePointGuide.isHidden = !contactVisible
+        guard contactVisible else { return }
+        let attacker = canvasTransform(for: boxerA)
+        let center = attacker.scenePoint(fromImage: contactGeometry.center(for: punch.kind))
+        let radius = attacker.sceneRadius(fromImage: contactGeometry.radius(for: punch.kind))
+        let color: SKColor = contactTracker.latest?.result == .hit ? .systemGreen : .systemRed
+        gloveRadiusGuide.path = CGPath(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius,
+            width: radius * 2, height: radius * 2), transform: nil)
+        gloveRadiusGuide.strokeColor = color
+        gloveRadiusGuide.fillColor = color.withAlphaComponent(0.16)
+        glovePointGuide.position = center
+        glovePointGuide.strokeColor = color
+        glovePointGuide.fillColor = color
     }
 
     private func applyGuideVisibility() {
-        groundLine?.isHidden = !showsGuides
-        originA?.isHidden = !showsGuides
-        originB?.isHidden = !showsGuides
+        let visible = showsGuides && debugOverlaysEnabled
+        groundLine?.isHidden = !visible
+        originA?.isHidden = !visible
+        originB?.isHidden = !visible
+        updateContactGuides()
     }
 
     private func observeAppFocus() {
