@@ -180,56 +180,49 @@ struct GuardPlayback {
 
 struct BlockFeedbackProfile {
     var duration: Double
-    var radius: CGFloat
-    var opacity: Double
-    static let jab = BlockFeedbackProfile(duration: 0.08, radius: 18, opacity: 0.65)
-    static let cross = BlockFeedbackProfile(duration: 0.11, radius: 23, opacity: 0.85)
+    static let jab = BlockFeedbackProfile(duration: 0.12)
+    static let cross = BlockFeedbackProfile(duration: 0.16)
 }
 
-/// Presentation only. Confirmed BLOCK events own this single restartable effect.
+/// Dedicated whole-frame guard recoil with fixed-foot artwork, never root motion.
 struct BlockFeedbackPlayback {
+    static let frameCount = 3
     var jabProfile = BlockFeedbackProfile.jab
     var crossProfile = BlockFeedbackProfile.cross
     private(set) var kind: PunchKind?
-    private(set) var imageAnchor = CGPoint.zero
-    private(set) var elapsed = 0.0
+    private(set) var frameIndex = 0
+    private var accumulator = 0.0
     private var lastSequence = 0
     var isActive: Bool { kind != nil }
     var profile: BlockFeedbackProfile { kind == .cross ? crossProfile : jabProfile }
-    var label: String { kind == nil ? "OFF" : (kind == .jab ? "Jab" : "Cross") }
-    var opacity: Double {
-        guard isActive else { return 0 }
-        return profile.opacity * max(0, 1 - elapsed / max(profile.duration, 1e-10))
-    }
+    var frameDuration: Double { max(profile.duration, 1e-6) / Double(Self.frameCount) }
+    var label: String { kind == nil ? "OFF" : (kind == .jab ? "Jab recoil" : "Cross recoil") }
 
     @discardableResult
     mutating func receive(_ event: PunchContactEvent) -> Bool {
         guard event.result == .block, event.sequence > lastSequence else { return false }
         lastSequence = event.sequence
         kind = event.kind
-        elapsed = 0
-        // Fixed source-canvas anchors are the centers of guard_b_2's gloves:
-        // rear (296-43,186-36), lead (364.5-61,192-40).
-        // Choose the one nearest the confirmed scene contact center.
-        let anchors = [CGPoint(x: 253, y: 150), CGPoint(x: 303.5, y: 152)]
-        imageAnchor = anchors.min { a, b in
-            let pa = event.defender.scenePoint(fromImage: a)
-            let pb = event.defender.scenePoint(fromImage: b)
-            return hypot(pa.x - event.center.x, pa.y - event.center.y)
-                < hypot(pb.x - event.center.x, pb.y - event.center.y)
-        } ?? anchors[0]
+        frameIndex = 0
+        accumulator = 0
         return true
     }
 
     mutating func advance(_ dt: Double) {
         guard isActive, dt.isFinite, dt >= 0 else { return }
-        elapsed += dt
-        if elapsed + 1e-10 >= profile.duration { cancel() }
+        accumulator += dt
+        guard accumulator + 1e-10 >= frameDuration else { return }
+        accumulator = max(0, accumulator - frameDuration)
+        // Preserve each authored pose under a render hitch; low FPS may extend
+        // nominal duration. Never skip the visible return-to-guard pose.
+        if accumulator + 1e-10 >= frameDuration { accumulator = 0 }
+        if frameIndex == Self.frameCount - 1 { cancel() }
+        else { frameIndex += 1 }
     }
     mutating func cancel() {
         kind = nil
-        elapsed = 0
-        imageAnchor = .zero
-        // Retain watermark: cancellation/reset must not replay an old BLOCK.
+        frameIndex = 0
+        accumulator = 0
+        // Retain watermark so reset/repeated rendering cannot replay a BLOCK.
     }
 }

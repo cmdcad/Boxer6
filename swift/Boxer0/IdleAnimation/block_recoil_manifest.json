@@ -1,0 +1,33 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "clips": {
+    "jab": {
+      "frames": [
+        "block_jab_b_0",
+        "block_jab_b_1",
+        "block_jab_b_2"
+      ],
+      "durationMs": 120,
+      "frameDurationMs": 40.0,
+      "headRecoilPixels": 10
+    },
+    "cross": {
+      "frames": [
+        "block_cross_b_0",
+        "block_cross_b_1",
+        "block_cross_b_2"
+      ],
+      "durationMs": 160,
+      "frameDurationMs": 53.333333333333336,
+      "headRecoilPixels": 18
+    }
+  }
+}

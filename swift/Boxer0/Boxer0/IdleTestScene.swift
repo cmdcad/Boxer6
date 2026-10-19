@@ -67,6 +67,7 @@ final class IdleTestScene: SKScene {
     private var guardPlayback = GuardPlayback()
     private var blockFeedback = BlockFeedbackPlayback()
     var blockFeedbackLabel: String { blockFeedback.label }
+    private(set) var blockRecoilAssetsAvailable = false
     // Optional development tuning, off until readability is reviewed on device.
     // Does not affect reaction timing, geometry, roots, or counters.
     var impactEmphasisEnabled = false {
@@ -223,8 +224,9 @@ final class IdleTestScene: SKScene {
     private var downB: [SKTexture] = []
     private var riseB: [SKTexture] = []
     private var guardB: [SKTexture] = []
+    private var blockJabB: [SKTexture] = []
+    private var blockCrossB: [SKTexture] = []
     private var groundLine: SKShapeNode!
-    private var blockFeedbackNode: SKShapeNode!
     private var targetGuide: SKShapeNode!
     private var gloveRadiusGuide: SKShapeNode!
     private var glovePointGuide: SKShapeNode!
@@ -476,7 +478,7 @@ final class IdleTestScene: SKScene {
                     guardPlayback.cancel()
                     blockFeedback.cancel()
                 }
-                blockFeedback.receive(contact)
+                if blockRecoilAssetsAvailable { blockFeedback.receive(contact) }
                 // Publish health even when this contact does not change a frame.
                 onPlaybackChange?()
                 if reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
@@ -612,6 +614,10 @@ final class IdleTestScene: SKScene {
         riseAssetsAvailable = riseB.count == 8
         guardB = loadPunchTextures(prefix: "guard_b", count: GuardPlayback.frameCount)
         guardAssetsAvailable = guardB.count == GuardPlayback.frameCount
+        blockJabB = loadPunchTextures(prefix: "block_jab_b", count: BlockFeedbackPlayback.frameCount)
+        blockCrossB = loadPunchTextures(prefix: "block_cross_b", count: BlockFeedbackPlayback.frameCount)
+        blockRecoilAssetsAvailable = blockJabB.count == BlockFeedbackPlayback.frameCount
+            && blockCrossB.count == BlockFeedbackPlayback.frameCount
     }
 
     private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
@@ -650,14 +656,6 @@ final class IdleTestScene: SKScene {
         rootB.addChild(boxerB)
         addChild(rootA)
         addChild(rootB)
-
-        blockFeedbackNode = SKShapeNode()
-        blockFeedbackNode.strokeColor = SKColor(red: 1, green: 0.78, blue: 0.25, alpha: 1)
-        blockFeedbackNode.fillColor = .clear
-        blockFeedbackNode.lineWidth = 1.5
-        blockFeedbackNode.zPosition = 7
-        blockFeedbackNode.isHidden = true
-        addChild(blockFeedbackNode)
 
         targetGuide = SKShapeNode()
         targetGuide.lineWidth = 1.5
@@ -740,7 +738,6 @@ final class IdleTestScene: SKScene {
         originA.position = rootA.position
         originB.position = rootB.position
         updateContactGuides()
-        applyBlockFeedback()
     }
 
     private func movementLimits() -> ClosedRange<CGFloat> {
@@ -786,40 +783,17 @@ final class IdleTestScene: SKScene {
             boxerB.texture = downB[0]
         } else if reaction.isActive && reactionAssetsAvailable {
             boxerB.texture = hitReactB[reaction.frameIndex]
+        } else if blockFeedback.isActive && blockRecoilAssetsAvailable && guardPlayback.isEffective {
+            let textures = blockFeedback.kind == .cross ? blockCrossB : blockJabB
+            boxerB.texture = textures[blockFeedback.frameIndex]
         } else if guardPlayback.isSelected && guardAssetsAvailable {
             boxerB.texture = guardB[guardPlayback.frameIndex]
         } else {
             boxerB.texture = idleB[orangeFrame % idleB.count]
         }
         applyImpactEmphasis()
-        applyBlockFeedback()
         textureCanvasInfo = "child A\(Int(boxerA.size.width)) B\(Int(boxerB.size.width)) · tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0))"
         updateContactGuides()
-    }
-
-    private func applyBlockFeedback() {
-        guard let node = blockFeedbackNode, boxerB != nil else { return }
-        guard blockFeedback.isActive, guardPlayback.isEffective,
-              orangeCombatState == .standing else {
-            node.isHidden = true
-            node.alpha = 0
-            node.path = nil
-            return
-        }
-        // Anchored in the full-frame guard artwork; live conversion handles
-        // layout scaling and mirrored facing without screen-space offsets.
-        let transform = canvasTransform(for: boxerB)
-        node.position = transform.scenePoint(fromImage: blockFeedback.imageAnchor)
-        let radius = transform.sceneRadius(fromImage: blockFeedback.profile.radius)
-        let path = CGMutablePath()
-        path.addEllipse(in: CGRect(x: -radius, y: -radius, width: 2 * radius, height: 2 * radius))
-        for sign in [-1.0, 1.0] {
-            path.move(to: CGPoint(x: CGFloat(sign) * radius * 1.25, y: 0))
-            path.addLine(to: CGPoint(x: CGFloat(sign) * radius * 1.65, y: 0))
-        }
-        node.path = path
-        node.alpha = CGFloat(blockFeedback.opacity)
-        node.isHidden = false
     }
 
     private func applyImpactEmphasis() {

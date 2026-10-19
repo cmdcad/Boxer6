@@ -27,6 +27,7 @@ final class IdlePlayback: ObservableObject {
     @Published var blockCount = 0
     @Published var latestWasBlock = false
     @Published var blockFeedbackLabel = "OFF"
+    @Published var blockRecoilAssetsAvailable = false
     @Published var guardStatus = "OFF"
     @Published var guardSelected = false
     @Published var canToggleGuard = false
@@ -96,6 +97,7 @@ final class IdlePlayback: ObservableObject {
         jabContactCount = scene.jabContactCount
         blockCount = scene.blockCount
         blockFeedbackLabel = scene.blockFeedbackLabel
+        blockRecoilAssetsAvailable = scene.blockRecoilAssetsAvailable
         guardStatus = scene.guardStatus
         guardSelected = scene.guardSelected
         canToggleGuard = scene.canToggleGuard
@@ -211,6 +213,9 @@ struct ContentView: View {
                             Text("Orange: \(playback.orangeCombatState.rawValue)")
                             Text("Guard: \(playback.guardStatus)")
                             Text("Block FX: \(playback.blockFeedbackLabel)")
+                            if !playback.blockRecoilAssetsAvailable {
+                                Text("Block recoil assets missing").foregroundColor(.red)
+                            }
                             if !playback.guardAssetsAvailable {
                                 Text("Guard assets missing").foregroundColor(.red)
                             }
@@ -324,7 +329,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("7B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("7B.1 · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
