@@ -11,12 +11,13 @@ final class IdlePlayback: ObservableObject {
     let scene: IdleTestScene
 
     @Published var isPlaying = true
-    @Published var speed: IdlePlaybackSpeed = .normal
     @Published var frameIndex = 0
     @Published var frameCount = 4
     @Published var showsGuides = true
     @Published var clipName = FighterClip.idle.rawValue
     @Published var positionX = 0
+    @Published var velocityX = 0
+    @Published var inputGeneration = 0
     @Published var holdAdvance = false
     @Published var holdRetreat = false
 
@@ -33,12 +34,15 @@ final class IdlePlayback: ObservableObject {
 
     func syncFromScene() {
         isPlaying = scene.isPlaying
-        speed = scene.playbackSpeed
         frameIndex = scene.frameIndex
         frameCount = scene.activeClip.frameCount
         showsGuides = scene.showsGuides
         clipName = scene.activeClip.rawValue
         positionX = Int(scene.bluePositionX.rounded())
+        velocityX = Int(scene.horizontalVelocity.rounded())
+        holdAdvance = scene.advanceHeld
+        holdRetreat = scene.retreatHeld
+        inputGeneration = scene.inputGeneration
     }
 
     func togglePlayback() {
@@ -51,25 +55,17 @@ final class IdlePlayback: ObservableObject {
         syncFromScene()
     }
 
-    func cycleSpeed() {
-        let next: IdlePlaybackSpeed = speed == .normal ? .quarter : .normal
-        scene.setSpeed(next)
-        syncFromScene()
-    }
-
     func toggleGuides() {
         scene.toggleGuides()
         syncFromScene()
     }
 
     func setAdvance(_ held: Bool) {
-        holdAdvance = held
         scene.setAdvanceHeld(held)
         syncFromScene()
     }
 
     func setRetreat(_ held: Bool) {
-        holdRetreat = held
         scene.setRetreatHeld(held)
         syncFromScene()
     }
@@ -84,6 +80,8 @@ final class IdlePlayback: ObservableObject {
 
 struct ContentView: View {
     @StateObject private var playback = IdlePlayback()
+    // Development presentation only; hiding it does not change locomotion.
+    var showsDevelopmentDiagnostics = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -93,14 +91,14 @@ struct ContentView: View {
 
             VStack(spacing: 8) {
                 HStack(alignment: .bottom, spacing: 12) {
-                    PressHoldButton(title: "Hold Retreat", pressed: playback.holdRetreat, action: playback.setRetreat)
+                    PressHoldButton(title: "Hold Retreat", pressed: playback.holdRetreat, inputGeneration: playback.inputGeneration, action: playback.setRetreat)
                     Spacer()
-                    statusLabel
+                    if showsDevelopmentDiagnostics { statusLabel }
                     Spacer()
-                    PressHoldButton(title: "Hold Advance", pressed: playback.holdAdvance, action: playback.setAdvance)
+                    PressHoldButton(title: "Hold Advance", pressed: playback.holdAdvance, inputGeneration: playback.inputGeneration, action: playback.setAdvance)
                 }
                 .frame(minHeight: 52)
-                debugControls
+                if showsDevelopmentDiagnostics { debugControls }
             }
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 12)
@@ -120,7 +118,10 @@ struct ContentView: View {
     }
 
     private var statusLabel: some View {
-        Text("3A · \(playback.clipName)  \(playback.positionX)")
+        VStack(spacing: 2) {
+            Text("3B · \(playback.clipName)")
+            Text("x \(playback.positionX) · v \(playback.velocityX)")
+        }
             .font(.system(size: 13, weight: .semibold, design: .monospaced))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
@@ -131,7 +132,6 @@ struct ContentView: View {
         HStack(spacing: 8) {
             controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
             controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
-            controlButton(playback.speed.label, action: playback.cycleSpeed)
             controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
         }
         .padding(.horizontal, 8)
@@ -156,6 +156,7 @@ struct ContentView: View {
 struct PressHoldButton: View {
     let title: String
     let pressed: Bool
+    let inputGeneration: Int
     let action: (Bool) -> Void
 
     var body: some View {
@@ -175,7 +176,7 @@ struct PressHoldButton: View {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .stroke(Color.accentColor, lineWidth: 1.5)
             )
-            .overlay(HoldTouchSurface(title: title, action: action))
+            .overlay(HoldTouchSurface(title: title, inputGeneration: inputGeneration, action: action))
     }
 }
 
@@ -184,6 +185,7 @@ struct PressHoldButton: View {
 // control. UIKit also delivers cancellation when system gestures interrupt input.
 private struct HoldTouchSurface: UIViewRepresentable {
     let title: String
+    let inputGeneration: Int
     let action: (Bool) -> Void
 
     func makeUIView(context: Context) -> HoldTouchView {
@@ -192,6 +194,7 @@ private struct HoldTouchSurface: UIViewRepresentable {
         view.isAccessibilityElement = true
         view.accessibilityTraits = .button
         view.action = action
+        view.inputGeneration = inputGeneration
         view.accessibilityLabel = title
         view.accessibilityHint = "Touch and hold to move"
         return view
@@ -199,6 +202,7 @@ private struct HoldTouchSurface: UIViewRepresentable {
 
     func updateUIView(_ view: HoldTouchView, context: Context) {
         view.action = action
+        view.inputGeneration = inputGeneration
         view.accessibilityLabel = title
     }
 
@@ -210,6 +214,13 @@ private struct HoldTouchSurface: UIViewRepresentable {
 
 private final class HoldTouchView: UIView {
     var action: ((Bool) -> Void)?
+    var inputGeneration = 0 {
+        didSet {
+            // Pause/focus cancellation invalidates existing fingers. A fresh
+            // touchesBegan is required; continuing to hold cannot restart motion.
+            if inputGeneration != oldValue { heldTouches.removeAll() }
+        }
+    }
     private var heldTouches = Set<UITouch>()
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

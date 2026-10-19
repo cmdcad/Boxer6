@@ -144,3 +144,17 @@ SpriteKit pause changes. Added an update readiness guard and cancellation for
 negative or >250 ms elapsed-time gaps instead. App focus and scene removal still
 cancel immediately. Source checks pass; no Swift/iOS runtime is available here.
 Rebuild and obtain the highlighted filename and Thread 1 backtrace if it persists.
+
+
+## User validation — October 19, 2026
+
+User reports the updated app works on iPhone SE and supplied a roughly 23-second
+screen recording. Reviewed samples show visible movement controls, blue horizontal
+travel in both directions, orange remaining stationary, idle after movement, and
+pause/resume plus frame stepping. Pressed controls are highlighted blue. User
+confirms the remaining movement checks and both playback speeds work, with 1×
+preferred for normal play. Quarter speed remains an animation debug option.
+
+Movement is accepted by the user. Background/system-interruption behavior and
+fine-grained foot sliding were not independently verified from the recording.
+No next task is defined in the current Tasks directory.
