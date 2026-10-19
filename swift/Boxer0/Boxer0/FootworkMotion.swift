@@ -52,3 +52,33 @@ struct FootworkMotion {
         return result
     }
 }
+
+enum CPUMovementIntent: String { case advance, retreat, hold }
+
+/// Distance policy only; FootworkMotion still owns all velocity integration.
+struct CPUDistanceController {
+    var speed = 65.0
+    var decisionInterval = 0.20
+    var preferredReachFactor = 0.90
+    var tooFarFactor = 1.15
+    var tooCloseFactor = 0.75
+    private(set) var intent: CPUMovementIntent = .hold
+    private var remaining = 0.0
+    mutating func reset() { intent = .hold; remaining = 0 }
+    func thresholds(reach: Double, minimum: Double) -> (close: Double, preferred: Double, far: Double) {
+        // Keep retreat reachable above the physical body-spacing floor.
+        let closeFloor = minimum + reach * 0.04
+        let preferred = max(reach * preferredReachFactor, closeFloor + reach * 0.06)
+        return (max(preferred * tooCloseFactor, closeFloor), preferred, preferred * tooFarFactor)
+    }
+    mutating func advance(_ dt: Double, separation: Double, reach: Double, minimum: Double) {
+        guard dt.isFinite, dt >= 0 else { return }
+        remaining -= dt
+        guard remaining <= 1e-10 else { return }
+        remaining += max(0.001, decisionInterval) * max(1, ceil(-remaining / max(0.001, decisionInterval)))
+        let band = thresholds(reach: reach, minimum: minimum)
+        if separation > band.far { intent = .advance }
+        else if separation < band.close { intent = .retreat }
+        else { intent = .hold }
+    }
+}

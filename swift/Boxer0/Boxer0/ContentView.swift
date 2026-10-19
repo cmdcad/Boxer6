@@ -24,6 +24,7 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var cpuMovement = "hold"
     @Published var cpuEnabled = false
     @Published var cpuStatus = "OFF"
     @Published var blockCount = 0
@@ -97,6 +98,7 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        cpuMovement = scene.cpuMovementLabel
         cpuEnabled = scene.cpuEnabled
         cpuStatus = scene.cpuStatus
         blockCount = scene.blockCount
@@ -220,7 +222,7 @@ struct ContentView: View {
                                 Text("Orange: reaction assets missing")
                             }
                             Text("Orange: \(playback.orangeCombatState.rawValue)")
-                            Text("CPU: \(playback.cpuStatus) | Guard: \(playback.guardStatus)")
+                            Text("CPU: \(playback.cpuStatus) · \(playback.cpuMovement) | Guard: \(playback.guardStatus)")
                             Text("Block FX: \(playback.blockFeedbackLabel)")
                             if !playback.blockRecoilAssetsAvailable {
                                 Text("Block recoil assets missing").foregroundColor(.red)
@@ -342,7 +344,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("8A.1 · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("8B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

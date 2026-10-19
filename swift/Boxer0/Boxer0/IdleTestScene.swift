@@ -61,6 +61,24 @@ final class IdleTestScene: SKScene {
     static let defaultMoveSpeed: CGFloat = 100
 
     private var motion = FootworkMotion()
+    private var orangeMotion = FootworkMotion()
+    private var cpuDistance = CPUDistanceController()
+    private var orangeLocomotionClip = FighterClip.idle
+    private var orangeXFraction: CGFloat = 0.70
+    var cpuMovementLabel: String { cpuDistance.intent.rawValue }
+    var orangeVelocity: Double { orangeMotion.velocity }
+    private func stopCPUFootwork() {
+        orangeMotion.stop()
+        cpuDistance.reset()
+        setOrangeLocomotion(.idle)
+    }
+    private func setOrangeLocomotion(_ clip: FighterClip) {
+        if orangeLocomotionClip != clip {
+            orangeLocomotionClip = clip
+            orangeFrame = 0
+            orangeAccumulator = 0
+        }
+    }
     private var punch = PunchPlayback()
     private var reaction = HitReactionPlayback()
     private var knockdown = KnockdownPlayback()
@@ -72,6 +90,7 @@ final class IdleTestScene: SKScene {
     var cpuStatus: String { defensiveAI.label }
     func toggleCPU() {
         defensiveAI.setEnabled(!defensiveAI.enabled)
+        stopCPUFootwork()
         requestGuard(false)
         applyFrames()
         onPlaybackChange?()
@@ -121,6 +140,7 @@ final class IdleTestScene: SKScene {
         guard !selected || canRequestGuard else { return }
         guard guardPlayback.isSelected != selected else { return }
         guardPlayback.toggle()
+        if selected { stopCPUFootwork() }
         if !guardPlayback.isSelected { blockFeedback.cancel() }
         orangeFrame = 0
         orangeAccumulator = 0
@@ -128,11 +148,15 @@ final class IdleTestScene: SKScene {
     var orangeClip: DefenderClip {
         if knockdown.hasStarted { return knockdown.clip }
         if reaction.isActive { return reaction.clip }
-        return guardPlayback.isSelected ? .guardPose : .idle
+        if guardPlayback.isSelected { return .guardPose }
+        if orangeLocomotionClip == .advance { return .advance }
+        if orangeLocomotionClip == .retreat { return .retreat }
+        return .idle
     }
     var orangeFrameCount: Int {
         switch orangeClip {
         case .idle, .hitReact: return 4
+        case .advance, .retreat: return 6
         case .knockdown, .rise: return 8
         case .down: return 1
         case .guardPose: return 3
@@ -154,6 +178,7 @@ final class IdleTestScene: SKScene {
     func resetHealth() {
         health.reset()
         defensiveAI.cancel(reseed: true)
+        stopCPUFootwork()
         // End pending ownership, not the diagnostic counters or root positions.
         punch.cancel()
         contactTracker.finish()
@@ -244,6 +269,8 @@ final class IdleTestScene: SKScene {
     private var downB: [SKTexture] = []
     private var riseB: [SKTexture] = []
     private var guardB: [SKTexture] = []
+    private var advanceB: [SKTexture] = []
+    private var retreatB: [SKTexture] = []
     private var blockJabB: [SKTexture] = []
     private var blockCrossB: [SKTexture] = []
     private var groundLine: SKShapeNode!
@@ -514,6 +541,7 @@ final class IdleTestScene: SKScene {
                 health.receive(contact)
                 if contact.result == .hit {
                     defensiveAI.cancel()
+                    stopCPUFootwork()
                     guardPlayback.cancel()
                     blockFeedback.cancel()
                 }
@@ -598,9 +626,63 @@ final class IdleTestScene: SKScene {
             guardPlayback.advance(dt)
             if wasEffective != guardPlayback.isEffective { onPlaybackChange?() }
         } else if orangeCombatState == .standing {
+            advanceCPUFootwork(dt)
+        }
+    }
+
+    private func advanceCPUFootwork(_ dt: Double) {
+        guard cpuEnabled, advanceB.count == 6, retreatB.count == 6 else {
+            stopCPUFootwork()
             animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
                          speed: playbackSpeed.rawValue, dt: dt)
+            return
         }
+        let limits = orangeMovementLimits()
+        let minimum = Double(limits.lowerBound - rootA.position.x)
+        let a = canvasTransform(for: boxerA)
+        let b = canvasTransform(for: boxerB)
+        let reach = Double(a.scenePoint(fromImage: contactGeometry.crossCenter).x - a.rootPosition.x
+            + a.sceneRadius(fromImage: contactGeometry.crossRadius)
+            + b.rootPosition.x - b.sceneRect(fromImage: contactGeometry.defenderTarget).minX)
+        cpuDistance.advance(dt, separation: Double(abs(rootB.position.x-rootA.position.x)),
+                            reach: max(1, reach), minimum: max(0, minimum))
+        orangeMotion.maximumSpeed = cpuDistance.speed
+        let direction = cpuDistance.intent == .advance ? -1.0 : (cpuDistance.intent == .retreat ? 1.0 : 0)
+        for segment in orangeMotion.advance(duration: dt, direction: direction) {
+            let old = rootB.position.x
+            rootB.position.x = min(limits.upperBound, max(limits.lowerBound, old + CGFloat(segment.displacement)))
+            let travel = Double(rootB.position.x-old)
+            if abs(travel) > 1e-8 {
+                setOrangeLocomotion(travel < 0 ? .advance : .retreat)
+                animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: orangeLocomotionClip,
+                    speed: 1, dt: abs(travel) / max(1, cpuDistance.speed))
+            } else {
+                setOrangeLocomotion(.idle)
+                animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle, speed: 1, dt: segment.duration)
+            }
+            if rootB.position.x == limits.lowerBound || rootB.position.x == limits.upperBound {
+                orangeMotion.stop()
+                setOrangeLocomotion(.idle)
+                break
+            }
+        }
+        if orangeMotion.velocity == 0 { setOrangeLocomotion(.idle) }
+        orangeXFraction = rootB.position.x / max(1, size.width)
+        originB.position = rootB.position
+    }
+
+    private func orangeMovementLimits() -> ClosedRange<CGFloat> {
+        let a = canvasTransform(for: boxerA)
+        let b = canvasTransform(for: boxerB)
+        let body = CGRect(x: Self.bodyMinX, y: 183, width: Self.bodyMaxX-Self.bodyMinX, height: 117)
+        let aBody = a.sceneRect(fromImage: body)
+        let bBody = b.sceneRect(fromImage: body)
+        let visible = b.sceneRect(fromImage: CGRect(x: Self.contentMinX,y: 0,
+            width: Self.contentMaxX-Self.contentMinX,height: Self.spriteCanvas))
+        let gap = max(aBody.width,bBody.width) * max(0, minimumBodyGapFactor)
+        let lower = aBody.maxX + gap - (bBody.minX-b.rootPosition.x)
+        let upper = size.width-Self.edgePaddingPoints-(visible.maxX-b.rootPosition.x)
+        return min(lower,upper)...upper
     }
 
     private func stepOrange() {
@@ -683,6 +765,8 @@ final class IdleTestScene: SKScene {
         riseAssetsAvailable = riseB.count == 8
         guardB = loadPunchTextures(prefix: "guard_b", count: GuardPlayback.frameCount)
         guardAssetsAvailable = guardB.count == GuardPlayback.frameCount
+        advanceB = loadPunchTextures(prefix: "advance_b", count: 6)
+        retreatB = loadPunchTextures(prefix: "retreat_b", count: 6)
         blockJabB = loadPunchTextures(prefix: "block_jab_b", count: BlockFeedbackPlayback.frameCount)
         blockCrossB = loadPunchTextures(prefix: "block_cross_b", count: BlockFeedbackPlayback.frameCount)
         blockRecoilAssetsAvailable = blockJabB.count == BlockFeedbackPlayback.frameCount
@@ -782,7 +866,7 @@ final class IdleTestScene: SKScene {
         groundY = size.height * 0.22
         let spriteSide = min(size.height * 0.88, size.width * 0.46, 420)
         fighterScale = spriteSide / Self.spriteCanvas
-        let right = CGPoint(x: size.width * 0.70, y: groundY)
+        let right = CGPoint(x: size.width * orangeXFraction, y: groundY)
 
         rootB.position = right
         rootA.yScale = fighterScale
@@ -797,6 +881,9 @@ final class IdleTestScene: SKScene {
             rootA.position = CGPoint(x: size.width * blueXFraction, y: groundY)
         }
 
+        let orangeLimits = orangeMovementLimits()
+        rootB.position.x = min(orangeLimits.upperBound, max(orangeLimits.lowerBound, rootB.position.x))
+        orangeXFraction = rootB.position.x / size.width
         clampBlue()
         blueXFraction = rootA.position.x / size.width
 
@@ -857,6 +944,10 @@ final class IdleTestScene: SKScene {
             boxerB.texture = textures[blockFeedback.frameIndex]
         } else if guardPlayback.isSelected && guardAssetsAvailable {
             boxerB.texture = guardB[guardPlayback.frameIndex]
+        } else if orangeLocomotionClip == .advance && !advanceB.isEmpty {
+            boxerB.texture = advanceB[orangeFrame % advanceB.count]
+        } else if orangeLocomotionClip == .retreat && !retreatB.isEmpty {
+            boxerB.texture = retreatB[orangeFrame % retreatB.count]
         } else {
             boxerB.texture = idleB[orangeFrame % idleB.count]
         }

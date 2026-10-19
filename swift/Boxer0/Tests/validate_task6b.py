@@ -24,7 +24,7 @@ for expected in ['health.reset()', 'punch.cancel()', 'contactTracker.finish()', 
 for forbidden in ['rootA.', 'rootB.', 'contactTracker =', 'isPlaying =']:
     assert forbidden not in reset
 assert 'DEFEATED' in view and 'state == .defeated' in view
-assert '8A.1 ' in view
+assert '8B ' in view
 print('PASS: eligibility before contact counters, one-shot defeat model, blocked post-defeat contacts, standing-only idle/step, clean reset, HUD source checks')
 compiler = shutil.which('swiftc')
 if compiler:
