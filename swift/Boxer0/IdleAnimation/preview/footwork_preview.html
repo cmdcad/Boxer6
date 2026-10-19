@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boxer0 footwork preview</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #1c2430; font-family: ui-rounded, system-ui, sans-serif; }
+    .stage { position: relative; width: min(100vw, 1100px); aspect-ratio: 844 / 390; margin: 20px auto 10px; background: #e8eef4; overflow: hidden; border-radius: 12px; }
+    .ground { position: absolute; left: 20px; right: 20px; top: 78%; height: 2px; background: #7890a0; }
+    .boxer { position: absolute; width: 38.5%; top: 78%; transform: translate(-50%, -87.5%); }
+    .boxer.b { transform: translate(-50%, -87.5%) scaleX(-1); }
+    .origin { position: absolute; width: 10px; height: 10px; border: 2px solid; border-radius: 50%; top: 78%; transform: translate(-50%, -50%); }
+    .origin.a { color: #2876d2; } .origin.b { color: #e77728; }
+    .hidden { visibility: hidden; }
+    .bar, .moves { width: min(100vw, 1100px); margin: 0 auto 8px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    button, .hold { border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; user-select: none; }
+    .hold { background: #fff; border: 2px solid #4b7fd6; }
+    .hold.on { background: #cfe0ff; }
+    .status { color: #e8eef4; font: 650 13px ui-monospace, monospace; align-self: center; }
+    .note { text-align: center; color: #9aa8b8; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="ground" id="ground"></div>
+    <img class="boxer a" id="boxerA" alt="Blue boxer">
+    <img class="boxer b" id="boxerB" alt="Orange boxer">
+    <div class="origin a" id="originA"></div>
+    <div class="origin b" id="originB"></div>
+  </div>
+  <div class="moves">
+    <button class="hold" id="retreat">Retreat</button>
+    <div class="status" id="status">idle  0</div>
+    <button class="hold" id="advance">Advance</button>
+  </div>
+  <div class="bar">
+    <button id="play">Pause</button>
+    <button id="step">Step 1/4</button>
+    <button id="speed">1× speed</button>
+    <button id="guides">Guides on</button>
+  </div>
+  <p class="note">HTML stand-in for Task 3A. Blue moves 100 scene-points/s. Orange stays idle. Clips are 4×800ms idle and 6×480ms footwork.</p>
+  <script>
+    const idleA = [0,1,2,3].map(i => `../frames/idle_a_${i}.png`);
+    const idleB = [0,1,2,3].map(i => `../frames/idle_b_${i}.png`);
+    const advanceA = [0,1,2,3,4,5].map(i => `../frames/advance_a_${i}.png`);
+    const retreatA = [0,1,2,3,4,5].map(i => `../frames/retreat_a_${i}.png`);
+    const W = 844, H = 390, CANVAS = 512, ORIGIN_X = 256, MIN_X = 168, MAX_X = 389;
+    const SPEED = 100, PAD = 20, SEP_FACTOR = 0.22;
+    const stage = document.getElementById("stage");
+    const boxerA = document.getElementById("boxerA");
+    const boxerB = document.getElementById("boxerB");
+    const originA = document.getElementById("originA");
+    const originB = document.getElementById("originB");
+    let playing = true, speed = 1, guides = true;
+    let holdA = false, holdR = false;
+    let clip = "idle", blueFrame = 0, orangeFrame = 0, blueAcc = 0, orangeAcc = 0;
+    let last = performance.now();
+    let blueX = W * 0.30;
+    const orangeX = W * 0.70;
+
+    function scale() {
+      const r = stage.getBoundingClientRect();
+      return { w: r.width, h: r.height, s: r.width / W };
+    }
+    function extents(s) {
+      const sc = (Math.min(H * 0.88, W * 0.46, 420) / CANVAS) * s;
+      const left = (ORIGIN_X - MIN_X) * sc;
+      const right = (MAX_X - ORIGIN_X) * sc;
+      const stance = (MAX_X - MIN_X) * sc;
+      return { left, right, sep: stance * SEP_FACTOR, sc };
+    }
+    function clipInfo() {
+      if (holdA && !holdR) return { name: "advance", frames: advanceA, dur: 480 };
+      if (holdR && !holdA) return { name: "retreat", frames: retreatA, dur: 480 };
+      return { name: "idle", frames: idleA, dur: 800 };
+    }
+    function apply() {
+      const info = clipInfo();
+      if (info.name !== clip) { clip = info.name; blueFrame = 0; blueAcc = 0; }
+      boxerA.src = info.frames[blueFrame % info.frames.length];
+      boxerB.src = idleB[orangeFrame % 4];
+      document.getElementById("step").textContent = `Step ${blueFrame + 1}/${info.frames.length}`;
+      const m = scale();
+      const e = extents(m.s);
+      const minX = (PAD * m.s) + e.left;
+      const orangeLeft = orangeX * m.s - e.right;
+      const maxX = orangeLeft - e.sep - e.right;
+      blueX = Math.min(Math.max(blueX, minX / m.s), Math.max(minX / m.s, maxX / m.s));
+      const ax = (blueX / W) * 100, bx = 70;
+      boxerA.style.left = ax + "%";
+      originA.style.left = ax + "%";
+      boxerB.style.left = bx + "%";
+      originB.style.left = bx + "%";
+      document.getElementById("status").textContent = `${clip}  ${Math.round(blueX)}`;
+    }
+    function tick(now) {
+      const dt = now - last; last = now;
+      if (playing) {
+        const info = clipInfo();
+        const frameMs = (info.dur / info.frames.length) / speed;
+        blueAcc += dt; orangeAcc += dt;
+        while (blueAcc >= frameMs) { blueAcc -= frameMs; blueFrame = (blueFrame + 1) % info.frames.length; }
+        const idleMs = (200) / speed;
+        while (orangeAcc >= idleMs) { orangeAcc -= idleMs; orangeFrame = (orangeFrame + 1) % 4; }
+        if (holdA && !holdR) blueX += SPEED * (dt / 1000);
+        if (holdR && !holdA) blueX -= SPEED * (dt / 1000);
+      }
+      apply();
+      requestAnimationFrame(tick);
+    }
+    function bindHold(id, set) {
+      const el = document.getElementById(id);
+      const down = e => { e.preventDefault(); el.setPointerCapture(e.pointerId); set(true); el.classList.add("on"); };
+      const up = () => { set(false); el.classList.remove("on"); };
+      el.addEventListener("pointerdown", down);
+      el.addEventListener("pointerup", up);
+      el.addEventListener("pointercancel", up);
+    }
+    bindHold("advance", v => holdA = v);
+    bindHold("retreat", v => holdR = v);
+    document.getElementById("play").onclick = () => {
+      playing = !playing;
+      document.getElementById("play").textContent = playing ? "Pause" : "Resume";
+    };
+    document.getElementById("step").onclick = () => {
+      playing = false;
+      document.getElementById("play").textContent = "Resume";
+      const info = clipInfo();
+      blueFrame = (blueFrame + 1) % info.frames.length;
+      apply();
+    };
+    document.getElementById("speed").onclick = () => {
+      speed = speed === 1 ? 0.25 : 1;
+      document.getElementById("speed").textContent = speed === 1 ? "1× speed" : "1/4 speed";
+    };
+    document.getElementById("guides").onclick = () => {
+      guides = !guides;
+      document.getElementById("guides").textContent = guides ? "Guides on" : "Guides off";
+      ["ground","originA","originB"].forEach(id => document.getElementById(id).classList.toggle("hidden", !guides));
+    };
+    window.addEventListener("blur", () => { holdA = false; holdR = false; });
+    apply();
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>

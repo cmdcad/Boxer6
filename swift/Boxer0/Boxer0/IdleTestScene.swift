@@ -2,11 +2,11 @@
 //  IdleTestScene.swift
 //  Boxer0
 //
-//  Minimal SpriteKit scene that plays the four-frame idle cycle for both
-//  placeholder boxers. Boxer B is mirrored at runtime. No combat systems.
+//  Task 2 idle playback plus Task 3A horizontal footwork for the blue boxer.
 //
 
 import SpriteKit
+import UIKit
 
 enum IdlePlaybackSpeed: Double, CaseIterable {
     case quarter = 0.25
@@ -20,34 +20,71 @@ enum IdlePlaybackSpeed: Double, CaseIterable {
     }
 }
 
+enum FighterClip: String {
+    case idle
+    case advance
+    case retreat
+
+    var frameCount: Int { self == .idle ? 4 : 6 }
+
+    var cycleDuration: TimeInterval {
+        self == .idle ? 0.8 : 0.48
+    }
+}
+
 final class IdleTestScene: SKScene {
 
-    static let frameCount = 4
-    static let cycleDuration: TimeInterval = 0.8
     static let originAnchor = CGPoint(x: 0.5, y: 1.0 - 448.0 / 512.0)
+    static let spriteCanvas: CGFloat = 512
+    static let figureOriginX: CGFloat = 256
+    // Conservative alpha bounds across all idle and footwork frames (including antialiasing).
+    static let contentMinX: CGFloat = 149
+    static let contentMaxX: CGFloat = 398
+    static let edgePaddingPoints: CGFloat = 20
+    static let minSeparationFactor: CGFloat = 0.22
+    static let defaultMoveSpeed: CGFloat = 100
 
+    var movementSpeed: CGFloat = IdleTestScene.defaultMoveSpeed
+    override var isPaused: Bool {
+        didSet {
+            if isPaused { cancelMovement() }
+            lastTime = 0
+        }
+    }
     var isPlaying = true
     var playbackSpeed: IdlePlaybackSpeed = .normal
     var showsGuides = true {
         didSet { applyGuideVisibility() }
     }
-    var frameIndex = 0 {
-        didSet { applyFrame() }
-    }
-    var onFrameChange: ((Int) -> Void)?
+    var frameIndex = 0
+    var activeClip: FighterClip = .idle
+    var onPlaybackChange: (() -> Void)?
 
     private var boxerA: SKSpriteNode!
     private var boxerB: SKSpriteNode!
-    private var texturesA: [SKTexture] = []
-    private var texturesB: [SKTexture] = []
+    private var idleA: [SKTexture] = []
+    private var idleB: [SKTexture] = []
+    private var advanceA: [SKTexture] = []
+    private var retreatA: [SKTexture] = []
     private var groundLine: SKShapeNode!
     private var originA: SKShapeNode!
     private var originB: SKShapeNode!
     private var lastTime: TimeInterval = 0
-    private var accumulator: TimeInterval = 0
+    private var blueAccumulator: TimeInterval = 0
+    private var orangeAccumulator: TimeInterval = 0
+    private var orangeFrame = 0
     private var groundY: CGFloat = 0
+    private var fighterScale: CGFloat = 1
+    private var didInitialLayout = false
+    private var blueXFraction: CGFloat = 0.30
+    private var holdAdvance = false
+    private var holdRetreat = false
+    private var resignObserver: NSObjectProtocol?
+
+    var bluePositionX: CGFloat { boxerA?.position.x ?? 0 }
 
     override func didMove(to view: SKView) {
+        lastTime = 0
         backgroundColor = SKColor(red: 0.91, green: 0.933, blue: 0.957, alpha: 1)
         scaleMode = .resizeFill
         loadTextures()
@@ -55,8 +92,17 @@ final class IdleTestScene: SKScene {
             buildNodes()
         }
         layoutFighters()
-        applyFrame()
+        applyFrames()
         applyGuideVisibility()
+        observeAppFocus()
+    }
+
+    override func willMove(from view: SKView) {
+        cancelMovement()
+        if let resignObserver {
+            NotificationCenter.default.removeObserver(resignObserver)
+            self.resignObserver = nil
+        }
     }
 
     override func didChangeSize(_ oldSize: CGSize) {
@@ -74,44 +120,145 @@ final class IdleTestScene: SKScene {
         lastTime = currentTime
         guard isPlaying else { return }
 
-        let frameDuration = Self.cycleDuration / TimeInterval(Self.frameCount)
-        accumulator += dt * playbackSpeed.rawValue
-        var advanced = false
-        while accumulator >= frameDuration {
-            accumulator -= frameDuration
-            frameIndex = (frameIndex + 1) % Self.frameCount
-            advanced = true
+        resolveClip()
+        animateBoxer(&blueAccumulator, frame: &frameIndex, clip: activeClip, speed: playbackSpeed.rawValue, dt: dt)
+        animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle, speed: playbackSpeed.rawValue, dt: dt)
+
+        if let direction = movementDirection {
+            boxerA.position.x += direction * movementSpeed * CGFloat(dt)
+            clampBlue()
+            blueXFraction = boxerA.position.x / max(size.width, 1)
+            originA.position = boxerA.position
         }
-        if advanced {
-            onFrameChange?(frameIndex)
+
+        applyFrames()
+        publishIfNeeded()
+    }
+
+    private var lastPublishedFrame = -1
+    private var lastPublishedX: CGFloat = .nan
+    private var lastPublishedClip: FighterClip?
+
+    private func publishIfNeeded() {
+        let x = boxerA.position.x
+        if frameIndex != lastPublishedFrame
+            || activeClip != lastPublishedClip
+            || lastPublishedX.isNaN
+            || abs(x - lastPublishedX) >= 1 {
+            lastPublishedFrame = frameIndex
+            lastPublishedClip = activeClip
+            lastPublishedX = x
+            onPlaybackChange?()
         }
     }
 
     func togglePlayback() {
         isPlaying.toggle()
         if isPlaying {
-            accumulator = 0
+            lastTime = 0
         }
+        onPlaybackChange?()
     }
 
     func stepFrame() {
         isPlaying = false
-        accumulator = 0
-        frameIndex = (frameIndex + 1) % Self.frameCount
-        onFrameChange?(frameIndex)
+        blueAccumulator = 0
+        frameIndex = (frameIndex + 1) % activeClip.frameCount
+        orangeAccumulator = 0
+        orangeFrame = (orangeFrame + 1) % FighterClip.idle.frameCount
+        applyFrames()
+        onPlaybackChange?()
     }
 
     func setSpeed(_ speed: IdlePlaybackSpeed) {
         playbackSpeed = speed
+        onPlaybackChange?()
     }
 
     func toggleGuides() {
         showsGuides.toggle()
+        onPlaybackChange?()
+    }
+
+    func setAdvanceHeld(_ held: Bool) {
+        holdAdvance = held
+        if !held && !holdRetreat {
+            settleIdle()
+        }
+        resolveClip()
+        applyFrames()
+        onPlaybackChange?()
+    }
+
+    func setRetreatHeld(_ held: Bool) {
+        holdRetreat = held
+        if !held && !holdAdvance {
+            settleIdle()
+        }
+        resolveClip()
+        applyFrames()
+        onPlaybackChange?()
+    }
+
+    func cancelMovement() {
+        lastTime = 0
+        holdAdvance = false
+        holdRetreat = false
+        settleIdle()
+        applyFrames()
+        onPlaybackChange?()
+    }
+
+    private var movementDirection: CGFloat? {
+        if holdAdvance && !holdRetreat { return 1 }
+        if holdRetreat && !holdAdvance { return -1 }
+        return nil
+    }
+
+    private func settleIdle() {
+        if activeClip != .idle {
+            activeClip = .idle
+            frameIndex = 0
+            blueAccumulator = 0
+        }
+    }
+
+    private func resolveClip() {
+        let next: FighterClip
+        if holdAdvance && !holdRetreat {
+            next = .advance
+        } else if holdRetreat && !holdAdvance {
+            next = .retreat
+        } else {
+            next = .idle
+        }
+        if next != activeClip {
+            activeClip = next
+            frameIndex = 0
+            blueAccumulator = 0
+        }
+    }
+
+    private func animateBoxer(
+        _ accumulator: inout TimeInterval,
+        frame: inout Int,
+        clip: FighterClip,
+        speed: Double,
+        dt: TimeInterval
+    ) {
+        let frameDuration = clip.cycleDuration / TimeInterval(clip.frameCount)
+        accumulator += dt * speed
+        while accumulator >= frameDuration {
+            accumulator -= frameDuration
+            frame = (frame + 1) % clip.frameCount
+        }
     }
 
     private func loadTextures() {
-        texturesA = (0..<Self.frameCount).map { makeTexture(named: "idle_a_\($0)") }
-        texturesB = (0..<Self.frameCount).map { makeTexture(named: "idle_b_\($0)") }
+        idleA = (0..<4).map { makeTexture(named: "idle_a_\($0)") }
+        idleB = (0..<4).map { makeTexture(named: "idle_b_\($0)") }
+        advanceA = (0..<6).map { makeTexture(named: "advance_a_\($0)") }
+        retreatA = (0..<6).map { makeTexture(named: "retreat_a_\($0)") }
     }
 
     private func makeTexture(named name: String) -> SKTexture {
@@ -132,8 +279,8 @@ final class IdleTestScene: SKScene {
         addChild(originA)
         addChild(originB)
 
-        boxerA = makeBoxer(texture: texturesA[0], mirrored: false)
-        boxerB = makeBoxer(texture: texturesB[0], mirrored: true)
+        boxerA = makeBoxer(texture: idleA[0], mirrored: false)
+        boxerB = makeBoxer(texture: idleB[0], mirrored: true)
         addChild(boxerA)
         addChild(boxerB)
     }
@@ -170,35 +317,76 @@ final class IdleTestScene: SKScene {
 
         groundY = size.height * 0.22
         let spriteSide = min(size.height * 0.88, size.width * 0.46, 420)
-        let scale = spriteSide / 512.0
-        let left = CGPoint(x: size.width * 0.30, y: groundY)
+        fighterScale = spriteSide / Self.spriteCanvas
         let right = CGPoint(x: size.width * 0.70, y: groundY)
 
-        boxerA.position = left
         boxerB.position = right
-        boxerA.xScale = scale
-        boxerA.yScale = scale
-        boxerB.xScale = -scale
-        boxerB.yScale = scale
+        boxerA.yScale = fighterScale
+        boxerB.yScale = fighterScale
+        boxerA.xScale = fighterScale
+        boxerB.xScale = -fighterScale
+
+        if !didInitialLayout {
+            boxerA.position = CGPoint(x: size.width * 0.30, y: groundY)
+            didInitialLayout = true
+        } else {
+            boxerA.position = CGPoint(x: size.width * blueXFraction, y: groundY)
+        }
+
+        clampBlue()
+        blueXFraction = boxerA.position.x / size.width
 
         let path = CGMutablePath()
-        path.move(to: CGPoint(x: 20, y: groundY))
-        path.addLine(to: CGPoint(x: size.width - 20, y: groundY))
+        path.move(to: CGPoint(x: Self.edgePaddingPoints, y: groundY))
+        path.addLine(to: CGPoint(x: size.width - Self.edgePaddingPoints, y: groundY))
         groundLine.path = path
-        originA.position = left
-        originB.position = right
+        originA.position = boxerA.position
+        originB.position = boxerB.position
     }
 
-    private func applyFrame() {
-        guard boxerA != nil, !texturesA.isEmpty else { return }
-        let index = frameIndex % Self.frameCount
-        boxerA.texture = texturesA[index]
-        boxerB.texture = texturesB[index]
+    private func extents() -> (left: CGFloat, right: CGFloat, separation: CGFloat) {
+        let left = (Self.figureOriginX - Self.contentMinX) * fighterScale
+        let right = (Self.contentMaxX - Self.figureOriginX) * fighterScale
+        let stance = (Self.contentMaxX - Self.contentMinX) * fighterScale
+        return (left, right, stance * Self.minSeparationFactor)
+    }
+
+    private func clampBlue() {
+        let box = extents()
+        // Mirrored orange: visual left edge uses the unmirrored right extent.
+        let minX = Self.edgePaddingPoints + box.left
+        let orangeLeft = boxerB.position.x - box.right
+        let maxX = orangeLeft - box.separation - box.right
+        boxerA.position.x = min(max(boxerA.position.x, minX), max(minX, maxX))
+        boxerA.position.y = groundY
+    }
+
+    private func applyFrames() {
+        guard boxerA != nil else { return }
+        let blueTextures: [SKTexture]
+        switch activeClip {
+        case .idle: blueTextures = idleA
+        case .advance: blueTextures = advanceA
+        case .retreat: blueTextures = retreatA
+        }
+        boxerA.texture = blueTextures[frameIndex % blueTextures.count]
+        boxerB.texture = idleB[orangeFrame % idleB.count]
     }
 
     private func applyGuideVisibility() {
         groundLine?.isHidden = !showsGuides
         originA?.isHidden = !showsGuides
         originB?.isHidden = !showsGuides
+    }
+
+    private func observeAppFocus() {
+        guard resignObserver == nil else { return }
+        resignObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.willResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.cancelMovement()
+        }
     }
 }
