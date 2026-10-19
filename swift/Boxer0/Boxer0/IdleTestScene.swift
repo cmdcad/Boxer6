@@ -76,6 +76,14 @@ final class IdleTestScene: SKScene {
     var orangeClip: DefenderClip { reaction.clip }
     var orangeFrameIndex: Int { reaction.isActive ? reaction.frameIndex : orangeFrame }
     private var contactTracker = PunchContactTracker()
+    private var health = FighterHealthState()
+    var blueHealth: FighterHealth { health.blue }
+    var orangeHealth: FighterHealth { health.orange }
+
+    func resetHealth() {
+        health.reset()
+        onPlaybackChange?()
+    }
     var contactGeometry = PunchContactGeometry() {
         didSet { updateContactGuides() }
     }
@@ -381,6 +389,9 @@ final class IdleTestScene: SKScene {
             if let contact = contactTracker.evaluate(punch.kind,
                     attacker: canvasTransform(for: boxerA),
                     defender: canvasTransform(for: boxerB), geometry: contactGeometry) {
+                health.receive(contact)
+                // Publish health even when this contact does not change a frame.
+                onPlaybackChange?()
                 if reactionAssetsAvailable && reaction.receive(contact.result, from: contact.kind) {
                     orangeFrame = 0
                     orangeAccumulator = 0
