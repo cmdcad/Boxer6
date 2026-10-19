@@ -74,6 +74,8 @@ struct PunchContactEvent {
     let target: CGRect
     let attacker: SpriteCanvasTransform
     let defender: SpriteCanvasTransform
+    var attackerID: FighterID = .blue
+    var defenderID: FighterID { attackerID.opponent }
     var centerDistance: CGFloat { PunchContactGeometry.distance(center: center, target: target) }
     // <=0 means intersection; >0 means actual separation between circle and target.
     var signedGap: CGFloat { centerDistance - radius }
@@ -114,28 +116,34 @@ struct PunchContactTracker {
     private var sequence = 0
     private var activeKind: PunchKind?
     private var evaluated = false
+    private(set) var context: AttackContext?
 
-    mutating func begin(_ kind: PunchKind) {
-        sequence += 1
+    mutating func begin(_ kind: PunchKind, attackerID: FighterID = .blue,
+                        attackID: Int? = nil, startTime: Double = 0) {
+        sequence = attackID ?? (sequence + 1)
+        context = AttackContext(id: sequence, attacker: attackerID, defender: attackerID.opponent,
+                                kind: kind, startTime: startTime)
         activeKind = kind
         evaluated = false
     }
 
-    mutating func finish() { activeKind = nil }
+    mutating func finish() { activeKind = nil; context?.completed = true }
 
     @discardableResult
     mutating func evaluate(_ kind: PunchKind, attacker: SpriteCanvasTransform,
                            defender: SpriteCanvasTransform, geometry: PunchContactGeometry, guardEffective: Bool = false) -> PunchContactEvent? {
         guard let activeKind = activeKind, activeKind == kind, !evaluated else { return nil }
         evaluated = true
+        context?.contactEvaluated = true
         let center = attacker.scenePoint(fromImage: geometry.center(for: kind))
         let radius = attacker.sceneRadius(fromImage: geometry.radius(for: kind))
         let target = defender.sceneRect(fromImage: geometry.defenderTarget)
         let overlaps = PunchContactGeometry.intersects(center: center, radius: radius, target: target)
         let result: PunchContactResult = !overlaps ? .miss : (guardEffective ? .block : .hit)
-        let event = PunchContactEvent(sequence: sequence, kind: kind, result: result,
+        var event = PunchContactEvent(sequence: sequence, kind: kind, result: result,
                                       center: center, radius: radius, target: target,
                                       attacker: attacker, defender: defender)
+        event.attackerID = context?.attacker ?? .blue
         if kind == .jab { jabContacts += 1 } else { crossContacts += 1 }
         switch result {
         case .hit: hits += 1
@@ -198,17 +206,28 @@ struct FighterHealthState {
         blueCombat.state == .standing && orangeCombat.state == .standing
     }
     private var lastContactSequence = 0
+    private var lastOrangeContactSequence = 0
 
     // Tracker sequences are monotonic for this scene. Resetting health must
     // retain this watermark so replaying an old event cannot damage again.
     @discardableResult
     mutating func receive(_ event: PunchContactEvent) -> Bool {
         guard canExchangePunches else { return false }
-        guard event.sequence > lastContactSequence else { return false }
-        lastContactSequence = event.sequence
+        if event.attackerID == .blue {
+            guard event.sequence > lastContactSequence else { return false }
+            lastContactSequence = event.sequence
+        } else {
+            guard event.sequence > lastOrangeContactSequence else { return false }
+            lastOrangeContactSequence = event.sequence
+        }
         guard event.result == .hit else { return false }
-        orange.applyDamage(PunchDamage.amount(for: event.kind))
-        orangeCombat.receiveHealth(orange)
+        if event.defenderID == .orange {
+            orange.applyDamage(PunchDamage.amount(for: event.kind))
+            orangeCombat.receiveHealth(orange)
+        } else {
+            blue.applyDamage(PunchDamage.amount(for: event.kind))
+            blueCombat.receiveHealth(blue)
+        }
         return true
     }
 
@@ -222,6 +241,12 @@ struct FighterHealthState {
         return true
     }
 
+    @discardableResult
+    mutating func recoverBlue() -> Bool {
+        guard blueCombat.state == .defeated else { return false }
+        blue.reset(); blueCombat.reset()
+        return true
+    }
     mutating func reset() {
         blue.reset()
         orange.reset()

@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Boxer A — cross 5: contact</title>
+  <desc>Cross: 512×512 transparent; root (256,448), baseline 448. Eight frames ×60 ms; contact frame 5 at 240 ms.</desc>
+  <defs>
+    <style>
+      .ink { stroke:#192A3C; stroke-width:4; stroke-linecap:round; stroke-linejoin:round }
+      .limb-outline { fill:none; stroke:#192A3C; stroke-linecap:round; stroke-linejoin:round }
+      .skin-line { fill:none; stroke:#D78F6C; stroke-linecap:round; stroke-linejoin:round }
+      .shorts-fill { fill:#E77728 }
+      .glove-fill { fill:#E77728 }
+    </style>
+  </defs>
+  <g id="boot-rear"><path class="ink" fill="#25364A" d="M168 420l37-8 30 16 7 16-3 2h-75z" /><path d="M168 444h72" stroke="#172334" stroke-width="7" stroke-linecap="round" /></g>
+  <g id="boot-lead"><path class="ink" fill="#25364A" d="M295 420l38-8 34 16 10 16-3 2h-82z" /><path d="M294 444h81" stroke="#172334" stroke-width="7" stroke-linecap="round" /></g>
+  <g id="thigh-rear"><path class="limb-outline" stroke-width="37" d="M239 310L216 365" /><path class="skin-line" stroke-width="31" d="M239 310L216 365" /></g>
+  <g id="thigh-lead"><path class="limb-outline" stroke-width="37" d="M282 310L309 364" /><path class="skin-line" stroke-width="31" d="M282 310L309 364" /></g>
+  <g id="shin-rear"><path class="limb-outline" stroke-width="31" d="M216 365L203 420" /><path class="skin-line" stroke-width="25" d="M216 365L203 420" /></g>
+  <g id="shin-lead"><path class="limb-outline" stroke-width="31" d="M309 364L304 420" /><path class="skin-line" stroke-width="25" d="M309 364L304 420" /></g>
+  <g id="torso" transform="translate(0 -0.00)"><path class="ink" fill="#D78F6C" d="M270.0000 186.0000L298.0000 186.0000L298.0000 214.0000L301.0000 257.0000L292.0000 300.0000L237.0000 298.0000L228.0000 254.0000L250.0000 214.0000Z" /><path d="M266.0000 170v20" stroke="#192A3C" stroke-width="24" stroke-linecap="round" /><path d="M266.0000 170v20" stroke="#D78F6C" stroke-width="18" stroke-linecap="round" /></g>
+  <g id="pelvis"><path class="ink shorts-fill" d="M230 286h63l14 26-6 25-37-7-43 7-5-25z" /><path d="M231 291h8v26h-8z" fill="#FFF" /></g>
+  <g id="upper-arm-lead"><path class="limb-outline" stroke-width="30" d="M286.0000 199.0000L321.4072 193.4024" /><path class="skin-line" stroke-width="24" d="M286.0000 199.0000L321.4072 193.4024" /></g>
+  <g id="forearm-lead"><path class="limb-outline" stroke-width="27" d="M321.4072 193.4024L296.0000 169.0000" /><path class="skin-line" stroke-width="21" d="M321.4072 193.4024L296.0000 169.0000" /></g>
+  <g id="upper-arm-rear"><path class="limb-outline" stroke-width="30" d="M282.0000 195.0000L306.2722 204.1575" /><path class="skin-line" stroke-width="24" d="M282.0000 195.0000L306.2722 204.1575" /></g>
+  <g id="forearm-rear"><path class="limb-outline" stroke-width="27" d="M306.2722 204.1575L360.0000 184.0000" /><path class="skin-line" stroke-width="21" d="M306.2722 204.1575L360.0000 184.0000" /></g>
+  <g id="glove-rear" transform="translate(82.0000 0.0000)"><ellipse class="ink glove-fill" cx="296" cy="186" rx="21" ry="17" /><rect x="271" y="179" width="13" height="17" rx="4" fill="#192A3C" /><ellipse class="glove-fill" cx="287" cy="192" rx="9" ry="7" /></g>
+  <g id="glove-lead" transform="translate(-49.0000 -24.0000)"><ellipse class="ink glove-fill" cx="364.5" cy="192" rx="24.5" ry="21" /><rect x="337" y="187" width="14" height="18" rx="4" fill="#192A3C" /><ellipse class="glove-fill" cx="354" cy="202" rx="10" ry="8" /></g>
+  <g id="head" transform="translate(8.0000 0)"><ellipse class="ink" fill="#D78F6C" cx="267" cy="158.5" rx="29" ry="31.5" /></g>
+</svg>

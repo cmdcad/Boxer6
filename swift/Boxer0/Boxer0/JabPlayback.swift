@@ -79,3 +79,73 @@ struct PunchPlayback {
         reachedContact = false
     }
 }
+
+enum FighterID { case blue, orange
+    var opponent: FighterID { self == .blue ? .orange : .blue }
+}
+struct AttackContext {
+    let id: Int
+    let attacker: FighterID
+    let defender: FighterID
+    let kind: PunchKind
+    let startTime: Double
+    var contactEvaluated = false
+    var completed = false
+}
+
+enum CPUOffenseState: String { case ready, preparing, attacking, cooldown }
+struct CPUOffense {
+    var decisionInterval = 0.30
+    var jabWeight = 0.70
+    var jabPreparation = 0.18
+    var crossPreparation = 0.28
+    var jabCooldown = 0.65
+    var crossCooldown = 0.90
+    var minimumCompletedInterval = 0.40
+    private(set) var state: CPUOffenseState = .ready
+    private(set) var kind: PunchKind = .jab
+    private(set) var remaining = 0.30
+    private var randomState: UInt64 = 98765
+    var label: String {
+        switch state {
+        case .ready: return "READY"
+        case .preparing: return kind == .jab ? "PREPARING JAB" : "PREPARING CROSS"
+        case .attacking: return kind == .jab ? "JAB" : "CROSS"
+        case .cooldown: return "COOLDOWN"
+        }
+    }
+    mutating func cancel(reseed: Bool = false) {
+        state = .ready; remaining = decisionInterval
+        if reseed { randomState = 98765 }
+    }
+    mutating func disable() { if state != .attacking { cancel() } }
+    mutating func finished() {
+        state = .cooldown
+        remaining = max(minimumCompletedInterval, kind == .jab ? jabCooldown : crossCooldown)
+    }
+    mutating func advance(_ dt: Double, enabled: Bool, eligible: Bool,
+                          jabInRange: Bool, crossInRange: Bool) -> PunchKind? {
+        guard dt.isFinite, dt >= 0 else { return nil }
+        if state == .attacking { return nil }
+        if state == .cooldown {
+            remaining = max(0, remaining-dt)
+            if remaining == 0 { state = .ready }
+            return nil
+        }
+        guard enabled, eligible else { cancel(); return nil }
+        remaining -= dt
+        guard remaining <= 1e-10 else { return nil }
+        if state == .preparing {
+            state = .attacking
+            return kind
+        }
+        remaining = decisionInterval
+        guard jabInRange || crossInRange else { return nil }
+        randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
+        let draw = Double(randomState >> 11) / 9007199254740992.0
+        kind = !crossInRange ? .jab : (!jabInRange ? .cross : (draw < jabWeight ? .jab : .cross))
+        state = .preparing
+        remaining = kind == .jab ? jabPreparation : crossPreparation
+        return nil
+    }
+}

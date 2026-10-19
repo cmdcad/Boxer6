@@ -4,6 +4,8 @@ enum DefenderClip: String {
     case idle
     case advance
     case retreat
+    case jab
+    case cross
     case hitReact = "hit_react"
     case knockdown
     case down

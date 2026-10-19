@@ -62,6 +62,7 @@ struct CPUDistanceController {
     var preferredReachFactor = 0.90
     var tooFarFactor = 1.15
     var tooCloseFactor = 0.75
+    var maximumRangeFactor: Double?
     private(set) var intent: CPUMovementIntent = .hold
     private var remaining = 0.0
     mutating func reset() { intent = .hold; remaining = 0 }
@@ -69,7 +70,10 @@ struct CPUDistanceController {
         // Keep retreat reachable above the physical body-spacing floor.
         let closeFloor = minimum + reach * 0.04
         let preferred = max(reach * preferredReachFactor, closeFloor + reach * 0.06)
-        return (max(preferred * tooCloseFactor, closeFloor), preferred, preferred * tooFarFactor)
+        let close = max(preferred * tooCloseFactor, closeFloor)
+        let far = maximumRangeFactor.map { max(close + reach * 0.02, min(preferred * tooFarFactor, reach * $0)) }
+            ?? preferred * tooFarFactor
+        return (close, min(preferred, far), far)
     }
     mutating func advance(_ dt: Double, separation: Double, reach: Double, minimum: Double) {
         guard dt.isFinite, dt >= 0 else { return }

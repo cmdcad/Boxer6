@@ -59,8 +59,8 @@ assert update.index('guard isPlaying, hasFocus')<update.index('advanceOrange(dt)
 assert update.count('advanceOrange(dt)')==1
 step=scene[scene.index('func stepFrame()'):scene.index('func setSpeed(')]
 assert step.index('stepOrange()')<step.index('punch.step()')<step.index('handlePunchEvent(event)')<step.index('applyFrames()')
-handler=scene[scene.index('private func handlePunchEvent'):scene.index('private func advanceOrange')]
-assert handler.index('contactTracker.evaluate(')<handler.index('reaction.receive(contact.result, from: contact.kind)')<handler.index('onPunchContact?(contact)')
+handler=scene[scene.index('private func resolveContact'):scene.index('private func advanceOrange')]
+assert handler.index('tracker.evaluate(')<handler.index('reaction.receive(.hit, from: event.kind)')<handler.index('onPunchContact?(event)')
 assert 'DispatchQueue' not in handler and 'async' not in handler and 'SKAction' not in handler
 assert 'preserveContactPose &&' in clock
 assert 'Orange:' in view

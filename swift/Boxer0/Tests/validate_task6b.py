@@ -11,10 +11,10 @@ assert 'defeatRecorded = true' in model and 'defeatRecorded = false' in model
 assert 'guard canExchangePunches else { return false }' in model
 assert 'health.canExchangePunches && jabAssetsAvailable' in scene
 assert 'health.canExchangePunches && crossAssetsAvailable' in scene
-handler = scene[scene.index('private func handlePunchEvent'):scene.index('private func advanceOrange')]
-assert handler.index('if event.contact && health.canExchangePunches') < handler.index('contactTracker.evaluate(')
+handler = scene[scene.index('private func resolveContact'):scene.index('private func advanceOrange')]
+assert handler.index('guard health.canExchangePunches else { return }') < handler.index('tracker.evaluate(')
 # 8A now allows the accepted final HIT recoil before the fall.
-assert 'if reactionAssetsAvailable && reaction.receive' in handler
+assert 'if reactionAssetsAvailable { reaction.receive' in handler
 orange = scene[scene.index('private func advanceOrange'):scene.index('private var movementDirection')]
 assert orange.count('else if orangeCombatState == .standing') == 2
 assert orange.count('if reaction.isActive') == 2
@@ -24,7 +24,7 @@ for expected in ['health.reset()', 'punch.cancel()', 'contactTracker.finish()', 
 for forbidden in ['rootA.', 'rootB.', 'contactTracker =', 'isPlaying =']:
     assert forbidden not in reset
 assert 'DEFEATED' in view and 'state == .defeated' in view
-assert '8B ' in view
+assert '8C ' in view
 print('PASS: eligibility before contact counters, one-shot defeat model, blocked post-defeat contacts, standing-only idle/step, clean reset, HUD source checks')
 compiler = shutil.which('swiftc')
 if compiler:

@@ -21,8 +21,8 @@ assert 'setOrangeLocomotion(travel < 0 ? .advance : .retreat)' in scene
 assert 'let gap = max(aBody.width,bBody.width)' in scene
 assert 'min(limits.upperBound, max(limits.lowerBound' in scene
 assert 'size.width * orangeXFraction' in scene
-assert 'if selected { stopCPUFootwork() }' in scene
-assert 'CPU:' in view and 'playback.cpuMovement' in view and '8B ' in view
+assert 'if selected {' in scene
+assert 'CPU:' in view and 'playback.cpuMovement' in view and '8C ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

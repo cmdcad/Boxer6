@@ -15,15 +15,15 @@ assert 'sequence > lastSequence' in ai and 'guard state == .idle' in ai
 for forbidden in ['Timer','DispatchQueue','SKAction','health.','position','contactTracker']:
     assert forbidden not in ai
 assert scene.count('defensiveAI.observe(')==1
-start=scene[scene.index('private func startPunch'):scene.index('private func handlePunchEvent')]
+start=scene[scene.index('private func startPunch'):scene.index('private func resolveContact')]
 assert 'PunchContactGeometry.intersects(' in start
-assert 'punchStartSequence += 1' in start and 'inRange: plausible' in start
+assert 'punchStartSequence += 1' in start and 'inRange: predictedContact(.blue, kind: kind)' in start
 assert '!cpuEnabled && canRequestGuard' in scene
 assert 'if canRequestGuard { requestGuard(true) }' in scene
 assert 'guardEffectiveAtContact = guardPlayback.isEffective' in scene
-assert 'guardEffective: guardEffectiveAtContact ?? guardPlayback.isEffective' in scene
+assert 'guardEffective: attacker == .blue && (guardEffectiveAtContact ?? guardPlayback.isEffective)' in scene
 assert 'defensiveAI.cancel(reseed: true)' in scene
-assert 'CPU: ON' in view and 'playback.cpuStatus' in view and '8B ' in view
+assert 'CPU: ON' in view and 'playback.cpuStatus' in view and '8C ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

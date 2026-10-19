@@ -1,0 +1,152 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "variants": [
+    {
+      "source": "jab_a_0",
+      "target": "jab_b_0"
+    },
+    {
+      "source": "jab_a_1",
+      "target": "jab_b_1"
+    },
+    {
+      "source": "jab_a_2",
+      "target": "jab_b_2"
+    },
+    {
+      "source": "jab_a_3",
+      "target": "jab_b_3"
+    },
+    {
+      "source": "jab_a_4",
+      "target": "jab_b_4"
+    },
+    {
+      "source": "jab_a_5",
+      "target": "jab_b_5"
+    },
+    {
+      "source": "cross_a_0",
+      "target": "cross_b_0"
+    },
+    {
+      "source": "cross_a_1",
+      "target": "cross_b_1"
+    },
+    {
+      "source": "cross_a_2",
+      "target": "cross_b_2"
+    },
+    {
+      "source": "cross_a_3",
+      "target": "cross_b_3"
+    },
+    {
+      "source": "cross_a_4",
+      "target": "cross_b_4"
+    },
+    {
+      "source": "cross_a_5",
+      "target": "cross_b_5"
+    },
+    {
+      "source": "cross_a_6",
+      "target": "cross_b_6"
+    },
+    {
+      "source": "cross_a_7",
+      "target": "cross_b_7"
+    },
+    {
+      "source": "hit_react_b_0",
+      "target": "hit_react_a_0"
+    },
+    {
+      "source": "hit_react_b_1",
+      "target": "hit_react_a_1"
+    },
+    {
+      "source": "hit_react_b_2",
+      "target": "hit_react_a_2"
+    },
+    {
+      "source": "hit_react_b_3",
+      "target": "hit_react_a_3"
+    },
+    {
+      "source": "knockdown_b_0",
+      "target": "knockdown_a_0"
+    },
+    {
+      "source": "knockdown_b_1",
+      "target": "knockdown_a_1"
+    },
+    {
+      "source": "knockdown_b_2",
+      "target": "knockdown_a_2"
+    },
+    {
+      "source": "knockdown_b_3",
+      "target": "knockdown_a_3"
+    },
+    {
+      "source": "knockdown_b_4",
+      "target": "knockdown_a_4"
+    },
+    {
+      "source": "knockdown_b_5",
+      "target": "knockdown_a_5"
+    },
+    {
+      "source": "knockdown_b_6",
+      "target": "knockdown_a_6"
+    },
+    {
+      "source": "knockdown_b_7",
+      "target": "knockdown_a_7"
+    },
+    {
+      "source": "down_b_0",
+      "target": "down_a_0"
+    },
+    {
+      "source": "rise_b_0",
+      "target": "rise_a_0"
+    },
+    {
+      "source": "rise_b_1",
+      "target": "rise_a_1"
+    },
+    {
+      "source": "rise_b_2",
+      "target": "rise_a_2"
+    },
+    {
+      "source": "rise_b_3",
+      "target": "rise_a_3"
+    },
+    {
+      "source": "rise_b_4",
+      "target": "rise_a_4"
+    },
+    {
+      "source": "rise_b_5",
+      "target": "rise_a_5"
+    },
+    {
+      "source": "rise_b_6",
+      "target": "rise_a_6"
+    },
+    {
+      "source": "rise_b_7",
+      "target": "rise_a_7"
+    }
+  ]
+}

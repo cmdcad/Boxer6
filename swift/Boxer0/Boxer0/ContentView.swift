@@ -24,6 +24,12 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var cpuAttack = "READY"
+    @Published var cpuStats = ""
+    @Published var cpuLastResult = "-"
+    @Published var blueAnimation = "idle"
+    @Published var canBlueRise = false
+    @Published var bidirectionalAssetsAvailable = false
     @Published var cpuMovement = "hold"
     @Published var cpuEnabled = false
     @Published var cpuStatus = "OFF"
@@ -98,6 +104,12 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        cpuAttack = scene.cpuAttackLabel
+        cpuStats = scene.cpuStats
+        cpuLastResult = scene.cpuLastResult
+        blueAnimation = scene.blueAnimationLabel
+        canBlueRise = scene.canBlueRise
+        bidirectionalAssetsAvailable = scene.orangePunchAssetsAvailable && scene.blueRecoveryAssetsAvailable
         cpuMovement = scene.cpuMovementLabel
         cpuEnabled = scene.cpuEnabled
         cpuStatus = scene.cpuStatus
@@ -117,7 +129,7 @@ final class IdlePlayback: ObservableObject {
         orangeFrameCount = scene.orangeFrameCount
         knockdownAssetsAvailable = scene.knockdownAssetsAvailable
         riseAssetsAvailable = scene.riseAssetsAvailable
-        canRise = scene.canRise
+        canRise = scene.canRise || scene.canBlueRise
         reactionAssetsAvailable = scene.reactionAssetsAvailable
         if let event = scene.latestContact {
             latestResultText = "\(event.kind == .jab ? "JAB" : "CROSS") · \(event.result.rawValue)"
@@ -143,7 +155,8 @@ final class IdlePlayback: ObservableObject {
     }
 
     func rise() {
-        scene.startRise()
+        if scene.canBlueRise { scene.startBlueRise() }
+        else { scene.startRise() }
         syncFromScene()
     }
 
@@ -224,6 +237,12 @@ struct ContentView: View {
                             Text("Orange: \(playback.orangeCombatState.rawValue)")
                             Text("CPU: \(playback.cpuStatus) · \(playback.cpuMovement) | Guard: \(playback.guardStatus)")
                             Text("Block FX: \(playback.blockFeedbackLabel)")
+                            Text("CPU Attack: \(playback.cpuAttack) | \(playback.cpuLastResult)")
+                            Text(playback.cpuStats)
+                            Text("Blue: \(playback.blueAnimation)")
+                            if !playback.bidirectionalAssetsAvailable {
+                                Text("8C punch/recovery assets missing").foregroundColor(.red)
+                            }
                             if !playback.blockRecoilAssetsAvailable {
                                 Text("Block recoil assets missing").foregroundColor(.red)
                             }
@@ -305,7 +324,7 @@ struct ContentView: View {
                     .buttonStyle(.plain)
                     .disabled(!playback.canToggleGuard)
                     .accessibilityValue(playback.guardStatus)
-                Button("Rise", action: playback.rise)
+                Button(playback.canBlueRise ? "Blue Rise" : "Rise", action: playback.rise)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 44, minHeight: 44)
                     .buttonStyle(.plain)
@@ -344,7 +363,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("8B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("8C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

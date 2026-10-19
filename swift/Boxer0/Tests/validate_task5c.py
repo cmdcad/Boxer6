@@ -9,7 +9,7 @@ scene=(ROOT/'Boxer0/IdleTestScene.swift').read_text(encoding='utf-8')
 model=(ROOT/'Boxer0/HitReactionPlayback.swift').read_text(encoding='utf-8')
 view=(ROOT/'Boxer0/ContentView.swift').read_text(encoding='utf-8')
 assert 'impactEmphasisEnabled = false' in scene
-assert 'reaction.receive(contact.result, from: contact.kind)' in scene
+assert 'reaction.receive(.hit, from: event.kind)' in scene
 assert 'private(set) var profile: HitFeedbackProfile?' in model
 assert 'guard result == .hit else { return false }' in model
 assert 'static let duration = 0.24' in model
@@ -22,8 +22,8 @@ helper=scene[scene.index('private func applyImpactEmphasis'):scene.index('privat
 assert 'colorBlendFactor' in helper and 'reaction.emphasisAmount' in helper
 for forbidden in ['.position', '.xScale', '.yScale', '.size', 'SKAction', 'DispatchQueue']:
     assert forbidden not in helper
-assert '8A ·' in view and 'playback.orangeProfile' in view
-assert scene.count('contactTracker.evaluate(')==1
+assert '8C ·' in view and 'playback.orangeProfile' in view
+assert scene.count('tracker.evaluate(')==1
 print('PASS: profiles, 240 ms shared clip, default-off 60 ms emphasis, no transform/geometry mutation, once-only contact and triggering punch HUD')
 compiler=shutil.which('swiftc')
 if compiler:
