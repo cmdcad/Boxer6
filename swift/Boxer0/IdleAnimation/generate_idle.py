@@ -74,7 +74,7 @@ def draw_ellipse(draw: ImageDraw.ImageDraw, cx, cy, rx, ry, fill, outline, strok
     draw.ellipse(box, fill=fill, outline=outline, width=stroke)
 
 
-def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead_x: float, rear_x: float) -> Image.Image:
+def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead_x: float, rear_x: float, lead_pose=None) -> Image.Image:
     s = SUPERSAMPLE
     img = Image.new("RGBA", (CANVAS * s, CANVAS * s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
@@ -125,8 +125,9 @@ def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead
         d.rectangle([P(245, 291), P(253, 318)], fill=WHITE)
 
     gy = chest + glove_extra
-    limb(283, 199, 316, 213, 30, 24, 0, uy)
-    limb(316, 213, 345, 193, 27, 21, 0, uy)
+    shoulder, elbow, wrist = lead_pose if lead_pose else ((283, 199), (316, 213), (345, 193))
+    limb(*shoulder, *elbow, 30, 24, 0, uy)
+    limb(*elbow, *wrist, 27, 21, 0, uy)
 
     # Gloves: follow the chest, plus a slightly larger bob.
     draw_ellipse(d, 296 + rear_x, 186 + gy, 21, 17, accent, INK, stroke, s)
@@ -135,11 +136,12 @@ def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead
     d.rounded_rectangle((x0, y0, x1, y1), radius=int(round(4 * s)), fill=INK)
     draw_ellipse(d, 287 + rear_x, 192 + gy, 9, 7, accent, None, 0, s)
 
-    draw_ellipse(d, 364.5 + lead_x, 192 + gy, 24.5, 21, accent, INK, stroke, s)
-    x0, y0 = P(337 + lead_x, 187 + gy)
-    x1, y1 = P(351 + lead_x, 205 + gy)
+    lead_gy = gy + (wrist[1] - 193 if lead_pose else 0)
+    draw_ellipse(d, 364.5 + lead_x, 192 + lead_gy, 24.5, 21, accent, INK, stroke, s)
+    x0, y0 = P(337 + lead_x, 187 + lead_gy)
+    x1, y1 = P(351 + lead_x, 205 + lead_gy)
     d.rounded_rectangle((x0, y0, x1, y1), radius=int(round(4 * s)), fill=INK)
-    draw_ellipse(d, 354 + lead_x, 202 + gy, 10, 8, accent, None, 0, s)
+    draw_ellipse(d, 354 + lead_x, 202 + lead_gy, 10, 8, accent, None, 0, s)
 
     hy = chest + head_extra
     draw_ellipse(d, 267, 158.5 + hy, 29, 31.5, SKIN, INK, stroke, s)

@@ -2,7 +2,7 @@
 //  IdleTestScene.swift
 //  Boxer0
 //
-//  Task 2 idle playback plus Task 3B velocity-driven footwork.
+//  Idle playback, Task 3B footwork and Task 4A non-looping jab.
 //
 
 import SpriteKit
@@ -24,11 +24,16 @@ enum FighterClip: String {
     case idle
     case advance
     case retreat
+    case jab
 
     var frameCount: Int { self == .idle ? 4 : 6 }
 
     var cycleDuration: TimeInterval {
-        self == .idle ? 0.8 : 0.48
+        switch self {
+        case .idle: return 0.8
+        case .advance, .retreat: return 0.48
+        case .jab: return 0.3
+        }
     }
 }
 
@@ -45,6 +50,14 @@ final class IdleTestScene: SKScene {
     static let defaultMoveSpeed: CGFloat = 100
 
     private var motion = FootworkMotion()
+    private var jab = JabPlayback()
+    private var hasFocus = true
+    private(set) var jabAssetsAvailable = false
+    private(set) var jabContactCount = 0
+    var canStartJab: Bool {
+        jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !jab.isActive
+    }
+    var showsJabContact: Bool { jab.isActive && jab.frameIndex == JabPlayback.contactFrame }
     var movementSpeed: CGFloat {
         get { CGFloat(motion.maximumSpeed) }
         set { motion.maximumSpeed = max(0, Double(newValue)) }
@@ -80,6 +93,7 @@ final class IdleTestScene: SKScene {
     private var idleB: [SKTexture] = []
     private var advanceA: [SKTexture] = []
     private var retreatA: [SKTexture] = []
+    private var jabA: [SKTexture] = []
     private var groundLine: SKShapeNode!
     private var originA: SKShapeNode!
     private var originB: SKShapeNode!
@@ -94,11 +108,13 @@ final class IdleTestScene: SKScene {
     private var holdAdvance = false
     private var holdRetreat = false
     private var resignObserver: NSObjectProtocol?
+    private var activeObserver: NSObjectProtocol?
 
     var bluePositionX: CGFloat { boxerA?.position.x ?? 0 }
 
     override func didMove(to view: SKView) {
         lastTime = 0
+        hasFocus = UIApplication.shared.applicationState == .active
         backgroundColor = SKColor(red: 0.91, green: 0.933, blue: 0.957, alpha: 1)
         scaleMode = .resizeFill
         loadTextures()
@@ -109,11 +125,21 @@ final class IdleTestScene: SKScene {
         applyFrames()
         applyGuideVisibility()
         observeAppFocus()
+        onPlaybackChange?()
     }
 
     override func willMove(from view: SKView) {
         cancelMovement()
-        if let resignObserver = resignObserver { 
+        
+        jab.cancel()
+        settleIdle()
+        applyFrames()
+        if let activeObserver {
+            NotificationCenter.default.removeObserver(activeObserver)
+            self.activeObserver = nil
+        }
+        if let resignObserver {
+            
             NotificationCenter.default.removeObserver(resignObserver)
             self.resignObserver = nil
         }
@@ -142,7 +168,16 @@ final class IdleTestScene: SKScene {
             cancelMovement()
             return
         }
-        guard isPlaying else { return }
+        guard isPlaying, hasFocus else { return }
+        if jab.isActive {
+            let event = jab.advance(dt)
+            handleJabEvent(event)
+            animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
+                         speed: playbackSpeed.rawValue, dt: dt)
+            applyFrames()
+            publishIfNeeded()
+            return
+        }
 
         let segments = motion.advance(duration: dt, direction: Double(movementDirection ?? 0))
         for segment in segments {
@@ -205,7 +240,7 @@ final class IdleTestScene: SKScene {
         motion.stop()
         lastTime = 0
         if isPlaying {
-            settleIdle()
+            if !jab.isActive { settleIdle() }
             applyFrames()
         }
         onPlaybackChange?()
@@ -217,7 +252,12 @@ final class IdleTestScene: SKScene {
         motion.stop()
         lastTime = 0
         blueAccumulator = 0
-        frameIndex = (frameIndex + 1) % activeClip.frameCount
+        if jab.isActive {
+            let event = jab.step()
+            handleJabEvent(event)
+        } else {
+            frameIndex = (frameIndex + 1) % activeClip.frameCount
+        }
         orangeAccumulator = 0
         orangeFrame = (orangeFrame + 1) % FighterClip.idle.frameCount
         applyFrames()
@@ -235,12 +275,12 @@ final class IdleTestScene: SKScene {
     }
 
     func setAdvanceHeld(_ held: Bool) {
-        holdAdvance = held && isPlaying
+        holdAdvance = held && isPlaying && hasFocus && !jab.isActive
         onPlaybackChange?()
     }
 
     func setRetreatHeld(_ held: Bool) {
-        holdRetreat = held && isPlaying
+        holdRetreat = held && isPlaying && hasFocus && !jab.isActive
         onPlaybackChange?()
     }
 
@@ -254,9 +294,32 @@ final class IdleTestScene: SKScene {
         lastTime = 0
         clearHeldInput()
         motion.stop()
-        settleIdle()
+        if !jab.isActive { settleIdle() }
         applyFrames()
         onPlaybackChange?()
+    }
+
+    func startJab() {
+        guard canStartJab, jab.start() else { return }
+        clearHeldInput()
+        motion.stop()
+        setClip(.jab)
+        // Seed timing at the next render tick so the ready frame is presented
+        // before consuming any of the six 50 ms frame intervals.
+        lastTime = 0
+        applyFrames()
+        onPlaybackChange?()
+    }
+
+    private func handleJabEvent(_ event: (contact: Bool, completed: Bool)) {
+        if event.contact { jabContactCount += 1 }
+        if event.completed {
+            clearHeldInput()
+            motion.stop()
+            settleIdle()
+        } else {
+            frameIndex = jab.frameIndex
+        }
     }
 
     private var movementDirection: CGFloat? {
@@ -269,7 +332,7 @@ final class IdleTestScene: SKScene {
 
     private func setClip(_ next: FighterClip) {
         guard next != activeClip else { return }
-        // Frame zero is the shared rest/guard pose in all three clips.
+        // Frame zero is the shared rest/guard pose in every clip.
         // Keep phase untouched while staying in a clip; only reset on a real
         // state change. Direction changes occur after braking through zero.
         activeClip = next
@@ -301,6 +364,16 @@ final class IdleTestScene: SKScene {
         idleB = (0..<4).map { makeTexture(named: "idle_b_\($0)") }
         advanceA = (0..<6).map { makeTexture(named: "advance_a_\($0)") }
         retreatA = (0..<6).map { makeTexture(named: "retreat_a_\($0)") }
+        // Never use SpriteKit's missing-image placeholder as a punch pose.
+        let images = (0..<6).compactMap { UIImage(named: "jab_a_\($0)") }
+        jabAssetsAvailable = images.count == 6 && images.allSatisfy {
+            $0.cgImage?.width == 512 && $0.cgImage?.height == 512
+        }
+        jabA = jabAssetsAvailable ? images.map {
+            let texture = SKTexture(image: $0)
+            texture.filteringMode = .linear
+            return texture
+        } : []
     }
 
     private func makeTexture(named name: String) -> SKTexture {
@@ -418,7 +491,9 @@ final class IdleTestScene: SKScene {
         case .idle: blueTextures = idleA
         case .advance: blueTextures = advanceA
         case .retreat: blueTextures = retreatA
+        case .jab: blueTextures = jabA
         }
+        guard !blueTextures.isEmpty, !idleB.isEmpty else { return }
         boxerA.texture = blueTextures[frameIndex % blueTextures.count]
         boxerB.texture = idleB[orangeFrame % idleB.count]
     }
@@ -436,7 +511,17 @@ final class IdleTestScene: SKScene {
             object: nil,
             queue: .main
         ) { [weak self] _ in
+            self?.hasFocus = false
             self?.cancelMovement()
+        }
+        activeObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.hasFocus = true
+            self?.lastTime = 0
+            self?.onPlaybackChange?()
         }
     }
 }
