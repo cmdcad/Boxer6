@@ -47,6 +47,9 @@ Use `@available` wrappers for newer SwiftUI selectors; use `@backDeployed` only 
 ### Firebase Timestamp Compatibility Rule
 Always add Firebase Timestamp support to handle Date fields properly when sending to/decoding from Firebase. Firebase stores dates as Timestamp objects with `{seconds, nanoseconds}` format, not as Date/DateTime primitives. 
 
+Another Rule:
+Use `if let c = c { ... }` instead of `if let c { ... }`.
+
 For Swift:
 - Implement a `FirebaseTimestamp` struct that matches Firebase's format
 - Add custom encoding/decoding logic in `Codable` implementations to handle Timestamp format

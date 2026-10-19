@@ -74,7 +74,7 @@ def draw_ellipse(draw: ImageDraw.ImageDraw, cx, cy, rx, ry, fill, outline, strok
     draw.ellipse(box, fill=fill, outline=outline, width=stroke)
 
 
-def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead_x: float, rear_x: float, lead_pose=None) -> Image.Image:
+def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead_x: float, rear_x: float, lead_pose=None, rear_pose=None, torso_points=None, head_dx=0) -> Image.Image:
     s = SUPERSAMPLE
     img = Image.new("RGBA", (CANVAS * s, CANVAS * s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
@@ -109,13 +109,14 @@ def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead
     limb(309, 364, 304, 420, 31, 25)
 
     uy = chest
-    limb(247, 199, 235, 222, 30, 24, 0, uy)
-    limb(235, 222, 278, 184, 27, 21, 0, uy)
+    if rear_pose is None:
+        limb(247, 199, 235, 222, 30, 24, 0, uy)
+        limb(235, 222, 278, 184, 27, 21, 0, uy)
 
     torso = [(235, 184), (279, 183), (302, 209), (307, 257), (292, 300), (237, 298), (220, 254), (224, 211)]
-    filled_poly(torso, SKIN, 0, uy)
-    round_line(d, P(258, 170, 0, uy), P(258, 190, 0, uy), max(1, int(round(24 * s))), INK)
-    round_line(d, P(258, 170, 0, uy), P(258, 190, 0, uy), max(1, int(round(18 * s))), SKIN)
+    filled_poly(torso_points if torso_points is not None else torso, SKIN, 0, uy)
+    round_line(d, P(258 + head_dx, 170, 0, uy), P(258 + head_dx, 190, 0, uy), max(1, int(round(24 * s))), INK)
+    round_line(d, P(258 + head_dx, 170, 0, uy), P(258 + head_dx, 190, 0, uy), max(1, int(round(18 * s))), SKIN)
 
     pelvis = [(230, 286), (293, 286), (307, 312), (301, 337), (264, 330), (221, 337), (216, 312)]
     filled_poly(pelvis, accent)
@@ -129,12 +130,17 @@ def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead
     limb(*shoulder, *elbow, 30, 24, 0, uy)
     limb(*elbow, *wrist, 27, 21, 0, uy)
 
-    # Gloves: follow the chest, plus a slightly larger bob.
-    draw_ellipse(d, 296 + rear_x, 186 + gy, 21, 17, accent, INK, stroke, s)
-    x0, y0 = P(271 + rear_x, 179 + gy)
-    x1, y1 = P(284 + rear_x, 196 + gy)
+    if rear_pose is not None:
+        rear_shoulder, rear_elbow, rear_wrist = rear_pose
+        limb(*rear_shoulder, *rear_elbow, 30, 24, 0, uy)
+        limb(*rear_elbow, *rear_wrist, 27, 21, 0, uy)
+    rear_gy = gy + (rear_pose[2][1] - 184 if rear_pose else 0)
+    # Gloves retain their original dimensions and follow their wrist endpoints.
+    draw_ellipse(d, 296 + rear_x, 186 + rear_gy, 21, 17, accent, INK, stroke, s)
+    x0, y0 = P(271 + rear_x, 179 + rear_gy)
+    x1, y1 = P(284 + rear_x, 196 + rear_gy)
     d.rounded_rectangle((x0, y0, x1, y1), radius=int(round(4 * s)), fill=INK)
-    draw_ellipse(d, 287 + rear_x, 192 + gy, 9, 7, accent, None, 0, s)
+    draw_ellipse(d, 287 + rear_x, 192 + rear_gy, 9, 7, accent, None, 0, s)
 
     lead_gy = gy + (wrist[1] - 193 if lead_pose else 0)
     draw_ellipse(d, 364.5 + lead_x, 192 + lead_gy, 24.5, 21, accent, INK, stroke, s)
@@ -144,7 +150,7 @@ def draw_boxer(accent, chest: float, head_extra: float, glove_extra: float, lead
     draw_ellipse(d, 354 + lead_x, 202 + lead_gy, 10, 8, accent, None, 0, s)
 
     hy = chest + head_extra
-    draw_ellipse(d, 267, 158.5 + hy, 29, 31.5, SKIN, INK, stroke, s)
+    draw_ellipse(d, 267 + head_dx, 158.5 + hy, 29, 31.5, SKIN, INK, stroke, s)
 
     return img.resize((CANVAS, CANVAS), Image.Resampling.LANCZOS)
 
