@@ -1,0 +1,41 @@
+# Gradle files
+.gradle/
+build/
+app/build/
+
+# Local config
+local.properties
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea/caches/
+.idea/libraries/
+.idea/workspace.xml
+
+# Build outputs
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Signing
+*.jks
+*.keystore
+
+# NDK / Native build
+obj/
+.externalNativeBuild/
+ndkBuild/
+
+# Captures & metadata
+captures/
+output.json
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

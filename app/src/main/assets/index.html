@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retro Boxer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            background: #333;
+        }
+        body {
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            /* --- UPDATED FOR STICKY FOOTER --- */
+            justify-content: space-between; /* Pushes content and controls apart */
+            margin: 8px;
+            box-sizing: border-box;
+            min-height: calc(100vh - 16px);
+        }
+        /* New wrapper for all content except the controls */
+        #main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            background: #6495ED;
+            border: 2px solid #ddd;
+            max-width: 100%; /* The canvas will now shrink to fit smaller screens */
+        }
+        .hud { text-align: center; width: 100%; max-width: 600px; }
+        .health-bar-container { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .health-bar { width: 48%; height: 20px; background: #555; border: 1px solid #fff; }
+        .health-fill { height: 100%; background: #0f0; } /* Removed transition */
+        #cpuHealthFill { background: #f00; }
+        /* ... existing styles ... */
+        #cpuHealthFill { background: #f00; }
+
+           /* START: STAMINA STYLES */
+        .stamina-bar { height: 12px; }
+        .stamina-fill { background: #00BFFF; } /* Deep Sky Blue */
+        /* END: STAMINA STYLES */
+
+        .info-row { display: flex; justify-content: space-between; }
+
+        .info-row { display: flex; justify-content: space-between; }
+        .button-row { display: flex; justify-content: center; gap: 5px; margin-top: 10px; }
+        button { padding: 10px; font-size: 16px; background: #555; color: white; border: 1px solid #fff; border-radius: 5px; cursor: pointer; }
+        .controls { margin-bottom: 8px; } /* Add a little space at the very bottom */
+        #gameOver { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; display: none; flex-direction: column; align-items: center; }
+    </style>
+</head>
+<body>
+
+<!-- NEW WRAPPER FOR MAIN CONTENT -->
+<div id="main-content">
+    <h1>Retro Boxer</h1>
+
+    <!-- UPDATED HUD AREA -->
+    <div class="hud">
+        <div class="health-bar-container">
+            <!-- Player Health Bar (Left) -->
+            <div class="health-bar"><div class="health-fill" id="playerHealthFill"></div></div>
+            <!-- CPU Health Bar (Right) -->
+            <div class="health-bar"><div class="health-fill" id="cpuHealthFill"></div></div>
+        </div>
+        <!-- START: STAMINA BARS -->
+        <div class="health-bar-container" style="margin-top: 4px;">
+            <!-- Player Stamina Bar (Left) -->
+            <div class="health-bar stamina-bar"><div class="health-fill stamina-fill" id="playerStaminaFill"></div></div>
+            <!-- CPU Stamina Bar (Right) -->
+            <div class="health-bar stamina-bar"><div class="health-fill stamina-fill" id="cpuStaminaFill"></div></div>
+        </div>
+        <!-- END: STAMINA BARS -->
+        <div class="info-row" style="margin-top: 5px;">
+            <span id="playerLvl">Player Lvl: 1</span>
+            <span id="roundText">Round 1</span>
+            <span id="cpuLvl">CPU Lvl: 1</span>
+        </div>
+        <div>
+            <span id="roundTimer">Time: 30</span>
+        </div>
+    </div>
+
+    <!-- CANVAS (Health bars removed from around it) -->
+    <canvas id="gameCanvas" width="600" height="300" style="margin-top: 16px;"></canvas>
+
+    <!-- MOVED BUTTON ROW -->
+    <div class="button-row" style="margin-top: 16px;">
+        <button id="btn-start">Start</button>
+        <button id="btn-settings">Settings</button>
+    </div>
+</div>
+
+<!-- CONTROLS ARE NOW THE LAST DIRECT CHILD OF BODY -->
+<div class="controls">
+    <div class="button-row">
+        <button id="btn-left">Left</button>
+        <button id="btn-right">Right</button>
+        <button id="btn-punch">Punch</button>
+    </div>
+    <div class="button-row">
+        <button id="btn-block">Block</button>
+        <button id="btn-uppercut">Uppercut</button>
+        <button id="btn-hook">Hook</button>
+    </div>
+</div>
+
+<!-- This element remains outside the main flow -->
+<div id="gameOver">
+    <h2 id="gameOverText">Game Over</h2>
+    <button id="restartBtn">Restart</button>
+</div>
+
+<script src="js/boxer.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
