@@ -1,0 +1,226 @@
+[
+  {
+    "path": "ArtV2\\StageA",
+    "bytes": 6109693.0
+  },
+  {
+    "path": "ArtV2\\StageB",
+    "bytes": 2912529.0
+  },
+  {
+    "path": "ArtV2\\Manual",
+    "bytes": 1766988.0
+  },
+  {
+    "path": "ArtV2\\MANUAL_ART_HANDOFF.md",
+    "bytes": 2769
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\clean_cutouts",
+    "bytes": 376343.0
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\source\\previous_frames",
+    "bytes": 1478263.0
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\cutouts",
+    "bytes": 1743124.0
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\source\\previous_frames",
+    "bytes": 1830722.0
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\aggressive_clean.py",
+    "bytes": 4594
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\clean_guard_cutouts.py",
+    "bytes": 3214
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v10.py",
+    "bytes": 10476
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v11.py",
+    "bytes": 12251
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v12.py",
+    "bytes": 8746
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v2.py",
+    "bytes": 12983
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v3.py",
+    "bytes": 13203
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v4.py",
+    "bytes": 14293
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v5.py",
+    "bytes": 13531
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v6.py",
+    "bytes": 11314
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v7.py",
+    "bytes": 9553
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v8.py",
+    "bytes": 10732
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard_v9.py",
+    "bytes": 9869
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\export_guard.py",
+    "bytes": 11971
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\manual_bounds_extract.py",
+    "bytes": 2077
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\manual_clean_cutouts.py",
+    "bytes": 3232
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\reextract_guard_v2.py",
+    "bytes": 2792
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\reextract_guard.py",
+    "bytes": 3150
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\export_punches_v2.py",
+    "bytes": 9564
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\export_punches_v3.py",
+    "bytes": 9340
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\export_punches_v4.py",
+    "bytes": 11221
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\export_punches_v5.py",
+    "bytes": 10663
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\export_punches.py",
+    "bytes": 12872
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\extract_punches_clean_v2.py",
+    "bytes": 4563
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\extract_punches_clean.py",
+    "bytes": 4613
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\extract_punches_v2.py",
+    "bytes": 4438
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\extract_punches.py",
+    "bytes": 4306
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\generate_previews.py",
+    "bytes": 3917
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\generate_validation_report.py",
+    "bytes": 7420
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\inspect_regions.py",
+    "bytes": 890
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\manual_extract_punches.py",
+    "bytes": 2710
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\review_joins.py",
+    "bytes": 852
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\orange_variants_stage_f.zip",
+    "bytes": 6660132
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageA\\uploaded_blue_idle_stage_a.zip",
+    "bytes": 5910943
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageB\\uploaded_blue_footwork_stage_b.zip",
+    "bytes": 9737128
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\uploaded_blue_guard_stage_c_repaired.zip",
+    "bytes": 7903839
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\uploaded_blue_punches_stage_d_repaired.zip",
+    "bytes": 9572468
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageE\\BlockRecoil\\blue_block_recoil_stage_e.zip",
+    "bytes": 1614241
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageE\\DownRise\\blue_down_rise_stage_e.zip",
+    "bytes": 2297808
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageE\\HitReaction\\blue_hit_reaction_stage_e.zip",
+    "bytes": 1279344
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageE\\Knockdown\\blue_knockdown_stage_e.zip",
+    "bytes": 3590032
+  },
+  {
+    "path": "ArtV2\\Sprites\\__pycache__",
+    "bytes": 7777.0
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageB\\__pycache__",
+    "bytes": 12480.0
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageC\\__pycache__",
+    "bytes": 15588.0
+  },
+  {
+    "path": "ArtV2\\UploadedSheet\\StageD\\__pycache__",
+    "bytes": 19691.0
+  },
+  {
+    "path": "Tests\\__pycache__",
+    "bytes": 1502.0
+  },
+  {
+    "path": "ArtV2\\Sprites\\Tools\\CompileCheck\\bin",
+    "bytes": 36820.0
+  },
+  {
+    "path": "ArtV2\\Sprites\\Tools\\CompileCheck\\obj",
+    "bytes": 61505.0
+  }
+]
