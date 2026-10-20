@@ -17,16 +17,17 @@ struct FootworkMotion {
 
     /// Integrate constant-acceleration legs exactly, splitting at target speed
     /// and zero crossings so reversals do not depend on the display frame rate.
-    mutating func advance(duration: Double, direction: Double) -> [Segment] {
+    mutating func advance(duration: Double, direction: Double, speedMultiplier: Double = 1) -> [Segment] {
         guard duration > 0, duration.isFinite else { return [] }
         let input = direction > 0 ? 1.0 : (direction < 0 ? -1.0 : 0.0)
-        let speed = max(0, maximumSpeed)
+        let speed = max(0, maximumSpeed) * min(1, max(0, speedMultiplier))
         var remaining = duration
         var result: [Segment] = []
         while remaining > 1e-10 {
             let braking = velocity != 0 && (input == 0 || velocity * input < 0)
             let target = braking ? 0 : input * speed
-            let rate = max(1, braking ? deceleration : acceleration)
+            let reducingSpeed = !braking && abs(velocity) > speed
+            let rate = max(1, braking || reducingSpeed ? deceleration : acceleration)
             let difference = target - velocity
             if abs(difference) < 1e-10 {
                 result.append(Segment(duration: remaining, displacement: velocity * remaining))

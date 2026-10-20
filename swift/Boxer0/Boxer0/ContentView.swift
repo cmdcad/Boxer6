@@ -27,6 +27,7 @@ final class IdlePlayback: ObservableObject {
     @Published var vulnerabilityText = ""
     @Published var counterSummary = ""
     @Published var lastCounterText = ""
+    @Published var movementReadout = ""
     @Published var combatLogEnabled = false
     @Published var recentCombatEvents = ""
     func toggleCombatLog() { scene.setCombatLogging(!scene.combatLog.enabled); syncFromScene() }
@@ -122,6 +123,7 @@ final class IdlePlayback: ObservableObject {
         vulnerabilityText = "Vulnerable Blue: \(scene.isAttackVulnerable(.blue) ? "YES" : "NO") · Orange: \(scene.isAttackVulnerable(.orange) ? "YES" : "NO")"
         counterSummary = scene.counterSummary
         lastCounterText = scene.lastCounterText
+        movementReadout = "Blue Move: \(scene.blueMovementLabel) | Orange Move: \(scene.orangeMovementLabel)"
         combatLogEnabled = scene.combatLog.enabled
         recentCombatEvents = scene.combatLog.recent
         blueAction = scene.blueActionLabel
@@ -349,6 +351,7 @@ struct ContentView: View {
 
     private var counterReadout: some View {
         VStack(alignment: .leading, spacing: 1) {
+            Text(playback.movementReadout)
             Text(playback.vulnerabilityText)
             Text(playback.counterSummary)
             Text(playback.lastCounterText)
@@ -446,7 +449,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("9C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("10A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

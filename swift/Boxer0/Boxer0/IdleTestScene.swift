@@ -59,6 +59,17 @@ final class IdleTestScene: SKScene {
     static let bodyMaxX: CGFloat = 308
     var minimumBodyGapFactor: CGFloat = 0.8
     static let defaultMoveSpeed: CGFloat = 100
+    var guardedMovementMultiplier = 0.55
+    var blueMovementLabel: String {
+        movementLabel(guarded: blueGuard.isEffective, velocity: motion.velocity, mirrored: false)
+    }
+    var orangeMovementLabel: String {
+        movementLabel(guarded: guardPlayback.isEffective, velocity: orangeMotion.velocity, mirrored: true)
+    }
+    private func movementLabel(guarded: Bool, velocity: Double, mirrored: Bool) -> String {
+        let direction = abs(velocity) < 1e-8 ? "HOLD" : ((velocity > 0) != mirrored ? "ADVANCE" : "RETREAT")
+        return (guarded ? "GUARDED " : "") + direction
+    }
 
     private var motion = FootworkMotion()
     private var orangeMotion = FootworkMotion()
@@ -270,6 +281,12 @@ final class IdleTestScene: SKScene {
         cpuOffense.randomDraw = { attackDraw }
         defensiveAI.randomDraw = { defenseDraw }
     }
+    var testBluePosition: CGFloat { rootA.position.x }
+    var testOrangePosition: CGFloat { rootB.position.x }
+    var testBlueVelocity: Double { motion.velocity }
+    var testOrangeVelocity: Double { orangeMotion.velocity }
+    var testBlueLimits: ClosedRange<CGFloat> { movementLimits() }
+    var testOrangeLimits: ClosedRange<CGFloat> { orangeMovementLimits() }
     var testCanCPUAttack: Bool { canCPUAttack }
     var testBlueRecovery: PunchRecovery { blueRecovery }
     var testOrangeRecovery: PunchRecovery { orangeRecovery }
@@ -379,7 +396,8 @@ final class IdleTestScene: SKScene {
         guard guardPlayback.isSelected != selected else { return }
         guardPlayback.toggle()
         if selected {
-            stopCPUFootwork()
+            cpuDistance.reset()
+            setOrangeLocomotion(.idle)
             cpuOffense.cancelPreparation()
         }
         // Releasing guard ends protection immediately; an existing block recoil
@@ -649,9 +667,17 @@ final class IdleTestScene: SKScene {
 
     /// Production update entry point shared with deterministic XCTest drivers.
     /// Large intervals are rejected just as they are by the render-loop adapter.
-    func advanceSimulation(by dt: Double) {
+    func advanceSimulation(by dt: Double, stepping: Bool = false) {
         guard boxerA != nil, boxerB != nil, dt.isFinite, dt >= 0, dt <= 0.25 else { return }
-        guard isPlaying, hasFocus else { return }
+        guard (isPlaying || stepping), hasFocus else { return }
+        // Resolve geometry at the marker, before movement in the rest of a tick.
+        let marker = min(punch.timeUntilContact ?? .infinity, orangePunch.timeUntilContact ?? .infinity)
+        if marker > 1e-9 && marker < dt - 1e-9 {
+            advanceSimulation(by: marker, stepping: stepping)
+            advanceSimulation(by: dt - marker, stepping: stepping)
+            return
+        }
+        let blueGuardWasRaising = blueGuard.isSelected && !blueGuard.isEffective
         simulationTime += dt
         advancePhysicalRecovery(dt)
         advanceBlueRecovery(dt)
@@ -682,9 +708,18 @@ final class IdleTestScene: SKScene {
             applyFrames(); publishIfNeeded()
             return
         }
-        if blueGuard.isEffective { motion.stop() }
-        let direction = blueGuard.isSelected ? 0.0 : Double(movementDirection ?? 0)
-        let segments = motion.advance(duration: dt, direction: direction)
+        advanceBlueFootwork(dt, guardEntry: blueGuardWasRaising)
+        advanceActiveAttacks(dt)
+
+        applyFrames()
+        publishIfNeeded()
+    }
+
+    private func advanceBlueFootwork(_ dt: Double, guardEntry: Bool) {
+        let enteringGuard = guardEntry || (blueGuard.isSelected && !blueGuard.isEffective)
+        let direction = enteringGuard ? 0.0 : Double(movementDirection ?? 0)
+        let segments = motion.advance(duration: dt, direction: direction,
+            speedMultiplier: blueGuard.isEffective ? guardedMovementMultiplier : 1)
         for segment in segments {
             let oldX = rootA.position.x
             rootA.position.x += CGFloat(segment.displacement)
@@ -711,10 +746,6 @@ final class IdleTestScene: SKScene {
         if motion.velocity == 0 { settleIdle() }
         blueXFraction = rootA.position.x / max(size.width, 1)
         originA.position = rootA.position
-        advanceActiveAttacks(dt)
-
-        applyFrames()
-        publishIfNeeded()
     }
 
     private var lastPublishedFrame = -1
@@ -723,6 +754,7 @@ final class IdleTestScene: SKScene {
     private var lastPublishedVelocity: Double = .nan
     private var lastPublishedOrangeFrame = -1
     private var lastPublishedOrangeClip: DefenderClip?
+    private var lastPublishedMovement = ""
     private var lastPublishedActions = ""
     private var lastPublishedBlueGuard = ""
     private var lastPublishedBlueFX = ""
@@ -739,6 +771,7 @@ final class IdleTestScene: SKScene {
             || abs(motion.velocity - lastPublishedVelocity) >= 1
             || orangeFrameIndex != lastPublishedOrangeFrame
             || orangeClip != lastPublishedOrangeClip
+            || blueMovementLabel + orangeMovementLabel != lastPublishedMovement
             || blueActionLabel + orangeActionLabel != lastPublishedActions
             || blueGuardStatus != lastPublishedBlueGuard
             || blueBlockFeedbackLabel != lastPublishedBlueFX
@@ -750,6 +783,7 @@ final class IdleTestScene: SKScene {
             lastPublishedVelocity = motion.velocity
             lastPublishedOrangeFrame = orangeFrameIndex
             lastPublishedOrangeClip = orangeClip
+            lastPublishedMovement = blueMovementLabel + orangeMovementLabel
             lastPublishedActions = blueActionLabel + orangeActionLabel
             lastPublishedBlueGuard = blueGuardStatus
             lastPublishedBlueFX = blueBlockFeedbackLabel
@@ -761,8 +795,6 @@ final class IdleTestScene: SKScene {
 
     func togglePlayback() {
         isPlaying.toggle()
-        clearHeldInput()
-        motion.stop()
         lastTime = 0
         if isPlaying {
             if !punch.isActive { settleIdle() }
@@ -788,23 +820,9 @@ final class IdleTestScene: SKScene {
 
     func stepFrame() {
         isPlaying = false
-        clearHeldInput(); motion.stop(); lastTime = 0
-        let effectStep = simulationStepDuration
-        simulationTime += effectStep
-        advancePhysicalRecovery(effectStep)
-        advanceBlueRecovery(effectStep)
-        advanceBlueDefense(effectStep)
-        advanceCPUOffense(effectStep)
-        advanceBlockFeedback(effectStep)
-        // Every action receives the same simulation duration; step does not
-        // silently advance a50ms Jab while only40ms elapses for guard/recovery.
-        advanceOrange(effectStep)
-        if !punch.isActive && !blueVisualBusy && blueCombatState == .standing && !blueRecovery.isRecovering {
-            animateBoxer(&blueAccumulator, frame: &frameIndex, clip: activeClip,
-                         speed: playbackSpeed.rawValue, dt: effectStep)
-        }
-        advanceActiveAttacks(effectStep)
-        applyFrames(); onPlaybackChange?()
+        lastTime = 0
+        advanceSimulation(by: simulationStepDuration, stepping: true)
+        onPlaybackChange?()
     }
 
     func setSpeed(_ speed: IdlePlaybackSpeed) {
@@ -951,6 +969,7 @@ final class IdleTestScene: SKScene {
                 if blueRecoveryAssetsAvailable { blueReaction.receive(.hit, from: event.kind) }
             }
         } else if event.result == .block {
+            if event.defenderID == .blue { motion.stop() } else { stopCPUFootwork() }
             if event.defenderID == .orange && blockRecoilAssetsAvailable { blockFeedback.receive(event) }
             else if event.defenderID == .blue && playerGuardAssetsAvailable { blueBlockFeedback.receive(event) }
         }
@@ -1102,12 +1121,13 @@ final class IdleTestScene: SKScene {
             let wasEffective = guardPlayback.isEffective
             guardPlayback.advance(dt)
             if wasEffective != guardPlayback.isEffective { onPlaybackChange?() }
+            advanceCPUFootwork(dt, guardEntry: !wasEffective)
         } else if orangeCombatState == .standing {
             advanceCPUFootwork(dt)
         }
     }
 
-    private func advanceCPUFootwork(_ dt: Double) {
+    private func advanceCPUFootwork(_ dt: Double, guardEntry: Bool = false) {
         guard cpuEnabled, health.canExchangePunches, advanceB.count == 6, retreatB.count == 6 else {
             stopCPUFootwork()
             animateBoxer(&orangeAccumulator, frame: &orangeFrame, clip: .idle,
@@ -1125,9 +1145,10 @@ final class IdleTestScene: SKScene {
         cpuDistance.advance(dt, separation: Double(abs(rootB.position.x-rootA.position.x)),
                             reach: max(1, reach), minimum: max(0, minimum))
         orangeMotion.maximumSpeed = cpuDistance.speed
-        let direction = cpuOffense.state == .preparing ? 0.0
+        let direction = guardEntry || cpuOffense.state == .preparing ? 0.0
             : (cpuDistance.intent == .advance ? -1.0 : (cpuDistance.intent == .retreat ? 1.0 : 0))
-        for segment in orangeMotion.advance(duration: dt, direction: direction) {
+        for segment in orangeMotion.advance(duration: dt, direction: direction,
+            speedMultiplier: guardPlayback.isEffective ? guardedMovementMultiplier : 1) {
             let old = rootB.position.x
             rootB.position.x = min(limits.upperBound, max(limits.lowerBound, old + CGFloat(segment.displacement)))
             let travel = Double(rootB.position.x-old)

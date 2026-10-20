@@ -566,3 +566,10 @@ Illustrative event format only (not an executed capture):
 0.300 blue RECOVERY_START #1 JAB
 0.420 blue RECOVERY_END #1 JAB
 ```
+
+
+## Xcode execution confirmed by user — 2026-10-19
+
+The supplied Xcode XCTest transcript reports All tests passed at 22:17:37.692: 24 tests executed, zero failures (zero unexpected), 11.456 seconds of test execution (11.479 seconds total suite elapsed). All ten test groups passed, including production scene timing/recovery, CPU decisions, contact geometry, guard, counterpunching/simultaneous contacts, damage, state priorities, statistics and pause/reset/Rise.
+
+This supersedes the earlier pending XCTest build/execution status: the suite successfully built and ran in the user's Xcode environment. The transcript does not identify the destination/device or Xcode version, so those are unspecified. Physical touch cancellation, ordinary-speed visual readability, lifecycle behavior and manual Log-menu/clipboard validation are not established by this transcript and remain separate device checks. No code fix was needed for these results.

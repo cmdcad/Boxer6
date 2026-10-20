@@ -364,10 +364,14 @@ final class PauseResetRiseTests: XCTestCase {
             XCTAssertFalse(d.scene.testBeginAttack(defender,.jab))
             if defender == .blue {
                 d.scene.setGuardHeld(true)
+                d.scene.setAdvanceHeld(true)
                 XCTAssertFalse(d.scene.guardHeld)
+                XCTAssertFalse(d.scene.advanceHeld)
                 XCTAssertTrue(d.scene.canBlueRise); d.scene.startBlueRise()
             } else { XCTAssertTrue(d.scene.canRise); d.scene.startRise() }
+            let risePosition = defender == .blue ? d.scene.testBluePosition : d.scene.testOrangePosition
             d.advance(0.79)
+            XCTAssertEqual(defender == .blue ? d.scene.testBluePosition : d.scene.testOrangePosition,risePosition)
             XCTAssertEqual(defender == .blue ? d.scene.blueHealth.current : d.scene.orangeHealth.current,0)
             d.advance(0.01)
             XCTAssertEqual(defender == .blue ? d.scene.blueHealth.current : d.scene.orangeHealth.current,100)
@@ -436,5 +440,174 @@ final class PauseResetRiseTests: XCTestCase {
         for i in 0..<500 { log.record(time:Double(i),name:"TEST",fighter:.orange) }
         XCTAssertEqual(log.events.count,log.capacity)
         XCTAssertEqual(log.events.last?.time,499)
+    }
+}
+
+final class GuardedMovementTests: XCTestCase {
+    func testConfiguredSpeedAndSmoothLimitReduction() {
+        var motion = FootworkMotion()
+        motion.advance(duration:0.3,direction:1)
+        XCTAssertEqual(motion.velocity,100,accuracy:1e-8)
+        motion.advance(duration:0.01,direction:1,speedMultiplier:0.55)
+        XCTAssertEqual(motion.velocity,91,accuracy:1e-8) // existing deceleration, no snap
+        motion.advance(duration:0.3,direction:1,speedMultiplier:0.55)
+        XCTAssertEqual(motion.velocity,55,accuracy:1e-8)
+        motion.advance(duration:0.01,direction:1)
+        XCTAssertEqual(motion.velocity,61,accuracy:1e-8)
+    }
+    func testNormalBlueSpeedUnchanged() {
+        let d = CombatDriver(distance:500)
+        d.scene.setAdvanceHeld(true); d.advance(0.3)
+        XCTAssertEqual(d.scene.testBlueVelocity,100,accuracy:1e-8)
+    }
+    func testNoEarlyProtectionOrMovementDuringEntryFromRest() {
+        let d = CombatDriver(distance:500)
+        let start = d.scene.testBluePosition
+        d.scene.setGuardHeld(true); d.scene.setAdvanceHeld(true)
+        d.advance(0.119)
+        XCTAssertFalse(d.scene.testBlueGuardEffective)
+        XCTAssertEqual(d.scene.testBluePosition,start)
+        d.advance(0.001)
+        XCTAssertTrue(d.scene.testBlueGuardEffective)
+        d.advance(0.15)
+        XCTAssertGreaterThan(d.scene.testBluePosition,start)
+        XCTAssertEqual(d.scene.testBlueVelocity,55,accuracy:1e-8)
+    }
+    func testHeldAdvanceSurvivesGuardEntryAndRelease() {
+        let d = CombatDriver(distance:500)
+        d.scene.setAdvanceHeld(true); d.advance(0.3)
+        d.scene.setGuardHeld(true); d.advance(0.3)
+        XCTAssertTrue(d.scene.advanceHeld)
+        XCTAssertEqual(d.scene.testBlueVelocity,55,accuracy:1e-8)
+        let position = d.scene.testBluePosition
+        d.scene.setGuardHeld(false)
+        XCTAssertEqual(d.scene.testBluePosition,position)
+        XCTAssertEqual(d.scene.testBlueVelocity,55,accuracy:1e-8)
+        d.advance(0.1)
+        XCTAssertEqual(d.scene.testBlueVelocity,100,accuracy:1e-8)
+    }
+    func testGuardedRetreatAndBothDirectionsHeld() {
+        let d = CombatDriver(distance:500)
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setRetreatHeld(true); d.advance(0.2)
+        XCTAssertEqual(d.scene.testBlueVelocity,-55,accuracy:1e-8)
+        d.scene.setAdvanceHeld(true); d.advance(0.1)
+        XCTAssertEqual(d.scene.testBlueVelocity,0,accuracy:1e-8)
+        XCTAssertTrue(d.scene.testBlueGuardEffective)
+    }
+    func testReleaseMovementRetainsGuard() {
+        let d = CombatDriver(distance:500)
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setAdvanceHeld(true); d.advance(0.2)
+        d.scene.setAdvanceHeld(false); d.advance(0.1)
+        XCTAssertEqual(d.scene.testBlueVelocity,0)
+        XCTAssertTrue(d.scene.testBlueGuardEffective)
+        XCTAssertEqual(d.scene.blueMovementLabel,"GUARDED HOLD")
+    }
+    func testBlueBoundariesAndMinimumSeparation() {
+        let d = CombatDriver(distance:400)
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setAdvanceHeld(true); d.advance(8)
+        XCTAssertTrue(d.scene.testBlueLimits.contains(d.scene.testBluePosition))
+        XCTAssertLessThan(d.scene.testBluePosition,d.scene.testOrangePosition)
+        d.scene.setAdvanceHeld(false); d.scene.setRetreatHeld(true); d.advance(15)
+        XCTAssertTrue(d.scene.testBlueLimits.contains(d.scene.testBluePosition))
+        XCTAssertEqual(d.scene.testBlueVelocity,0)
+    }
+    func testOrangeGuardedAdvanceUsesCPUBaseSpeed() {
+        let d = CombatDriver(distance:400)
+        d.scene.toggleCPU(); d.scene.testSetOrangeGuard(true)
+        d.advance(0.4)
+        XCTAssertTrue(d.scene.testOrangeGuardEffective)
+        XCTAssertEqual(d.scene.testOrangeVelocity,-35.75,accuracy:1e-8)
+        XCTAssertEqual(d.scene.orangeClip,.guardPose)
+        XCTAssertFalse(d.scene.testCanCPUAttack)
+    }
+    func testOrangeGuardedRetreatAndBoundaries() {
+        let d = CombatDriver(distance:175)
+        d.scene.toggleCPU(); d.scene.testSetOrangeGuard(true)
+        d.advance(0.22)
+        XCTAssertGreaterThan(d.scene.testOrangeVelocity,0)
+        XCTAssertLessThanOrEqual(d.scene.testOrangeVelocity,35.75+1e-8)
+        XCTAssertTrue(d.scene.testOrangeLimits.contains(d.scene.testOrangePosition))
+        d.advance(1)
+        XCTAssertTrue(d.scene.testOrangeLimits.contains(d.scene.testOrangePosition))
+    }
+    func testGuardedRetreatChangesContactToMiss() {
+        let d = CombatDriver(distance:200)
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setRetreatHeld(true)
+        XCTAssertTrue(d.scene.testBeginAttack(.orange,.jab))
+        d.advance(0.15)
+        XCTAssertEqual(d.scene.testOrangeTracker.latest?.result,.miss)
+        XCTAssertEqual(d.scene.blueHealth.current,100)
+    }
+    func testBlockStopsThenResumesGuardedMovementWithoutDamage() {
+        let d = CombatDriver(distance:175)
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setRetreatHeld(true)
+        XCTAssertTrue(d.scene.testBeginAttack(.orange,.jab))
+        d.advance(0.15)
+        XCTAssertEqual(d.scene.testOrangeTracker.latest?.result,.block)
+        XCTAssertEqual(d.scene.blueHealth.current,100)
+        XCTAssertEqual(d.scene.testBlueVelocity,0)
+        let stopped = d.scene.testBluePosition
+        d.advance(0.08)
+        XCTAssertEqual(d.scene.testBluePosition,stopped)
+        d.advance(0.2)
+        XCTAssertLessThan(d.scene.testBlueVelocity,0)
+        XCTAssertTrue(d.scene.testBlueGuardEffective)
+    }
+    func testRecoveryStillPreventsGuardedMovement() {
+        let d = CombatDriver(distance:500)
+        d.scene.startCross(); d.scene.setGuardHeld(true); d.scene.setAdvanceHeld(true)
+        let position = d.scene.testBluePosition
+        d.advance(0.699)
+        XCTAssertFalse(d.scene.testBlueGuardEffective)
+        XCTAssertEqual(d.scene.testBluePosition,position)
+        XCTAssertTrue(d.scene.isAttackVulnerable(.blue))
+    }
+    func testCPUOffClearsGuardedMovement() {
+        let d = CombatDriver(distance:400)
+        d.scene.toggleCPU(); d.scene.testSetOrangeGuard(true); d.advance(0.4)
+        XCTAssertLessThan(d.scene.testOrangeVelocity,0)
+        d.scene.toggleCPU()
+        let position = d.scene.testOrangePosition
+        d.advance(0.5)
+        XCTAssertEqual(d.scene.testOrangePosition,position)
+        XCTAssertEqual(d.scene.testOrangeVelocity,0)
+    }
+    func testPauseStepAndResumePreserveHeldMovement() {
+        let d = CombatDriver(distance:500)
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setAdvanceHeld(true); d.advance(0.2)
+        d.scene.togglePlayback()
+        let position = d.scene.testBluePosition
+        d.advance(1)
+        XCTAssertEqual(d.scene.testBluePosition,position)
+        d.scene.stepFrame()
+        XCTAssertGreaterThan(d.scene.testBluePosition,position)
+        let stepped = d.scene.testBluePosition
+        d.scene.togglePlayback(); d.advance(0.01)
+        XCTAssertEqual(Double(d.scene.testBluePosition-stepped),0.55,accuracy:1e-6)
+    }
+    func testResetClearsHeldGuardedMovement() {
+        let d = CombatDriver(distance:500)
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setAdvanceHeld(true); d.advance(0.2)
+        d.scene.resetHealth()
+        let position = d.scene.testBluePosition
+        d.advance(0.5)
+        XCTAssertEqual(d.scene.testBluePosition,position)
+        XCTAssertFalse(d.scene.guardHeld); XCTAssertFalse(d.scene.advanceHeld)
+    }
+    func testMultiplierIsConfigurableWithoutChangingNormalSpeed() {
+        let d = CombatDriver(distance:500)
+        d.scene.guardedMovementMultiplier = 0.4
+        d.scene.setGuardHeld(true); d.advance(0.12)
+        d.scene.setAdvanceHeld(true); d.advance(0.2)
+        XCTAssertEqual(d.scene.testBlueVelocity,40,accuracy:1e-8)
+        d.scene.setGuardHeld(false); d.advance(0.2)
+        XCTAssertEqual(d.scene.testBlueVelocity,100,accuracy:1e-8)
     }
 }

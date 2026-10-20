@@ -23,8 +23,10 @@ assert 'let eligible = guardHeld && canHoldGuard && !punch.isActive && !blueVisu
 assert ': (blueGuardEffectiveAtContact ?? blueGuard.isEffective)' in scene
 assert 'event.defenderID == .blue && playerGuardAssetsAvailable' in scene
 assert 'B\\(cpuContactTracker.blocks)' in scene
-assert 'blueGuard.isSelected ? 0.0 : Double(movementDirection ?? 0)' in scene
-assert 'if blueGuard.isEffective { motion.stop() }' in scene
+# Task 10A supersedes guard-entry braking and slower raised-guard movement; entry still brakes.
+assert 'enteringGuard ? 0.0 : Double(movementDirection ?? 0)' in scene
+assert 'speedMultiplier: blueGuard.isEffective ? guardedMovementMultiplier : 1' in scene
+assert 'if event.defenderID == .blue { motion.stop() } else { stopCPUFootwork() }' in scene
 assert 'guardInputGeneration += 1' in scene
 assert 'clearHeldInput(); clearBlueGuardInput(); motion.stop()' in scene
 assert 'blueBlockFeedback.kind == .cross ? blockCrossA : blockJabA' in scene
@@ -32,14 +34,14 @@ control=view[view.index('private var playerGuardControl'):view.index('func punch
 assert 'HoldTouchSurface(title: "Guard"' in control
 assert 'inputGeneration: playback.guardInputGeneration' in control
 assert 'playback.setGuardHeld(held)' in control and 'Button(' not in control
-assert 'Blue Guard:' in view and '9C ' in view
+assert 'Blue Guard:' in view and '10A ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0
     for c in code:
         depth+=(c=='{')-(c=='}');assert depth>=0,file
     assert depth==0,file
-print('PASS:9 alpha-identical variants, shared guard/recoil, held-touch generation, attack eligibility, defender-specific BLOCK, stationary raised guard, lifecycle cleanup, diagnostics and brace nesting')
+print('PASS:9 alpha-identical variants, shared guard/recoil, held-touch generation, attack eligibility, defender-specific BLOCK, guard-entry braking and slower raised-guard movement, lifecycle cleanup, diagnostics and brace nesting')
 compiler=shutil.which('swiftc')
 if compiler:
     with tempfile.TemporaryDirectory() as folder:
