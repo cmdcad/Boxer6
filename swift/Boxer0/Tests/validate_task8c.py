@@ -31,7 +31,7 @@ assert 'contactEvaluated' in punch and 'context?.completed = true' in contact
 assert 'blue.applyDamage(PunchDamage.amount(for: event.kind))' in contact
 assert 'orange.applyDamage(PunchDamage.amount(for: event.kind))' in contact
 assert 'cpuStartedThisTick' in scene and 'cpuOffense.disable()' in scene
-assert 'Blue Rise' in view and 'CPU Attack:' in view and '9B.1 ' in view
+assert 'Blue Rise' in view and 'CPU Attack:' in view and '9C ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

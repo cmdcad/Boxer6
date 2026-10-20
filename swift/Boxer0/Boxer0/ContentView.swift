@@ -27,6 +27,10 @@ final class IdlePlayback: ObservableObject {
     @Published var vulnerabilityText = ""
     @Published var counterSummary = ""
     @Published var lastCounterText = ""
+    @Published var combatLogEnabled = false
+    @Published var recentCombatEvents = ""
+    func toggleCombatLog() { scene.setCombatLogging(!scene.combatLog.enabled); syncFromScene() }
+    func copyCombatLog() { UIPasteboard.general.string = scene.combatLog.text }
     @Published var blueAction = "READY"
     @Published var orangeAction = "READY"
     @Published var guardHeld = false
@@ -118,6 +122,8 @@ final class IdlePlayback: ObservableObject {
         vulnerabilityText = "Vulnerable Blue: \(scene.isAttackVulnerable(.blue) ? "YES" : "NO") · Orange: \(scene.isAttackVulnerable(.orange) ? "YES" : "NO")"
         counterSummary = scene.counterSummary
         lastCounterText = scene.lastCounterText
+        combatLogEnabled = scene.combatLog.enabled
+        recentCombatEvents = scene.combatLog.recent
         blueAction = scene.blueActionLabel
         orangeAction = scene.orangeActionLabel
         guardHeld = scene.guardHeld
@@ -300,6 +306,7 @@ struct ContentView: View {
             orangeAnimationReadout
             combatReadout
             counterReadout
+            if playback.combatLogEnabled { Text(playback.recentCombatEvents).font(.system(size: 9, design: .monospaced)) }
             assetWarnings
             contactGeometryReadout
         }
@@ -439,7 +446,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("9B.1 · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("9C · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)
@@ -496,6 +503,12 @@ struct ContentView: View {
             controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
             controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
             controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
+#if DEBUG
+            Menu("Log") {
+                Button(playback.combatLogEnabled ? "Disable log" : "Enable log", action: playback.toggleCombatLog)
+                Button("Copy recent events", action: playback.copyCombatLog)
+            }
+#endif
         }
         .padding(.horizontal, 8)
         .frame(height: 54)

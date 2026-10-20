@@ -244,6 +244,7 @@ enum DefensiveAIRequest { case raise, release }
 
 /// Receives accepted punch-start identities, never random per-frame polling.
 struct DefensiveAI {
+    var randomDraw: (() -> Double)?
     var jabProfile = DefensiveAIProfile.jab
     var crossProfile = DefensiveAIProfile.cross
     var maximumGuardDuration = 1.5
@@ -280,7 +281,7 @@ struct DefensiveAI {
         guard state == .idle else { return } // earliest pending reaction wins
         randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
         let draw = Double(randomState >> 11) / 9007199254740992.0
-        guard draw < min(1, max(0, profile.chance)) else { return }
+        guard (randomDraw?() ?? draw) < min(1, max(0, profile.chance)) else { return }
         state = .reacting
         remaining = max(0, profile.reactionDelay)
         pendingHold = max(0, profile.holdDuration)

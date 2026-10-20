@@ -23,7 +23,7 @@ assert 'cpuOffense.cancelPreparation()' in scene
 assert 'if blueVisualBusy || blueCombatState == .defeated || blueRecovery.isRecovering || blueBlockFeedback.isActive' in scene
 assert 'blueBlockFeedback.isActive && playerGuardAssetsAvailable' in scene
 assert 'blockFeedback.isActive && blockRecoilAssetsAvailable' in scene
-assert 'Blue Action:' in view and 'Orange Action:' in view and '9B.1 ' in view
+assert 'Blue Action:' in view and 'Orange Action:' in view and '9C ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

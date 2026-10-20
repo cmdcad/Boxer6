@@ -5,6 +5,8 @@
 	};
 	objectVersion = 55;
 	objects = {
+		9C000000000000000000000B = {isa = PBXTargetDependency; target = 4E9E6CFD3085A68000DAD680; targetProxy = 9C000000000000000000000C; };
+		9C000000000000000000000C = {isa = PBXContainerItemProxy; containerPortal = 4E9E6CF63085A68000DAD680; proxyType = 1; remoteGlobalIDString = 4E9E6CFD3085A68000DAD680; remoteInfo = Boxer0; };
 
 /* Begin PBXBuildFile section */
 		4E9E6D023085A68100DAD680 /* Boxer0App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D013085A68100DAD680 /* Boxer0App.swift */; };
@@ -16,6 +18,7 @@
 		4E9E6D143085A90000DAD680 /* JabPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D153085A90000DAD680 /* JabPlayback.swift */; };
 		4E9E6D163085A90000DAD680 /* PunchContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D173085A90000DAD680 /* PunchContact.swift */; };
 		4E9E6D183085A90000DAD680 /* HitReactionPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */; };
+		9C0000000000000000000004 = {isa = PBXBuildFile; fileRef = 9C0000000000000000000003; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +32,8 @@
 		4E9E6D153085A90000DAD680 /* JabPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabPlayback.swift; sourceTree = "<group>"; };
 		4E9E6D173085A90000DAD680 /* PunchContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PunchContact.swift; sourceTree = "<group>"; };
 		4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HitReactionPlayback.swift; sourceTree = "<group>"; };
+		9C0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatTests.swift; sourceTree = "<group>"; };
+		9C0000000000000000000002 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = Boxer0Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +44,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9C0000000000000000000006 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -46,6 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				4E9E6D003085A68000DAD680 /* Boxer0 */,
+				9C000000000000000000000D,
 				4E9E6CFF3085A68000DAD680 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				4E9E6CFE3085A68000DAD680 /* Boxer0.app */,
+				9C0000000000000000000002,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,6 +90,7 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		9C000000000000000000000D = {isa = PBXGroup; children = (9C0000000000000000000003,); path = Boxer0Tests; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -102,6 +111,7 @@
 			productReference = 4E9E6CFE3085A68000DAD680 /* Boxer0.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9C0000000000000000000001 = {isa = PBXNativeTarget; buildConfigurationList = 9C000000000000000000000A; buildPhases = (9C0000000000000000000005, 9C0000000000000000000006, 9C0000000000000000000007,); buildRules = (); dependencies = (9C000000000000000000000B,); name = Boxer0Tests; productName = Boxer0Tests; productReference = 9C0000000000000000000002; productType = "com.apple.product-type.bundle.unit-test"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -131,6 +141,7 @@
 			projectRoot = "";
 			targets = (
 				4E9E6CFD3085A68000DAD680 /* Boxer0 */,
+				9C0000000000000000000001,
 			);
 		};
 /* End PBXProject section */
@@ -145,6 +156,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9C0000000000000000000007 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -162,6 +174,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9C0000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (9C0000000000000000000004,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -341,6 +354,8 @@
 			};
 			name = Release;
 		};
+		9C0000000000000000000008 = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Boxer0.app/Boxer0"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mikesso.Boxer0Tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 15.5; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; DEVELOPMENT_TEAM = P64L9XJWX8; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG"; SWIFT_OPTIMIZATION_LEVEL = "-Onone";}; name = Debug; };
+		9C0000000000000000000009 = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Boxer0.app/Boxer0"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.mikesso.Boxer0Tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 15.5; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; DEVELOPMENT_TEAM = P64L9XJWX8; SDKROOT = iphoneos;}; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -362,6 +377,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		9C000000000000000000000A = {isa = XCConfigurationList; buildConfigurations = (9C0000000000000000000008, 9C0000000000000000000009,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 	};
 	rootObject = 4E9E6CF63085A68000DAD680 /* Project object */;

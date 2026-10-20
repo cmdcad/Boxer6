@@ -98,6 +98,7 @@ struct AttackContext {
 
 enum CPUOffenseState: String { case ready, preparing, attacking, cooldown }
 struct CPUOffense {
+    var randomDraw: (() -> Double)?
     var decisionInterval = 0.30
     var jabWeight = 0.70
     var counterOpportunityAttackChance = 0.65
@@ -149,11 +150,11 @@ struct CPUOffense {
         if opponentVulnerable {
             randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
             let opportunityDraw = Double(randomState >> 11) / 9007199254740992.0
-            guard opportunityDraw < min(1, max(0, counterOpportunityAttackChance)) else { return nil }
+            guard (randomDraw?() ?? opportunityDraw) < min(1, max(0, counterOpportunityAttackChance)) else { return nil }
         }
         randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
         let draw = Double(randomState >> 11) / 9007199254740992.0
-        kind = !crossInRange ? .jab : (!jabInRange ? .cross : (draw < jabWeight ? .jab : .cross))
+        kind = !crossInRange ? .jab : (!jabInRange ? .cross : ((randomDraw?() ?? draw) < jabWeight ? .jab : .cross))
         state = .preparing
         remaining = kind == .jab ? jabPreparation : crossPreparation
         return nil
@@ -195,4 +196,34 @@ struct PunchRecovery {
         return true
     }
     mutating func cancel() { phase = .ready; remaining = 0 }
+}
+
+
+/// Structured bounded diagnostics. Disabled by default; never writes to stdout.
+struct CombatDiagnosticEvent {
+    let time: Double
+    let name: String
+    let fighter: FighterID
+    let attackID: Int?
+    let kind: PunchKind?
+    let detail: String
+    var line: String {
+        let attack = attackID.map { " #\($0)" } ?? ""
+        let punch = kind.map { $0 == .jab ? " JAB" : " CROSS" } ?? ""
+        return String(format: "%.3f", time) + " \(fighter) \(name)" + attack + punch + (detail.isEmpty ? "" : " " + detail)
+    }
+}
+struct CombatEventLog {
+    var enabled = false
+    let capacity = 160
+    private(set) var events: [CombatDiagnosticEvent] = []
+    mutating func record(time: Double, name: String, fighter: FighterID,
+                         attackID: Int? = nil, kind: PunchKind? = nil, detail: String = "") {
+        guard enabled else { return }
+        events.append(CombatDiagnosticEvent(time: time, name: name, fighter: fighter,
+                                           attackID: attackID, kind: kind, detail: detail))
+        if events.count > capacity { events.removeFirst(events.count-capacity) }
+    }
+    var text: String { events.map { $0.line }.joined(separator: "\n") }
+    var recent: String { events.suffix(3).map { $0.line }.joined(separator: "\n") }
 }
