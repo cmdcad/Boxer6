@@ -145,7 +145,7 @@ final class IdlePlayback: ObservableObject {
         hitCount = scene.hitCount
         missCount = scene.missCount
         canvasInfo = scene.textureCanvasInfo
-        orangeState = scene.orangeClip.rawValue
+        orangeState = scene.orangeAnimationName
         orangeProfile = scene.orangeProfileLabel
         orangeFrameIndex = scene.orangeFrameIndex
         orangeFrameCount = scene.orangeFrameCount

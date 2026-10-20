@@ -195,7 +195,7 @@ final class IdleTestScene: SKScene {
     var blueAnimationLabel: String {
         if blueKnockdown.hasStarted { return "\(blueKnockdown.clip.rawValue) \(blueKnockdown.frameIndex+1)/\(blueKnockdown.clip == .down ? 1 : 8)" }
         if blueReaction.isActive { return "hit_react \(blueReaction.frameIndex+1)/4" }
-        if blueRecovery.isRecovering { return "\(blueRecovery.kind == .jab ? "jab" : "cross") recovery pose \(blueRecovery.kind.recoveryPoseFrame+1)" }
+        if blueRecovery.isRecovering { return "\(blueRecovery.kind == .jab ? "jab" : "cross") recovery" }
         if blueGuard.isSelected { return "guard \(blueGuard.frameIndex+1)/3" }
         return "\(activeClip.rawValue) \(frameIndex+1)/\(activeClip.frameCount)"
     }
@@ -293,7 +293,15 @@ final class IdleTestScene: SKScene {
         if orangeLocomotionClip == .retreat { return .retreat }
         return .idle
     }
+    private var orangeHasDedicatedRecoveryPose: Bool {
+        orangeRecovery.isRecovering && usesDedicatedRecoveryPoses
+            && !(orangeRecovery.kind == .jab ? jabRecoveryB : crossRecoveryB).isEmpty
+    }
+    var orangeAnimationName: String {
+        orangeHasDedicatedRecoveryPose ? "\(orangeClip.rawValue)_recovery" : orangeClip.rawValue
+    }
     var orangeFrameCount: Int {
+        if orangeHasDedicatedRecoveryPose { return 1 }
         switch orangeClip {
         case .idle, .hitReact: return 4
         case .advance, .retreat, .jab: return 6
@@ -306,6 +314,7 @@ final class IdleTestScene: SKScene {
         if knockdown.hasStarted { return knockdown.frameIndex }
         if reaction.isActive { return reaction.frameIndex }
         if orangePunch.isActive { return orangePunch.frameIndex }
+        if orangeHasDedicatedRecoveryPose { return 0 }
         if orangeRecovery.isRecovering { return orangeRecovery.kind.recoveryPoseFrame }
         return guardPlayback.isSelected ? guardPlayback.frameIndex : orangeFrame
     }
@@ -409,6 +418,12 @@ final class IdleTestScene: SKScene {
     private var idleB: [SKTexture] = []
     private var advanceA: [SKTexture] = []
     private var retreatA: [SKTexture] = []
+    // Reversible presentation switch: false restores the Task 9B.1 withdrawal frames.
+    var usesDedicatedRecoveryPoses = true
+    private var jabRecoveryA: [SKTexture] = []
+    private var crossRecoveryA: [SKTexture] = []
+    private var jabRecoveryB: [SKTexture] = []
+    private var crossRecoveryB: [SKTexture] = []
     private var jabA: [SKTexture] = []
     private var crossA: [SKTexture] = []
     private var hitReactB: [SKTexture] = []
@@ -1050,6 +1065,10 @@ final class IdleTestScene: SKScene {
         // Never substitute another clip or a missing-image placeholder.
         jabA = loadPunchTextures(prefix: "jab_a", count: PunchKind.jab.frameCount)
         crossA = loadPunchTextures(prefix: "cross_a", count: PunchKind.cross.frameCount)
+        jabRecoveryA = loadPunchTextures(prefix: "jab_recovery_a", count: 1)
+        crossRecoveryA = loadPunchTextures(prefix: "cross_recovery_a", count: 1)
+        jabRecoveryB = loadPunchTextures(prefix: "jab_recovery_b", count: 1)
+        crossRecoveryB = loadPunchTextures(prefix: "cross_recovery_b", count: 1)
         jabAssetsAvailable = jabA.count == PunchKind.jab.frameCount
         crossAssetsAvailable = crossA.count == PunchKind.cross.frameCount
         hitReactB = loadPunchTextures(prefix: "hit_react_b", count: HitReactionPlayback.frameCount)
@@ -1251,7 +1270,9 @@ final class IdleTestScene: SKScene {
             boxerA.texture = textures[blueBlockFeedback.frameIndex]
         } else if blueRecovery.isRecovering {
             let textures = blueRecovery.kind == .jab ? jabA : crossA
-            boxerA.texture = textures[blueRecovery.kind.recoveryPoseFrame]
+            let dedicated = blueRecovery.kind == .jab ? jabRecoveryA : crossRecoveryA
+            boxerA.texture = usesDedicatedRecoveryPoses && !dedicated.isEmpty
+                ? dedicated[0] : textures[blueRecovery.kind.recoveryPoseFrame]
         } else if blueGuard.isSelected && playerGuardAssetsAvailable {
             boxerA.texture = guardA[blueGuard.frameIndex]
         } else { boxerA.texture = blueTextures[frameIndex % blueTextures.count] }
@@ -1271,7 +1292,9 @@ final class IdleTestScene: SKScene {
             boxerB.texture = textures[blockFeedback.frameIndex]
         } else if orangeRecovery.isRecovering {
             let textures = orangeRecovery.kind == .jab ? jabB : crossB
-            boxerB.texture = textures[orangeRecovery.kind.recoveryPoseFrame]
+            let dedicated = orangeRecovery.kind == .jab ? jabRecoveryB : crossRecoveryB
+            boxerB.texture = usesDedicatedRecoveryPoses && !dedicated.isEmpty
+                ? dedicated[0] : textures[orangeRecovery.kind.recoveryPoseFrame]
         } else if guardPlayback.isSelected && guardAssetsAvailable {
             boxerB.texture = guardB[guardPlayback.frameIndex]
         } else if orangeLocomotionClip == .advance && !advanceB.isEmpty {

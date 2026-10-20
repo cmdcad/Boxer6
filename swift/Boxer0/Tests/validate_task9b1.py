@@ -21,7 +21,7 @@ for color in 'ab':
 for physical, sprite, guard, reaction in [('blueRecovery','boxerA','blueGuard','blueReaction'), ('orangeRecovery','boxerB','guardPlayback','reaction')]:
     branch = render.index(f'else if {physical}.isRecovering')
     assert render.index(f'{reaction}.isActive') < branch < render.index(f'else if {guard}.isSelected')
-    assert f'{sprite}.texture = textures[{physical}.kind.recoveryPoseFrame]' in render
+    assert f'? dedicated[0] : textures[{physical}.kind.recoveryPoseFrame]' in render
     assert f'return {physical}.diagnosticLabel' in scene
 assert 'ceil(remaining * 1000' in punch
 assert 'blueActionLabel + orangeActionLabel != lastPublishedActions' in scene

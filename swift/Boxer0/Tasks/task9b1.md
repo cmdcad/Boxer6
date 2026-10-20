@@ -257,3 +257,14 @@ Asset review: inspected Jab and Cross contact sheets. Jab withdrawal has the lea
 Validation: python Tests/validate_task9b1.py passes source/asset checks plus the existing 9A, 9B, 8C and 8D validators. Tests/RecoveryChecks.swift adds checks for selected non-contact withdrawal indices, initial/stepped countdown, side-effect-free paused reads and reset. Executable Swift checks were skipped because swiftc/Xcode are unavailable on this Windows host. No simulator/iPhone validation claimed.
 
 Remaining validation: on iPhone at ordinary speed, confirm both colors' 120/220 ms pose holds, pause/step countdown, HIT/defeat overrides, held Guard and movement after recovery, Reset/Rise cleanup and extended exchanges. Reused frames are static holds. The existing punch ends in guard before switching back to withdrawal; this can produce a visible pose transition. Its naturalness and readability require device review. Dedicated jab_recovery/cross_recovery artwork is not currently required for Stage A; if that transition proves objectionable, request the four purpose-built poses as Stage B before creating them.
+
+
+## Approved Stage B trial: dedicated recovery sprites
+
+User approved creating and trying four dedicated recovery sprites, with the option to revert. Added jab_recovery_a_0, cross_recovery_a_0, jab_recovery_b_0, cross_recovery_b_0 as PNG/SVG sources and imagesets. Generator: IdleAnimation/generate_recovery.py. Comparison preview: IdleAnimation/preview/recovery_contact_sheet.png.
+
+The dedicated Jab has a forward lead shoulder with bent/retracting arm. Cross holds 65% projected torso turn, a bent withdrawing rear arm and protective lead glove. Existing rig segment lengths are validated. Both face right, keep the established root/canvas and retain lower-body silhouette and feet. Orange uses the established palette-variant method with identical alpha to blue.
+
+IdleTestScene loads the four optional textures. Existing recovery state selects them, with automatic fallback to the original withdrawal frames if a dedicated texture is missing. Revert by setting usesDedicatedRecoveryPoses = false in IdleTestScene.swift; all original artwork remains intact. ContentView's orange frame diagnostics now identify the single dedicated recovery pose as 1/1. Build label remains 9B.1. No combat clock, contact geometry, damage, recovery duration or AI configuration changed.
+
+Validation: python Tests/validate_recovery_assets.py and python Tests/validate_task9b1.py pass. Inspected comparison sheet. Source/asset regressions pass; Swift compilation and iPhone playback are unverified because Xcode is unavailable here. Confirm ordinary-speed pose readability and transitions on device before marking visual acceptance validated. These remain static holds after the existing final punch frame; no interpolation or extra transition time was added.
