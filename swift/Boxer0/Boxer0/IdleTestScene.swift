@@ -95,15 +95,27 @@ final class IdleTestScene: SKScene {
     var blueActionLabel: String {
         if blueVisualBusy { return blueKnockdown.hasStarted ? blueKnockdown.clip.rawValue.uppercased() : "HIT REACTION" }
         if blueBlockFeedback.isActive { return "BLOCK REACTION" }
-        if blueRecovery.phase != .ready { return blueRecovery.label }
-        return blueGuard.isSelected ? "GUARD" : "READY"
+        if blueRecovery.phase != .ready { return blueRecovery.diagnosticLabel }
+        if blueGuard.isSelected { return "GUARD \(blueGuardStatus)" }
+        if !hasFocus { return "INACTIVE" }
+        if !isPlaying { return "PAUSED" }
+        if !health.canExchangePunches { return "OPPONENT DOWN" }
+        if guardHeld { return "GUARD PENDING" }
+        return canStartJab || canStartCross ? "READY" : "UNAVAILABLE"
     }
     var orangeActionLabel: String {
         if knockdown.hasStarted { return knockdown.clip.rawValue.uppercased() }
         if reaction.isActive { return "HIT REACTION" }
         if blockFeedback.isActive { return "BLOCK REACTION" }
-        if orangeRecovery.phase != .ready { return orangeRecovery.label }
-        return guardPlayback.isSelected ? "GUARD" : "READY"
+        if orangeRecovery.phase != .ready { return orangeRecovery.diagnosticLabel }
+        if guardPlayback.isSelected { return "GUARD \(guardPlayback.status)" }
+        if !hasFocus { return "INACTIVE" }
+        if !isPlaying { return "PAUSED" }
+        if !health.canExchangePunches { return "OPPONENT DOWN" }
+        if cpuEnabled && cpuOffense.state != .ready { return cpuOffense.label }
+        if cpuEnabled && defensiveAI.state != .idle { return defensiveAI.label }
+        if cpuEnabled && !canCPUAttack { return "UNAVAILABLE" }
+        return cpuEnabled ? "READY" : "CPU OFF"
     }
     private func advancePhysicalRecovery(_ dt: Double) {
         let blueReady = blueRecovery.advance(dt)
@@ -183,6 +195,7 @@ final class IdleTestScene: SKScene {
     var blueAnimationLabel: String {
         if blueKnockdown.hasStarted { return "\(blueKnockdown.clip.rawValue) \(blueKnockdown.frameIndex+1)/\(blueKnockdown.clip == .down ? 1 : 8)" }
         if blueReaction.isActive { return "hit_react \(blueReaction.frameIndex+1)/4" }
+        if blueRecovery.isRecovering { return "\(blueRecovery.kind == .jab ? "jab" : "cross") recovery pose \(blueRecovery.kind.recoveryPoseFrame+1)" }
         if blueGuard.isSelected { return "guard \(blueGuard.frameIndex+1)/3" }
         return "\(activeClip.rawValue) \(frameIndex+1)/\(activeClip.frameCount)"
     }
@@ -274,6 +287,7 @@ final class IdleTestScene: SKScene {
         if knockdown.hasStarted { return knockdown.clip }
         if reaction.isActive { return reaction.clip }
         if orangePunch.isActive { return orangePunch.kind == .jab ? .jab : .cross }
+        if orangeRecovery.isRecovering { return orangeRecovery.kind == .jab ? .jab : .cross }
         if guardPlayback.isSelected { return .guardPose }
         if orangeLocomotionClip == .advance { return .advance }
         if orangeLocomotionClip == .retreat { return .retreat }
@@ -292,6 +306,7 @@ final class IdleTestScene: SKScene {
         if knockdown.hasStarted { return knockdown.frameIndex }
         if reaction.isActive { return reaction.frameIndex }
         if orangePunch.isActive { return orangePunch.frameIndex }
+        if orangeRecovery.isRecovering { return orangeRecovery.kind.recoveryPoseFrame }
         return guardPlayback.isSelected ? guardPlayback.frameIndex : orangeFrame
     }
     private var contactTracker = PunchContactTracker()
@@ -1234,6 +1249,9 @@ final class IdleTestScene: SKScene {
         } else if blueBlockFeedback.isActive && playerGuardAssetsAvailable {
             let textures = blueBlockFeedback.kind == .cross ? blockCrossA : blockJabA
             boxerA.texture = textures[blueBlockFeedback.frameIndex]
+        } else if blueRecovery.isRecovering {
+            let textures = blueRecovery.kind == .jab ? jabA : crossA
+            boxerA.texture = textures[blueRecovery.kind.recoveryPoseFrame]
         } else if blueGuard.isSelected && playerGuardAssetsAvailable {
             boxerA.texture = guardA[blueGuard.frameIndex]
         } else { boxerA.texture = blueTextures[frameIndex % blueTextures.count] }
@@ -1251,6 +1269,9 @@ final class IdleTestScene: SKScene {
         } else if blockFeedback.isActive && blockRecoilAssetsAvailable {
             let textures = blockFeedback.kind == .cross ? blockCrossB : blockJabB
             boxerB.texture = textures[blockFeedback.frameIndex]
+        } else if orangeRecovery.isRecovering {
+            let textures = orangeRecovery.kind == .jab ? jabB : crossB
+            boxerB.texture = textures[orangeRecovery.kind.recoveryPoseFrame]
         } else if guardPlayback.isSelected && guardAssetsAvailable {
             boxerB.texture = guardB[guardPlayback.frameIndex]
         } else if orangeLocomotionClip == .advance && !advanceB.isEmpty {

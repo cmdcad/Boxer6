@@ -23,7 +23,7 @@ assert scheduler.count('deferImpact: true')==2 and scheduler.count('simultaneous
 assert 'else if blueTime <= orangeTime' in scheduler
 assert 'orangeEvent.contact && orangePunch.isActive' in scheduler
 assert 'blueEvent.contact && punch.isActive' in scheduler
-assert 'Blue' in view and 'playback.counterSummary' in view and '9B ' in view
+assert 'Blue' in view and 'playback.counterSummary' in view and '9B.1 ' in view
 assert 'Timer' not in scheduler and 'DispatchQueue' not in scheduler
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))

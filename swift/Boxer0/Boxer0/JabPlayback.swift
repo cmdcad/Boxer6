@@ -8,6 +8,8 @@ enum PunchKind {
     var frameDuration: Double { self == .jab ? 0.05 : 0.06 }
     var contactFrame: Int { self == .jab ? 3 : 4 }
     var duration: Double { Double(frameCount) * frameDuration }
+    // Existing withdrawal artwork, zero-based. Presentation only.
+    var recoveryPoseFrame: Int { self == .jab ? 4 : 5 }
 }
 
 /// Shared one-shot clock; kept in the existing project source file.
@@ -174,6 +176,9 @@ struct PunchRecovery {
         case .attacking: return kind == .jab ? "JAB" : "CROSS"
         case .recovering: return kind == .jab ? "RECOVERING JAB" : "RECOVERING CROSS"
         }
+    }
+    var diagnosticLabel: String {
+        isRecovering ? "\(label) - \(Int(ceil(remaining * 1000 - 1e-7))) ms" : label
     }
     mutating func begin(_ punch: PunchKind) { kind = punch; phase = .attacking; remaining = 0 }
     mutating func completeAttack() {

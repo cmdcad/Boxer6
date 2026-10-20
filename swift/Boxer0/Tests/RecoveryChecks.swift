@@ -50,6 +50,20 @@ struct RecoveryChecks {
         tactical.disable()
         physical.advance(0.22)
         precondition(physical.phase == .ready)
+        // Presentation reads the physical clock without advancing it.
+        for kind in [PunchKind.jab, PunchKind.cross] {
+            var recovery = PunchRecovery()
+            recovery.begin(kind); recovery.completeAttack()
+            precondition(kind.recoveryPoseFrame > kind.contactFrame)
+            precondition(kind.recoveryPoseFrame < kind.frameCount - 1)
+            let before = recovery.diagnosticLabel
+            precondition(before.contains(kind == .jab ? "120 ms" : "220 ms"))
+            precondition(recovery.diagnosticLabel == before) // paused reads have no side effects
+            recovery.advance(0.04)
+            precondition(recovery.diagnosticLabel.contains(kind == .jab ? "80 ms" : "180 ms"))
+            recovery.cancel()
+            precondition(recovery.diagnosticLabel == "READY")
+        }
         var recoil = BlockFeedbackPlayback()
         let transform=SpriteCanvasTransform(rootPosition:.zero,scaleX:1,scaleY:1)
         let block=PunchContactEvent(sequence:1,kind:.jab,result:.block,center:.zero,radius:20,target:.zero,attacker:transform,defender:transform)
