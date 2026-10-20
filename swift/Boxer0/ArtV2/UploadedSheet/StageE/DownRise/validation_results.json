@@ -1,0 +1,201 @@
+{
+  "passed": true,
+  "errors": [],
+  "frames": [
+    {
+      "file": "down_a_0.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        54,
+        340,
+        460,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_0.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        54,
+        340,
+        460,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_1.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        108,
+        246,
+        400,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_2.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        142,
+        225,
+        386,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_3.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        151,
+        212,
+        362,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_4.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        164,
+        186,
+        326,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_5.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        129,
+        154,
+        365,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_6.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        165,
+        128,
+        345,
+        449
+      ]
+    },
+    {
+      "file": "rise_a_7.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "checksum": true
+      },
+      "bounds": [
+        184,
+        129,
+        329,
+        449
+      ]
+    }
+  ],
+  "timings_ms": {
+    "rise.png": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "down_rise_gameplay.gif": [
+      400,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      400
+    ]
+  },
+  "source_order": [
+    1,
+    2,
+    3,
+    5,
+    4,
+    7,
+    9,
+    "idle"
+  ],
+  "image_generation_used": false,
+  "limits": [
+    "Source artwork is low resolution and softer than approved Idle; no missing detail was generated.",
+    "Manual ground-root landmarks and source pose changes require visual review; no skeletal contact rig is claimed.",
+    "Feet may reposition naturally while rising; root remains logically fixed. This is not stationary punch/block artwork.",
+    "Not a falling/Knockdown clip; reversing Rise is not an authored fall.",
+    "No Swift, texture-catalog, XCTest, SpriteKit or iPhone execution changes."
+  ]
+}

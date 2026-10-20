@@ -1,0 +1,12 @@
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\bin\Debug\net9.0-windows\CompileCheck.deps.json
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\bin\Debug\net9.0-windows\CompileCheck.dll
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\bin\Debug\net9.0-windows\CompileCheck.pdb
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\CompileCheck.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\CompileCheck.AssemblyInfoInputs.cache
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\CompileCheck.AssemblyInfo.cs
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\CompileCheck.csproj.CoreCompileInputs.cache
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\CompileCheck.sourcelink.json
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\CompileCheck.dll
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\refint\CompileCheck.dll
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\CompileCheck.pdb
+C:\Users\oluwa\Downloads\Git\Boxer6\swift\Boxer0\ArtV2\Sprites\Tools\CompileCheck\obj\Debug\net9.0-windows\ref\CompileCheck.dll

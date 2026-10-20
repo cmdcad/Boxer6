@@ -1,0 +1,526 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "frame_count_per_clip": 6,
+  "loop_ms": 480,
+  "common_scale": 0.4055766793409379,
+  "common_offset": [
+    -2,
+    2
+  ],
+  "integrated": false,
+  "preview_root_speed": 100,
+  "preview_sprite_scale": 0.5,
+  "plant_slip_diagnostic": {
+    "advance": [
+      {
+        "support": "rear",
+        "frames": [
+          -1,
+          0,
+          1,
+          2
+        ],
+        "world_sole_positions": [
+          102.75,
+          103.5,
+          103.5,
+          103.25
+        ],
+        "range_px": 0.75
+      },
+      {
+        "support": "lead",
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "world_sole_positions": [
+          186.75,
+          186.75,
+          186.75,
+          186.75
+        ],
+        "range_px": 0.0
+      }
+    ],
+    "retreat": [
+      {
+        "support": "lead",
+        "frames": [
+          -1,
+          0,
+          1,
+          2
+        ],
+        "world_sole_positions": [
+          155.25,
+          155.0,
+          155.0,
+          154.75
+        ],
+        "range_px": 0.5
+      },
+      {
+        "support": "rear",
+        "frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "world_sole_positions": [
+          71.25,
+          71.25,
+          71.5,
+          71.25
+        ],
+        "range_px": 0.25
+      }
+    ]
+  },
+  "frames": [
+    {
+      "clip": "advance",
+      "index": 0,
+      "file": "frames/advance_a_0.png",
+      "duration_ms": 80,
+      "selected_source": "source/advance_a_0_generated.png",
+      "vertical_registration": -1,
+      "horizontal_registration": 10,
+      "support": "rear",
+      "planned_pose": {
+        "lead_dx": 0,
+        "rear_dx": 0,
+        "lead_lift": 6,
+        "rear_lift": 0,
+        "phase": "front foot begins lifting forward, rear foot bears weight"
+      },
+      "measurements": {
+        "bounds": [
+          180,
+          129,
+          376,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 207.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 436,
+          "sole_x": 321.0,
+          "ground_gap": 12
+        }
+      },
+      "sha256": "399db7c784dd5f418ead2bede9d822c7f60522b94f27c8131610db359b431c00"
+    },
+    {
+      "clip": "advance",
+      "index": 1,
+      "file": "frames/advance_a_1.png",
+      "duration_ms": 80,
+      "selected_source": "source/advance_a_1_low_swing.png",
+      "vertical_registration": 5,
+      "horizontal_registration": -2,
+      "support": "rear",
+      "planned_pose": {
+        "lead_dx": 16,
+        "rear_dx": -16,
+        "lead_lift": 12,
+        "rear_lift": 0,
+        "phase": "front foot swings forward with visible ground clearance, rear planted"
+      },
+      "measurements": {
+        "bounds": [
+          163,
+          134,
+          384,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 191.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 436,
+          "sole_x": 328.5,
+          "ground_gap": 12
+        }
+      },
+      "sha256": "ff06c0fa35b4ba7a962c54965b7ec0e662ac17c91b29d93030cfae53f546fa84"
+    },
+    {
+      "clip": "advance",
+      "index": 2,
+      "file": "frames/advance_a_2.png",
+      "duration_ms": 80,
+      "selected_source": "source/retreat_a_2_retry.png",
+      "vertical_registration": 7,
+      "horizontal_registration": 0,
+      "support": "rear",
+      "planned_pose": {
+        "lead_dx": 32,
+        "rear_dx": -32,
+        "lead_lift": 0,
+        "rear_lift": 0,
+        "phase": "front foot plants ahead, rear planted before following"
+      },
+      "measurements": {
+        "bounds": [
+          136,
+          136,
+          377,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 174.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 341.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "a6347c3a5ffdd47a9888ba0a70b87404b5b9d5b63461d2d01579fb427b92e2f9"
+    },
+    {
+      "clip": "advance",
+      "index": 3,
+      "file": "frames/advance_a_3.png",
+      "duration_ms": 80,
+      "selected_source": "source/advance_a_3_generated.png",
+      "vertical_registration": 0,
+      "horizontal_registration": 11,
+      "support": "lead",
+      "planned_pose": {
+        "lead_dx": 16,
+        "rear_dx": -16,
+        "lead_lift": 0,
+        "rear_lift": 6,
+        "phase": "rear foot lifts to follow, front foot bears weight"
+      },
+      "measurements": {
+        "bounds": [
+          171,
+          130,
+          358,
+          449
+        ],
+        "rear": {
+          "sole_y": 441,
+          "sole_x": 202.5,
+          "ground_gap": 7
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 325.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "5d6963cb7f992d3382ea7e976d8b4b46f596bf27555b00ff7fc0d37ada3972c2"
+    },
+    {
+      "clip": "advance",
+      "index": 4,
+      "file": "frames/advance_a_4.png",
+      "duration_ms": 80,
+      "selected_source": "source/advance_a_4_retry.png",
+      "vertical_registration": 0,
+      "horizontal_registration": -2,
+      "support": "lead",
+      "planned_pose": {
+        "lead_dx": 0,
+        "rear_dx": 0,
+        "lead_lift": 0,
+        "rear_lift": 12,
+        "phase": "rear foot swings forward, front foot planted"
+      },
+      "measurements": {
+        "bounds": [
+          172,
+          130,
+          341,
+          449
+        ],
+        "rear": {
+          "sole_y": 439,
+          "sole_x": 205.5,
+          "ground_gap": 9
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 309.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "93ee1d151c6489846ca38366a53128f28f29c50824e82511c4f7b63437c75922"
+    },
+    {
+      "clip": "advance",
+      "index": 5,
+      "file": "frames/advance_a_5.png",
+      "duration_ms": 80,
+      "selected_source": "source/advance_a_5_retry.png",
+      "vertical_registration": 0,
+      "horizontal_registration": -1,
+      "support": "lead",
+      "planned_pose": {
+        "lead_dx": -16,
+        "rear_dx": 16,
+        "lead_lift": 0,
+        "rear_lift": 0,
+        "phase": "rear foot lands, front foot planted, preparing the next front-foot step"
+      },
+      "measurements": {
+        "bounds": [
+          198,
+          128,
+          323,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 221.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 446,
+          "sole_x": 293.5,
+          "ground_gap": 2
+        }
+      },
+      "sha256": "d8dd6966413b63b690155b9f418bd6346f96466c0d8f710a8f63d26b2d41aa6c"
+    },
+    {
+      "clip": "retreat",
+      "index": 0,
+      "file": "frames/retreat_a_0.png",
+      "duration_ms": 80,
+      "selected_source": "source/retreat_a_0_generated.png",
+      "vertical_registration": 5,
+      "horizontal_registration": 4,
+      "support": "lead",
+      "planned_pose": {
+        "lead_dx": 0,
+        "rear_dx": 0,
+        "lead_lift": 0,
+        "rear_lift": 6,
+        "phase": "rear foot begins lifting backward, front foot bears weight"
+      },
+      "measurements": {
+        "bounds": [
+          175,
+          137,
+          341,
+          449
+        ],
+        "rear": {
+          "sole_y": 438,
+          "sole_x": 208.5,
+          "ground_gap": 10
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 310.0,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "1b95c8a7dd844c592d3d4b369dd86f29b45b87b6b87b3d49ad3c7112daf98c4c"
+    },
+    {
+      "clip": "retreat",
+      "index": 1,
+      "file": "frames/retreat_a_1.png",
+      "duration_ms": 80,
+      "selected_source": "source/retreat_a_1_retry.png",
+      "vertical_registration": 10,
+      "horizontal_registration": -22,
+      "support": "lead",
+      "planned_pose": {
+        "lead_dx": 16,
+        "rear_dx": -16,
+        "lead_lift": 0,
+        "rear_lift": 12,
+        "phase": "rear foot swings backward with visible ground clearance, front planted"
+      },
+      "measurements": {
+        "bounds": [
+          121,
+          139,
+          359,
+          449
+        ],
+        "rear": {
+          "sole_y": 444,
+          "sole_x": 155.5,
+          "ground_gap": 4
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 326.0,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "348b1df28352f6e4ec8218171de1e36a44b449c32e5b60ce33ebb39f06b69a61"
+    },
+    {
+      "clip": "retreat",
+      "index": 2,
+      "file": "frames/retreat_a_2.png",
+      "duration_ms": 80,
+      "selected_source": "source/retreat_a_2_retry.png",
+      "vertical_registration": 7,
+      "horizontal_registration": 0,
+      "support": "lead",
+      "planned_pose": {
+        "lead_dx": 32,
+        "rear_dx": -32,
+        "lead_lift": 0,
+        "rear_lift": 0,
+        "phase": "rear foot plants behind, front planted before following"
+      },
+      "measurements": {
+        "bounds": [
+          136,
+          136,
+          377,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 174.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 341.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "a6347c3a5ffdd47a9888ba0a70b87404b5b9d5b63461d2d01579fb427b92e2f9"
+    },
+    {
+      "clip": "retreat",
+      "index": 3,
+      "file": "frames/retreat_a_3.png",
+      "duration_ms": 80,
+      "selected_source": "source/retreat_a_3_retry.png",
+      "vertical_registration": 1,
+      "horizontal_registration": 1,
+      "support": "rear",
+      "planned_pose": {
+        "lead_dx": 16,
+        "rear_dx": -16,
+        "lead_lift": 6,
+        "rear_lift": 0,
+        "phase": "front foot lifts back to follow, rear foot bears weight"
+      },
+      "measurements": {
+        "bounds": [
+          157,
+          130,
+          368,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 190.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 431,
+          "sole_x": 351.5,
+          "ground_gap": 17
+        }
+      },
+      "sha256": "4de899db967f384c7adc1a453bcbb3161564a1fa31b20d024d86e23df6fd7fcd"
+    },
+    {
+      "clip": "retreat",
+      "index": 4,
+      "file": "frames/retreat_a_4.png",
+      "duration_ms": 80,
+      "selected_source": "source/retreat_a_4_generated.png",
+      "vertical_registration": 1,
+      "horizontal_registration": -4,
+      "support": "rear",
+      "planned_pose": {
+        "lead_dx": 0,
+        "rear_dx": 0,
+        "lead_lift": 12,
+        "rear_lift": 0,
+        "phase": "front foot swings backward, rear foot planted"
+      },
+      "measurements": {
+        "bounds": [
+          172,
+          130,
+          327,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 207.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 440,
+          "sole_x": 315.5,
+          "ground_gap": 8
+        }
+      },
+      "sha256": "1778c17a82dc86fdeacbfa78cc31aa1f41d8d0930c37aa513b4f3673174e303d"
+    },
+    {
+      "clip": "retreat",
+      "index": 5,
+      "file": "frames/retreat_a_5.png",
+      "duration_ms": 80,
+      "selected_source": "source/advance_a_5_retry.png",
+      "vertical_registration": 0,
+      "horizontal_registration": 0,
+      "support": "rear",
+      "planned_pose": {
+        "lead_dx": -16,
+        "rear_dx": 16,
+        "lead_lift": 0,
+        "rear_lift": 0,
+        "phase": "front foot lands, rear foot planted, preparing the next rear-foot step"
+      },
+      "measurements": {
+        "bounds": [
+          199,
+          128,
+          324,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 222.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 446,
+          "sole_x": 294.5,
+          "ground_gap": 2
+        }
+      },
+      "sha256": "6f619328fdaaad56ca7d4a591f8ec490ef0cb36f608238a8b18a957e53f775e2"
+    }
+  ]
+}

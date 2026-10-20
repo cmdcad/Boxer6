@@ -1,0 +1,125 @@
+{
+  "passed": true,
+  "errors": [],
+  "frames": [
+    {
+      "file": "hit_react_a_0.png",
+      "checks": {
+        "rgba512": true,
+        "alpha_range": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "fixed_legs_and_feet": true,
+        "clear_margins": true,
+        "hash": true
+      },
+      "significant_component_sizes": [
+        25644
+      ],
+      "bounds": [
+        184,
+        126,
+        331,
+        449
+      ]
+    },
+    {
+      "file": "hit_react_a_1.png",
+      "checks": {
+        "rgba512": true,
+        "alpha_range": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "fixed_legs_and_feet": true,
+        "clear_margins": true,
+        "hash": true
+      },
+      "significant_component_sizes": [
+        25076
+      ],
+      "bounds": [
+        166,
+        134,
+        329,
+        449
+      ]
+    },
+    {
+      "file": "hit_react_a_2.png",
+      "checks": {
+        "rgba512": true,
+        "alpha_range": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "fixed_legs_and_feet": true,
+        "clear_margins": true,
+        "hash": true
+      },
+      "significant_component_sizes": [
+        25164
+      ],
+      "bounds": [
+        179,
+        135,
+        329,
+        449
+      ]
+    },
+    {
+      "file": "hit_react_a_3.png",
+      "checks": {
+        "rgba512": true,
+        "alpha_range": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "fixed_legs_and_feet": true,
+        "clear_margins": true,
+        "hash": true
+      },
+      "significant_component_sizes": [
+        26315
+      ],
+      "bounds": [
+        184,
+        121,
+        336,
+        449
+      ]
+    }
+  ],
+  "timings_ms": {
+    "hit_reaction.png": [
+      60.0,
+      60.0,
+      60.0,
+      60.0
+    ],
+    "hit_reaction_to_idle.png": [
+      60.0,
+      60.0,
+      60.0,
+      60.0,
+      400.0
+    ],
+    "hit_reaction_gameplay.gif": [
+      60,
+      60,
+      60,
+      60,
+      400
+    ]
+  },
+  "source_order": [
+    2,
+    4,
+    3,
+    1
+  ],
+  "image_generation_used": false,
+  "limits": [
+    "Supplied low-resolution cutouts have hard/cropped source edges; no missing contour is invented.",
+    "Fixed lower body intentionally omits the source leg poses to avoid cropped boots/sliding.",
+    "Source shading/style and waist joins need review against approved Idle.",
+    "No SpriteKit, XCTest or iPhone execution."
+  ]
+}

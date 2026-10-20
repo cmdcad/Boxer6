@@ -1,0 +1,425 @@
+{
+  "passed": true,
+  "errors": [],
+  "frames": [
+    {
+      "file": "jab_0.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 239,
+      "significant_component_sizes": [
+        25232
+      ],
+      "bounds": [
+        184,
+        129,
+        329,
+        449
+      ]
+    },
+    {
+      "file": "jab_1.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 224,
+      "significant_component_sizes": [
+        26692
+      ],
+      "bounds": [
+        184,
+        127,
+        340,
+        449
+      ]
+    },
+    {
+      "file": "jab_2.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 225,
+      "significant_component_sizes": [
+        27838
+      ],
+      "bounds": [
+        184,
+        127,
+        342,
+        449
+      ]
+    },
+    {
+      "file": "jab_3.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 218,
+      "significant_component_sizes": [
+        28505
+      ],
+      "bounds": [
+        184,
+        125,
+        404,
+        449
+      ]
+    },
+    {
+      "file": "jab_4.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 246,
+      "significant_component_sizes": [
+        26463
+      ],
+      "bounds": [
+        184,
+        126,
+        350,
+        449
+      ]
+    },
+    {
+      "file": "jab_5.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 220,
+      "significant_component_sizes": [
+        26782
+      ],
+      "bounds": [
+        184,
+        127,
+        338,
+        449
+      ]
+    },
+    {
+      "file": "cross_0.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 239,
+      "significant_component_sizes": [
+        25232
+      ],
+      "bounds": [
+        184,
+        129,
+        329,
+        449
+      ]
+    },
+    {
+      "file": "cross_1.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 224,
+      "significant_component_sizes": [
+        28064
+      ],
+      "bounds": [
+        179,
+        128,
+        349,
+        449
+      ]
+    },
+    {
+      "file": "cross_2.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 218,
+      "significant_component_sizes": [
+        28084
+      ],
+      "bounds": [
+        166,
+        123,
+        329,
+        449
+      ]
+    },
+    {
+      "file": "cross_3.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 218,
+      "significant_component_sizes": [
+        28485
+      ],
+      "bounds": [
+        184,
+        124,
+        395,
+        449
+      ]
+    },
+    {
+      "file": "cross_4.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 223,
+      "significant_component_sizes": [
+        27576
+      ],
+      "bounds": [
+        184,
+        123,
+        407,
+        449
+      ]
+    },
+    {
+      "file": "cross_5.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 219,
+      "significant_component_sizes": [
+        27112
+      ],
+      "bounds": [
+        184,
+        122,
+        352,
+        449
+      ]
+    },
+    {
+      "file": "cross_6.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 221,
+      "significant_component_sizes": [
+        30110
+      ],
+      "bounds": [
+        184,
+        108,
+        347,
+        449
+      ]
+    },
+    {
+      "file": "cross_7.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 244,
+      "significant_component_sizes": [
+        27042
+      ],
+      "bounds": [
+        184,
+        125,
+        337,
+        449
+      ]
+    },
+    {
+      "file": "jab_recovery.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 219,
+      "significant_component_sizes": [
+        26926
+      ],
+      "bounds": [
+        184,
+        126,
+        344,
+        449
+      ]
+    },
+    {
+      "file": "cross_recovery.png",
+      "checks": {
+        "rgba_512": true,
+        "true_transparency": true,
+        "one_character": true,
+        "clear_edges": true,
+        "consistent_height": true,
+        "baseline": true,
+        "fixed_lower_body_exact": true,
+        "no_large_gray_checkerboard": true,
+        "hash": true
+      },
+      "gray_midtone_pixels": 218,
+      "significant_component_sizes": [
+        27449
+      ],
+      "bounds": [
+        184,
+        130,
+        334,
+        449
+      ]
+    }
+  ],
+  "contacts": [
+    {
+      "kind": "jab",
+      "configured_center": [
+        384.5,
+        189
+      ],
+      "detected_blue_glove_bbox_center": [
+        380.0,
+        193.5
+      ],
+      "center_distance_px": 6.363961030678928,
+      "circle_blue_coverage": 0.7380191693290735,
+      "note": "Color segmentation is a diagnostic, not artist-authored geometry."
+    },
+    {
+      "kind": "cross",
+      "configured_center": [
+        378,
+        186
+      ],
+      "detected_blue_glove_bbox_center": [
+        385.5,
+        189.5
+      ],
+      "center_distance_px": 8.276472678623424,
+      "circle_blue_coverage": 0.6214073339940536,
+      "note": "Color segmentation is a diagnostic, not artist-authored geometry."
+    }
+  ],
+  "limitations": [
+    "Visual review required for anatomy, no ghosting and motion continuity.",
+    "No live integration, Swift/XCTest or iPhone execution on Windows.",
+    "Color segmentation cannot independently establish anatomical glove centers."
+  ]
+}

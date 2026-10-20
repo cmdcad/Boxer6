@@ -1,0 +1,531 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "scale_factor": 2.05,
+  "note": "Cross includes 2 transition frames created from illustrated poses",
+  "integrated": false,
+  "clips": {
+    "jab": {
+      "frame_count": 6,
+      "frame_duration_ms": 50,
+      "total_ms": 300,
+      "contact_frame": 3,
+      "contact_ms": 150
+    },
+    "cross": {
+      "frame_count": 8,
+      "frame_duration_ms": 60,
+      "total_ms": 480,
+      "contact_frame": 4,
+      "contact_ms": 240,
+      "transition_frames": [
+        3,
+        6
+      ]
+    },
+    "jab_recovery": {
+      "frame_count": 1,
+      "duration_ms": 120
+    },
+    "cross_recovery": {
+      "frame_count": 1,
+      "duration_ms": 220
+    }
+  },
+  "frames": [
+    {
+      "clip": "jab",
+      "index": 0,
+      "file": "frames/jab_0.png",
+      "duration_ms": 50,
+      "selected_source": "source/jab_0_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 170,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "measurements": {
+        "bounds": [
+          170,
+          128,
+          342,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.5,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 298.5,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "198c88753b8bfb7a2782ca6e6afd21f6eeed50a94228cf7ab6641f152ee4f65d"
+    },
+    {
+      "clip": "jab",
+      "index": 1,
+      "file": "frames/jab_1.png",
+      "duration_ms": 50,
+      "selected_source": "source/jab_1_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 170,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "measurements": {
+        "bounds": [
+          170,
+          128,
+          342,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.5,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 298.5,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "1de163c7bb52d3f59954221e138a57ffaa6ead81ea54527398e4870b505464bb"
+    },
+    {
+      "clip": "jab",
+      "index": 2,
+      "file": "frames/jab_2.png",
+      "duration_ms": 50,
+      "selected_source": "source/jab_2_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 170,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "measurements": {
+        "bounds": [
+          170,
+          128,
+          342,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.5,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 298.5,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "e33fb1faa61b2c43734a01c5e8a177df12bc39391b2ce54ee10a864a18e7a757"
+    },
+    {
+      "clip": "jab",
+      "index": 3,
+      "file": "frames/jab_3.png",
+      "duration_ms": 50,
+      "selected_source": "source/jab_3_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 170,
+      "scale_factor": 2.05,
+      "is_contact_frame": true,
+      "measurements": {
+        "bounds": [
+          170,
+          128,
+          342,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.5,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 298.5,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "63dcb52e94b601021c71b7e12fb49227f0fabdd24d9218e7da047334855d0ea8"
+    },
+    {
+      "clip": "jab",
+      "index": 4,
+      "file": "frames/jab_4.png",
+      "duration_ms": 50,
+      "selected_source": "source/jab_4_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 170,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "measurements": {
+        "bounds": [
+          170,
+          128,
+          342,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.5,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 298.5,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "b3f6938376efb62cd8efac122c29f6c5ce92d5600c18a7122dedee2d91093538"
+    },
+    {
+      "clip": "jab",
+      "index": 5,
+      "file": "frames/jab_5.png",
+      "duration_ms": 50,
+      "selected_source": "source/jab_5_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 170,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "measurements": {
+        "bounds": [
+          170,
+          128,
+          342,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.5,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 298.5,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "7c6adbeb774ecfefe90552fa459c390000f373aad4aabe78927f5acc46b5dacc"
+    },
+    {
+      "clip": "cross",
+      "index": 0,
+      "file": "frames/cross_0.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_0_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "is_transition": false,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "f35ba31d8029bfde48efee8e39c8ef381c09dba6cd0a4960faf1a1383a6219b0"
+    },
+    {
+      "clip": "cross",
+      "index": 1,
+      "file": "frames/cross_1.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_1_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "is_transition": false,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "73e3eef90cb6b2457565fb326c634d7aa30afdb8fdc0114c72792615fd85fcbe"
+    },
+    {
+      "clip": "cross",
+      "index": 2,
+      "file": "frames/cross_2.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_2_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "is_transition": false,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "e628a5e47f81b47f177ab0ea24d0a6d133ae036d60382d1aa85c5c7ba6ba3624"
+    },
+    {
+      "clip": "cross",
+      "index": 3,
+      "file": "frames/cross_3.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_3_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "is_transition": true,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "61df2e009558e5c0025ed7adbc44ff612397ae7e1e066c8cef749c1a260f944b"
+    },
+    {
+      "clip": "cross",
+      "index": 4,
+      "file": "frames/cross_4.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_4_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": true,
+      "is_transition": false,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "11f31d1a6793efe70c114f3ab01f84fa1f766a3075ac34b420302e0496e2fedc"
+    },
+    {
+      "clip": "cross",
+      "index": 5,
+      "file": "frames/cross_5.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_5_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "is_transition": false,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "5b5e88979de35bad069a6f8b2da255a2f09f09b5912c9ee9853aca18f7047d09"
+    },
+    {
+      "clip": "cross",
+      "index": 6,
+      "file": "frames/cross_6.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_6_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "is_transition": true,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "1c359bd902cd2e2c73c3bac8cb3d3a3cecdd3b31a5d88e1a7f1f649d26b18db1"
+    },
+    {
+      "clip": "cross",
+      "index": 7,
+      "file": "frames/cross_7.png",
+      "duration_ms": 60,
+      "selected_source": "source/cross_7_base.png",
+      "vertical_registration": 128,
+      "horizontal_registration": 169,
+      "scale_factor": 2.05,
+      "is_contact_frame": false,
+      "is_transition": false,
+      "measurements": {
+        "bounds": [
+          169,
+          128,
+          343,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 212.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 447,
+          "sole_x": 299.0,
+          "ground_gap": 1
+        }
+      },
+      "sha256": "edb76f2210c09bc510a53a4d2267505f6fc552783892128934c5b1f5ef611dac"
+    },
+    {
+      "clip": "jab_recovery",
+      "index": 0,
+      "file": "frames/jab_recovery.png",
+      "duration_ms": 120,
+      "selected_source": "source/jab_recovery_base.png",
+      "vertical_registration": 151,
+      "horizontal_registration": 176,
+      "scale_factor": 2.05,
+      "measurements": {
+        "bounds": [
+          176,
+          151,
+          336,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 195.0,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 446,
+          "sole_x": 296.5,
+          "ground_gap": 2
+        }
+      },
+      "sha256": "6d47cd798bbe7439afb493d898642f61879db3c082991ff7e5d60fe30fa43de0"
+    },
+    {
+      "clip": "cross_recovery",
+      "index": 0,
+      "file": "frames/cross_recovery.png",
+      "duration_ms": 220,
+      "selected_source": "source/cross_recovery_base.png",
+      "vertical_registration": 149,
+      "horizontal_registration": 170,
+      "scale_factor": 2.05,
+      "measurements": {
+        "bounds": [
+          170,
+          149,
+          342,
+          448
+        ],
+        "rear": {
+          "sole_y": 447,
+          "sole_x": 194.5,
+          "ground_gap": 1
+        },
+        "lead": {
+          "sole_y": 446,
+          "sole_x": 306.0,
+          "ground_gap": 2
+        }
+      },
+      "sha256": "7b028f9a7f6fbbb58a2fc9f2a95a5abda95ee61287446456e01df82702db6486"
+    }
+  ]
+}

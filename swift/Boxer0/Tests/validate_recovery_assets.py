@@ -1,3 +1,4 @@
+from active_art import frame
 """Dedicated recovery artwork checks; runtime rendering remains device-tested."""
 from pathlib import Path
 from PIL import Image
@@ -9,11 +10,11 @@ for kind, reused in [('jab',4), ('cross',5)]:
     alpha = []
     for color in 'ab':
         name = f'{kind}_recovery_{color}_0'
-        image = Image.open(root/f'IdleAnimation/frames/{name}.png')
+        image = Image.open(frame(name))
         assert image.mode == 'RGBA' and image.size == (512,512)
         assert image.getpixel((0,0))[3] == 0
-        ready = Image.open(root/f'IdleAnimation/frames/{kind}_{color}_0.png').convert('RGBA')
-        old = Image.open(root/f'IdleAnimation/frames/{kind}_{color}_{reused}.png').convert('RGBA')
+        ready = Image.open(frame(f'{kind}_{color}_0')).convert('RGBA')
+        old = Image.open(frame(f'{kind}_{color}_{reused}')).convert('RGBA')
         assert image.tobytes() != ready.tobytes() and image.tobytes() != old.tobytes()
         assert image.crop((0,340,512,512)).tobytes() == ready.crop((0,340,512,512)).tobytes()
         # Silhouette and baseline of the complete lower body are preserved.

@@ -571,6 +571,10 @@ final class IdleTestScene: SKScene {
     private var riseA: [SKTexture] = []
     private var advanceB: [SKTexture] = []
     private var retreatB: [SKTexture] = []
+    private var guardedAdvanceA: [SKTexture] = []
+    private var guardedRetreatA: [SKTexture] = []
+    private var guardedAdvanceB: [SKTexture] = []
+    private var guardedRetreatB: [SKTexture] = []
     private var blockJabB: [SKTexture] = []
     private var blockCrossB: [SKTexture] = []
     private var groundLine: SKShapeNode!
@@ -1259,6 +1263,10 @@ final class IdleTestScene: SKScene {
         guardAssetsAvailable = guardB.count == GuardPlayback.frameCount
         advanceB = loadPunchTextures(prefix: "advance_b", count: 6)
         retreatB = loadPunchTextures(prefix: "retreat_b", count: 6)
+        guardedAdvanceA = loadPunchTextures(prefix: "guarded_advance_a", count: 6)
+        guardedRetreatA = loadPunchTextures(prefix: "guarded_retreat_a", count: 6)
+        guardedAdvanceB = loadPunchTextures(prefix: "guarded_advance_b", count: 6)
+        guardedRetreatB = loadPunchTextures(prefix: "guarded_retreat_b", count: 6)
         blockJabB = loadPunchTextures(prefix: "block_jab_b", count: BlockFeedbackPlayback.frameCount)
         blockCrossB = loadPunchTextures(prefix: "block_cross_b", count: BlockFeedbackPlayback.frameCount)
         blockRecoilAssetsAvailable = blockJabB.count == BlockFeedbackPlayback.frameCount
@@ -1440,7 +1448,15 @@ final class IdleTestScene: SKScene {
             boxerA.texture = usesDedicatedRecoveryPoses && !dedicated.isEmpty
                 ? dedicated[0] : textures[blueRecovery.kind.recoveryPoseFrame]
         } else if blueGuard.isSelected && playerGuardAssetsAvailable {
-            boxerA.texture = guardA[blueGuard.frameIndex]
+            // Entry and stationary guard retain their authoritative guard clock.
+            // Once raised, walking uses the existing travel-driven footwork phase.
+            if blueGuard.isEffective && activeClip == .advance && !guardedAdvanceA.isEmpty {
+                boxerA.texture = guardedAdvanceA[frameIndex % guardedAdvanceA.count]
+            } else if blueGuard.isEffective && activeClip == .retreat && !guardedRetreatA.isEmpty {
+                boxerA.texture = guardedRetreatA[frameIndex % guardedRetreatA.count]
+            } else {
+                boxerA.texture = guardA[blueGuard.frameIndex]
+            }
         } else { boxerA.texture = blueTextures[frameIndex % blueTextures.count] }
         if knockdown.clip == .knockdown && knockdownAssetsAvailable {
             boxerB.texture = knockdownB[knockdown.frameIndex]
@@ -1462,7 +1478,13 @@ final class IdleTestScene: SKScene {
             boxerB.texture = usesDedicatedRecoveryPoses && !dedicated.isEmpty
                 ? dedicated[0] : textures[orangeRecovery.kind.recoveryPoseFrame]
         } else if guardPlayback.isSelected && guardAssetsAvailable {
-            boxerB.texture = guardB[guardPlayback.frameIndex]
+            if guardPlayback.isEffective && orangeLocomotionClip == .advance && !guardedAdvanceB.isEmpty {
+                boxerB.texture = guardedAdvanceB[orangeFrame % guardedAdvanceB.count]
+            } else if guardPlayback.isEffective && orangeLocomotionClip == .retreat && !guardedRetreatB.isEmpty {
+                boxerB.texture = guardedRetreatB[orangeFrame % guardedRetreatB.count]
+            } else {
+                boxerB.texture = guardB[guardPlayback.frameIndex]
+            }
         } else if orangeLocomotionClip == .advance && !advanceB.isEmpty {
             boxerB.texture = advanceB[orangeFrame % advanceB.count]
         } else if orangeLocomotionClip == .retreat && !retreatB.isEmpty {

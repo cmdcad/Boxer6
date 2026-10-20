@@ -1,3 +1,4 @@
+from active_art import frame
 """Source/asset checks only; scene rendering requires Xcode/device validation."""
 from pathlib import Path
 from PIL import Image
@@ -11,7 +12,7 @@ render = scene[scene.index('private func applyFrames()'):scene.index('private fu
 assert 'var recoveryPoseFrame: Int { self == .jab ? 4 : 5 }' in punch
 for color in 'ab':
     for kind, index, contact in [('jab', 4, 3), ('cross', 5, 4)]:
-        images = [Image.open(root/f'IdleAnimation/frames/{kind}_{color}_{i}.png').convert('RGBA') for i in [index, 0, contact]]
+        images = [Image.open(frame(f'{kind}_{color}_{i}')).convert('RGBA') for i in [index, 0, contact]]
         pose, ready, hit = images
         assert pose.size == (512, 512)
         assert pose.tobytes() != ready.tobytes() and pose.tobytes() != hit.tobytes()

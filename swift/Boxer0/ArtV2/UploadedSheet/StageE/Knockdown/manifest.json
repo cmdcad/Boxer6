@@ -1,0 +1,166 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "frame_count": 8,
+  "duration_ms": 640,
+  "frame_duration_ms": 80,
+  "integrated": false,
+  "reconstructed_frames": [
+    3,
+    4,
+    5,
+    6
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "phase": "Standing collapse",
+      "file": "frames/knockdown_a_0.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\Knockdown\\source\\fall_start_extracted.png",
+      "method": "Extracted authored standing-collapse pose; neighbor separated by reviewed mask.",
+      "source_scale": 2.206896551724138,
+      "vertical_registration": 144,
+      "bounds": [
+        146,
+        159,
+        366,
+        449
+      ],
+      "sha256": "6333c2e96f05e7c12edbe1c6750f549075e279ce5d79c28cdebfb2baf5f71b7d"
+    },
+    {
+      "index": 1,
+      "phase": "Drop to hands and knees",
+      "file": "frames/knockdown_a_1.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\DownRise\\frames\\rise_a_2.png",
+      "method": "Reused intact kneeling configuration from supplied artwork.",
+      "source_scale": 1,
+      "vertical_registration": 0,
+      "bounds": [
+        142,
+        225,
+        386,
+        449
+      ],
+      "sha256": "38fceb6ba278d5d1ab89a28756dbe935702081f66c699bec48ebb5bb3fe18804"
+    },
+    {
+      "index": 2,
+      "phase": "Knees give way",
+      "file": "frames/knockdown_a_2.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\DownRise\\frames\\rise_a_1.png",
+      "method": "Reused intact kneeling configuration from supplied artwork.",
+      "source_scale": 1,
+      "vertical_registration": 0,
+      "bounds": [
+        108,
+        246,
+        400,
+        449
+      ],
+      "sha256": "c771f3fa4004e453f871386e13acbc8bda664d7bef8056748b4066f26c56437e"
+    },
+    {
+      "index": 3,
+      "phase": "Collapse onto forearms",
+      "file": "frames/knockdown_a_3.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\Knockdown\\source\\knockdown_a_3_reconstructed.png",
+      "method": "Built-in imagegen reconstruction of obscured/missing collapse transition.",
+      "source_scale": 1,
+      "vertical_registration": -9,
+      "bounds": [
+        63,
+        296,
+        469,
+        449
+      ],
+      "sha256": "b87b6ee3d6b3b9b7065dc2ed164691002c8e1a43ce2ed29b820b91b6776d36d6"
+    },
+    {
+      "index": 4,
+      "phase": "Fall onto side",
+      "file": "frames/knockdown_a_4.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\Knockdown\\source\\knockdown_a_4_reconstructed.png",
+      "method": "Built-in imagegen reconstruction of obscured/missing collapse transition.",
+      "source_scale": 1,
+      "vertical_registration": -4,
+      "bounds": [
+        55,
+        305,
+        465,
+        449
+      ],
+      "sha256": "c9b57a33578647a2dae99549841f7e0a992523061de5d460dd80fb99ccaae64a"
+    },
+    {
+      "index": 5,
+      "phase": "Torso lands",
+      "file": "frames/knockdown_a_5.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\Knockdown\\source\\knockdown_a_5_reconstructed.png",
+      "method": "Built-in imagegen reconstruction of obscured/missing collapse transition.",
+      "source_scale": 1,
+      "vertical_registration": 6,
+      "bounds": [
+        57,
+        344,
+        471,
+        449
+      ],
+      "sha256": "b08e342e81c4cb0b8c805dd47a9fddc76a2672bf5dac6df532b317fb3e23bac4"
+    },
+    {
+      "index": 6,
+      "phase": "Settle lower",
+      "file": "frames/knockdown_a_6.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\Knockdown\\source\\knockdown_a_6_reconstructed.png",
+      "method": "Built-in imagegen reconstruction of obscured/missing collapse transition.",
+      "source_scale": 1,
+      "vertical_registration": 3,
+      "bounds": [
+        57,
+        348,
+        468,
+        449
+      ],
+      "sha256": "baa4a207fb6912e63f65a245bb67901c089c29446036cbea36cb48e5a2579876"
+    },
+    {
+      "index": 7,
+      "phase": "Exact Down",
+      "file": "frames/knockdown_a_7.png",
+      "duration_ms": 80,
+      "source": "C:\\Users\\oluwa\\Downloads\\Git\\Boxer6\\swift\\Boxer0\\ArtV2\\UploadedSheet\\StageE\\DownRise\\frames\\down_a_0.png",
+      "method": "Exact existing prepared Down pose.",
+      "source_scale": 1,
+      "vertical_registration": 0,
+      "bounds": [
+        54,
+        340,
+        460,
+        449
+      ],
+      "sha256": "ddb8410206669c08f81e1e1bafa180695925fffdc7be0bf4b01e25f36b28fd5b"
+    }
+  ],
+  "limits": [
+    "Mixed source resolutions/shading require review for motion/visual consistency.",
+    "Generated collapse anatomy and transitions require visual inspection.",
+    "Floor registration is a pixel-space diagnostic, not a skeletal contact model.",
+    "No Swift, catalog, XCTest, SpriteKit or iPhone validation/integration performed."
+  ]
+}

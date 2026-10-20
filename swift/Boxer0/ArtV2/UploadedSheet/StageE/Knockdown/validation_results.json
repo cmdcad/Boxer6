@@ -1,0 +1,226 @@
+{
+  "passed": true,
+  "errors": [],
+  "motion_review_warnings": [],
+  "frames": [
+    {
+      "file": "knockdown_a_0.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        146,
+        159,
+        366,
+        449
+      ],
+      "significant_component_sizes": [
+        28861
+      ]
+    },
+    {
+      "file": "knockdown_a_1.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        142,
+        225,
+        386,
+        449
+      ],
+      "significant_component_sizes": [
+        32687
+      ]
+    },
+    {
+      "file": "knockdown_a_2.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        108,
+        246,
+        400,
+        449
+      ],
+      "significant_component_sizes": [
+        32036
+      ]
+    },
+    {
+      "file": "knockdown_a_3.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        63,
+        296,
+        469,
+        449
+      ],
+      "significant_component_sizes": [
+        35534
+      ]
+    },
+    {
+      "file": "knockdown_a_4.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        55,
+        305,
+        465,
+        449
+      ],
+      "significant_component_sizes": [
+        32641
+      ]
+    },
+    {
+      "file": "knockdown_a_5.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        57,
+        344,
+        471,
+        449
+      ],
+      "significant_component_sizes": [
+        26877
+      ]
+    },
+    {
+      "file": "knockdown_a_6.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        57,
+        348,
+        468,
+        449
+      ],
+      "significant_component_sizes": [
+        25447
+      ]
+    },
+    {
+      "file": "knockdown_a_7.png",
+      "checks": {
+        "rgba512": true,
+        "alpha": true,
+        "one_significant_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "no_large_checkerboard_region": true,
+        "checksum": true
+      },
+      "bounds": [
+        54,
+        340,
+        460,
+        449
+      ],
+      "significant_component_sizes": [
+        26730
+      ]
+    }
+  ],
+  "timings_ms": {
+    "knockdown.png": [
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0,
+      80.0
+    ],
+    "knockdown_gameplay.gif": [
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      600
+    ],
+    "defeat_sequence_gameplay.gif": [
+      400,
+      60,
+      60,
+      60,
+      60,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      600
+    ]
+  },
+  "reconstructed_frames": [
+    3,
+    4,
+    5,
+    6
+  ],
+  "limits": [
+    "Mixed source resolutions/shading require review for motion/visual consistency.",
+    "Generated collapse anatomy and transitions require visual inspection.",
+    "Floor registration is a pixel-space diagnostic, not a skeletal contact model.",
+    "No Swift, catalog, XCTest, SpriteKit or iPhone validation/integration performed."
+  ]
+}

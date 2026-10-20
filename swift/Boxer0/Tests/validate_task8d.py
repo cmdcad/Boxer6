@@ -1,3 +1,4 @@
+from active_art import frame
 from pathlib import Path
 import json
 import re
@@ -11,8 +12,8 @@ view=(root/'Boxer0/ContentView.swift').read_text(encoding='utf-8')
 manifest=json.loads((root/'IdleAnimation/player_guard_manifest.json').read_text())
 assert len(manifest['variants'])==9
 for item in manifest['variants']:
-    src=Image.open(root/f"IdleAnimation/frames/{item['source']}.png").convert('RGBA')
-    dst=Image.open(root/f"IdleAnimation/frames/{item['target']}.png").convert('RGBA')
+    src=Image.open(frame(item['source'])).convert('RGBA')
+    dst=Image.open(frame(item['target'])).convert('RGBA')
     assert src.getchannel('A').tobytes()==dst.getchannel('A').tobytes() and dst.size==(512,512)
     assert dst.tobytes()==Image.open(root/f"Boxer0/Assets.xcassets/{item['target']}.imageset/{item['target']}.png").tobytes()
 assert 'private var blueGuard = GuardPlayback()' in scene

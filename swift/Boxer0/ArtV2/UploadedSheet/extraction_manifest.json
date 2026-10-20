@@ -1,0 +1,646 @@
+{
+  "source": "C:\\Users\\oluwa\\Downloads\\sprites.png",
+  "integrated": false,
+  "candidates": [
+    {
+      "clip": "idle",
+      "candidate": 0,
+      "file": "cutouts/idle_0.png",
+      "source_box": [
+        6,
+        48,
+        73,
+        193
+      ],
+      "size": [
+        67,
+        145
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "idle",
+      "candidate": 1,
+      "file": "cutouts/idle_1.png",
+      "source_box": [
+        76,
+        47,
+        143,
+        194
+      ],
+      "size": [
+        67,
+        147
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "idle",
+      "candidate": 2,
+      "file": "cutouts/idle_2.png",
+      "source_box": [
+        148,
+        47,
+        223,
+        192
+      ],
+      "size": [
+        75,
+        145
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "idle",
+      "candidate": 3,
+      "file": "cutouts/idle_3.png",
+      "source_box": [
+        226,
+        45,
+        401,
+        193
+      ],
+      "size": [
+        175,
+        148
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "idle",
+      "candidate": 4,
+      "file": "cutouts/idle_4.png",
+      "source_box": [
+        402,
+        45,
+        488,
+        193
+      ],
+      "size": [
+        86,
+        148
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "advance",
+      "candidate": 0,
+      "file": "cutouts/advance_0.png",
+      "source_box": [
+        511,
+        49,
+        593,
+        193
+      ],
+      "size": [
+        82,
+        144
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "advance",
+      "candidate": 1,
+      "file": "cutouts/advance_1.png",
+      "source_box": [
+        579,
+        50,
+        748,
+        193
+      ],
+      "size": [
+        169,
+        143
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "advance",
+      "candidate": 2,
+      "file": "cutouts/advance_2.png",
+      "source_box": [
+        745,
+        48,
+        835,
+        193
+      ],
+      "size": [
+        90,
+        145
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "advance",
+      "candidate": 3,
+      "file": "cutouts/advance_3.png",
+      "source_box": [
+        829,
+        46,
+        1014,
+        192
+      ],
+      "size": [
+        185,
+        146
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "retreat",
+      "candidate": 0,
+      "file": "cutouts/retreat_0.png",
+      "source_box": [
+        1034,
+        49,
+        1113,
+        193
+      ],
+      "size": [
+        79,
+        144
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "retreat",
+      "candidate": 1,
+      "file": "cutouts/retreat_1.png",
+      "source_box": [
+        1112,
+        49,
+        1191,
+        192
+      ],
+      "size": [
+        79,
+        143
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "retreat",
+      "candidate": 2,
+      "file": "cutouts/retreat_2.png",
+      "source_box": [
+        1194,
+        47,
+        1351,
+        192
+      ],
+      "size": [
+        157,
+        145
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "retreat",
+      "candidate": 3,
+      "file": "cutouts/retreat_3.png",
+      "source_box": [
+        1350,
+        48,
+        1429,
+        192
+      ],
+      "size": [
+        79,
+        144
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "retreat",
+      "candidate": 4,
+      "file": "cutouts/retreat_4.png",
+      "source_box": [
+        1426,
+        49,
+        1523,
+        191
+      ],
+      "size": [
+        97,
+        142
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard",
+      "candidate": 0,
+      "file": "cutouts/guard_0.png",
+      "source_box": [
+        3,
+        266,
+        78,
+        416
+      ],
+      "size": [
+        75,
+        150
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard",
+      "candidate": 1,
+      "file": "cutouts/guard_1.png",
+      "source_box": [
+        81,
+        265,
+        152,
+        416
+      ],
+      "size": [
+        71,
+        151
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard",
+      "candidate": 2,
+      "file": "cutouts/guard_2.png",
+      "source_box": [
+        155,
+        265,
+        230,
+        416
+      ],
+      "size": [
+        75,
+        151
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard",
+      "candidate": 3,
+      "file": "cutouts/guard_3.png",
+      "source_box": [
+        233,
+        264,
+        318,
+        416
+      ],
+      "size": [
+        85,
+        152
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard",
+      "candidate": 4,
+      "file": "cutouts/guard_4.png",
+      "source_box": [
+        323,
+        264,
+        401,
+        416
+      ],
+      "size": [
+        78,
+        152
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard",
+      "candidate": 5,
+      "file": "cutouts/guard_5.png",
+      "source_box": [
+        403,
+        265,
+        489,
+        416
+      ],
+      "size": [
+        86,
+        151
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard_advance",
+      "candidate": 0,
+      "file": "cutouts/guard_advance_0.png",
+      "source_box": [
+        508,
+        266,
+        1001,
+        416
+      ],
+      "size": [
+        493,
+        150
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard_retreat",
+      "candidate": 0,
+      "file": "cutouts/guard_retreat_0.png",
+      "source_box": [
+        1026,
+        271,
+        1106,
+        417
+      ],
+      "size": [
+        80,
+        146
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "guard_retreat",
+      "candidate": 1,
+      "file": "cutouts/guard_retreat_1.png",
+      "source_box": [
+        1104,
+        271,
+        1516,
+        417
+      ],
+      "size": [
+        412,
+        146
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "jab",
+      "candidate": 0,
+      "file": "cutouts/jab_0.png",
+      "source_box": [
+        6,
+        492,
+        487,
+        636
+      ],
+      "size": [
+        481,
+        144
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "cross",
+      "candidate": 0,
+      "file": "cutouts/cross_0.png",
+      "source_box": [
+        510,
+        492,
+        1021,
+        638
+      ],
+      "size": [
+        511,
+        146
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "hit_react",
+      "candidate": 0,
+      "file": "cutouts/hit_react_0.png",
+      "source_box": [
+        1037,
+        495,
+        1204,
+        645
+      ],
+      "size": [
+        167,
+        150
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "hit_react",
+      "candidate": 1,
+      "file": "cutouts/hit_react_1.png",
+      "source_box": [
+        1209,
+        503,
+        1524,
+        645
+      ],
+      "size": [
+        315,
+        142
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "block",
+      "candidate": 0,
+      "file": "cutouts/block_0.png",
+      "source_box": [
+        5,
+        715,
+        92,
+        855
+      ],
+      "size": [
+        87,
+        140
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "block",
+      "candidate": 1,
+      "file": "cutouts/block_1.png",
+      "source_box": [
+        93,
+        715,
+        359,
+        855
+      ],
+      "size": [
+        266,
+        140
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "recovery",
+      "candidate": 0,
+      "file": "cutouts/recovery_0.png",
+      "source_box": [
+        386,
+        709,
+        464,
+        854
+      ],
+      "size": [
+        78,
+        145
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "recovery",
+      "candidate": 1,
+      "file": "cutouts/recovery_1.png",
+      "source_box": [
+        466,
+        709,
+        550,
+        855
+      ],
+      "size": [
+        84,
+        146
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "recovery",
+      "candidate": 2,
+      "file": "cutouts/recovery_2.png",
+      "source_box": [
+        553,
+        709,
+        718,
+        855
+      ],
+      "size": [
+        165,
+        146
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "knockdown",
+      "candidate": 0,
+      "file": "cutouts/knockdown_0.png",
+      "source_box": [
+        745,
+        727,
+        1355,
+        855
+      ],
+      "size": [
+        610,
+        128
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "knockdown",
+      "candidate": 1,
+      "file": "cutouts/knockdown_1.png",
+      "source_box": [
+        1359,
+        793,
+        1529,
+        845
+      ],
+      "size": [
+        170,
+        52
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "rise",
+      "candidate": 0,
+      "file": "cutouts/rise_0.png",
+      "source_box": [
+        11,
+        951,
+        173,
+        994
+      ],
+      "size": [
+        162,
+        43
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "rise",
+      "candidate": 1,
+      "file": "cutouts/rise_1.png",
+      "source_box": [
+        170,
+        922,
+        458,
+        999
+      ],
+      "size": [
+        288,
+        77
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "rise",
+      "candidate": 2,
+      "file": "cutouts/rise_2.png",
+      "source_box": [
+        461,
+        919,
+        542,
+        1000
+      ],
+      "size": [
+        81,
+        81
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "rise",
+      "candidate": 3,
+      "file": "cutouts/rise_3.png",
+      "source_box": [
+        549,
+        912,
+        632,
+        1000
+      ],
+      "size": [
+        83,
+        88
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "rise",
+      "candidate": 4,
+      "file": "cutouts/rise_4.png",
+      "source_box": [
+        642,
+        897,
+        714,
+        1001
+      ],
+      "size": [
+        72,
+        104
+      ],
+      "needs_visual_review": true
+    },
+    {
+      "clip": "rise",
+      "candidate": 5,
+      "file": "cutouts/rise_5.png",
+      "source_box": [
+        716,
+        897,
+        791,
+        1001
+      ],
+      "size": [
+        75,
+        104
+      ],
+      "needs_visual_review": true
+    }
+  ]
+}

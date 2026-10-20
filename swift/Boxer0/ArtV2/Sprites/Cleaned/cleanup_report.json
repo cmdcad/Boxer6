@@ -1,0 +1,69 @@
+{
+  "method": "estimated outer-edge matte reconstruction",
+  "limitations": "Binary alpha and baked checkerboard cannot be perfectly inverted. Inspect before production.",
+  "frames": [
+    {
+      "file": "sprite_frame_01.png",
+      "fringe_pixels_reconstructed": 159,
+      "detached_speck_pixels_removed": 0,
+      "partial_alpha_pixels": 133,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_02.png",
+      "fringe_pixels_reconstructed": 141,
+      "detached_speck_pixels_removed": 12,
+      "partial_alpha_pixels": 115,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_03.png",
+      "fringe_pixels_reconstructed": 151,
+      "detached_speck_pixels_removed": 0,
+      "partial_alpha_pixels": 126,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_04.png",
+      "fringe_pixels_reconstructed": 134,
+      "detached_speck_pixels_removed": 5,
+      "partial_alpha_pixels": 97,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_05.png",
+      "fringe_pixels_reconstructed": 144,
+      "detached_speck_pixels_removed": 17,
+      "partial_alpha_pixels": 114,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_06.png",
+      "fringe_pixels_reconstructed": 133,
+      "detached_speck_pixels_removed": 10,
+      "partial_alpha_pixels": 98,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_07.png",
+      "fringe_pixels_reconstructed": 178,
+      "detached_speck_pixels_removed": 1,
+      "partial_alpha_pixels": 157,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_08.png",
+      "fringe_pixels_reconstructed": 176,
+      "detached_speck_pixels_removed": 0,
+      "partial_alpha_pixels": 140,
+      "interior_pixels_unchanged": true
+    },
+    {
+      "file": "sprite_frame_09.png",
+      "fringe_pixels_reconstructed": 151,
+      "detached_speck_pixels_removed": 11,
+      "partial_alpha_pixels": 123,
+      "interior_pixels_unchanged": true
+    }
+  ]
+}

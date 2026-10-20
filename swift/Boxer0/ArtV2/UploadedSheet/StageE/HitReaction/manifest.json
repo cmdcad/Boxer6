@@ -1,0 +1,204 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "frame_count": 4,
+  "duration_ms": 240,
+  "frame_duration_ms": 60,
+  "source_order": [
+    2,
+    4,
+    3,
+    1
+  ],
+  "common_scale": 1.48,
+  "integrated": false,
+  "generated_artwork": false,
+  "frames": [
+    {
+      "index": 0,
+      "phase": "initial recoil",
+      "source": "ArtV2\\latest\\sprite_frame_02.png",
+      "source_size": [
+        110,
+        228
+      ],
+      "source_belt_center": [
+        51,
+        95
+      ],
+      "common_scale": 1.48,
+      "offset": [
+        169,
+        110
+      ],
+      "duration_ms": 60,
+      "source_waist_mask_line": [
+        [
+          32,
+          99
+        ],
+        [
+          70,
+          91
+        ]
+      ],
+      "source_arm_preserve_rect": [
+        70,
+        50,
+        109,
+        95
+      ],
+      "cleanup": {
+        "fringe_pixels_reconstructed": 182,
+        "detached_speck_pixels_removed": 0,
+        "partial_alpha_pixels": 181,
+        "interior_pixels_unchanged": true
+      },
+      "additional_detached_mark_pixels_removed": 143,
+      "file": "frames/hit_react_a_0.png",
+      "sha256": "11e0fb120169f01bad895288d9af9f87cc1f73c58e4339f3c253e9a8cf126f1b"
+    },
+    {
+      "index": 1,
+      "phase": "peak backward recoil",
+      "source": "ArtV2\\latest\\sprite_frame_04.png",
+      "source_size": [
+        118,
+        216
+      ],
+      "source_belt_center": [
+        61.5,
+        89
+      ],
+      "common_scale": 1.48,
+      "offset": [
+        153,
+        118
+      ],
+      "duration_ms": 60,
+      "source_waist_mask_line": [
+        [
+          41,
+          98
+        ],
+        [
+          82,
+          80
+        ]
+      ],
+      "source_arm_preserve_rect": [
+        75,
+        40,
+        108,
+        90
+      ],
+      "cleanup": {
+        "fringe_pixels_reconstructed": 162,
+        "detached_speck_pixels_removed": 0,
+        "partial_alpha_pixels": 162,
+        "interior_pixels_unchanged": true
+      },
+      "additional_detached_mark_pixels_removed": 97,
+      "file": "frames/hit_react_a_1.png",
+      "sha256": "fa2403da2b90d3ac47aecc9ff4b402ae92b7f2e7f4764ef608dd5ff7035287df"
+    },
+    {
+      "index": 2,
+      "phase": "recover torso",
+      "source": "ArtV2\\latest\\sprite_frame_03.png",
+      "source_size": [
+        119,
+        213
+      ],
+      "source_belt_center": [
+        65,
+        86
+      ],
+      "common_scale": 1.48,
+      "offset": [
+        148,
+        123
+      ],
+      "duration_ms": 60,
+      "source_waist_mask_line": [
+        [
+          47,
+          94
+        ],
+        [
+          83,
+          78
+        ]
+      ],
+      "source_arm_preserve_rect": [
+        75,
+        40,
+        119,
+        85
+      ],
+      "cleanup": {
+        "fringe_pixels_reconstructed": 152,
+        "detached_speck_pixels_removed": 0,
+        "partial_alpha_pixels": 152,
+        "interior_pixels_unchanged": true
+      },
+      "additional_detached_mark_pixels_removed": 236,
+      "file": "frames/hit_react_a_2.png",
+      "sha256": "a2ed8889d791c72bce477af41088c7e5cc5c999c4b131dceaa3a189d2e5d06bd"
+    },
+    {
+      "index": 3,
+      "phase": "settle toward stance",
+      "source": "ArtV2\\latest\\sprite_frame_01.png",
+      "source_size": [
+        127,
+        226
+      ],
+      "source_belt_center": [
+        54,
+        94.5
+      ],
+      "common_scale": 1.48,
+      "offset": [
+        164,
+        110
+      ],
+      "duration_ms": 60,
+      "source_waist_mask_line": [
+        [
+          32,
+          97
+        ],
+        [
+          76,
+          92
+        ]
+      ],
+      "source_arm_preserve_rect": null,
+      "cleanup": {
+        "fringe_pixels_reconstructed": 164,
+        "detached_speck_pixels_removed": 0,
+        "partial_alpha_pixels": 164,
+        "interior_pixels_unchanged": true
+      },
+      "additional_detached_mark_pixels_removed": 31,
+      "file": "frames/hit_react_a_3.png",
+      "sha256": "b326e062d32b9b0ef4b49d294006524c5c463417f93392fef96f5624ced1ae1e"
+    }
+  ],
+  "fixed_lower_body": "Approved Idle lower body, with a small abdomen connector behind source-specific waist masks. Recoiling elbows can overlap the upper hip; all pixels y>=300 (shorts, legs and feet) remain exact Idle.",
+  "limitations": [
+    "Supplied low-resolution cutouts have hard/cropped source edges; no missing contour is invented.",
+    "Fixed lower body intentionally omits the source leg poses to avoid cropped boots/sliding.",
+    "Source shading/style and waist joins need review against approved Idle.",
+    "No SpriteKit, XCTest or iPhone execution."
+  ]
+}

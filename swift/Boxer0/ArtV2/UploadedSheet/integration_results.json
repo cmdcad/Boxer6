@@ -1,0 +1,756 @@
+{
+  "passed": true,
+  "installed_frames": 148,
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "rollback_archive": "pre_v2_live_assets.zip",
+  "apple_build": "not run; Windows host",
+  "assets": [
+    {
+      "catalog": "idle_a_0",
+      "source": "StageA/frames/idle_a_0.png",
+      "sha256": "01c36a90c26abce32e3c2434786d0d42bcc1f41b90942cf9a79c68f16b223a30"
+    },
+    {
+      "catalog": "idle_b_0",
+      "source": "StageF/frames/idle_b_0.png",
+      "sha256": "1d8284b46b703a97ec56c26b7755c6bd995030ac5b8863a320af25f5edc81fb3"
+    },
+    {
+      "catalog": "idle_a_1",
+      "source": "StageA/frames/idle_a_1.png",
+      "sha256": "6a56bba0403dfd5fe10981a4c3bd3cc4d10f0a8a637fa388c34e30da6a445c6c"
+    },
+    {
+      "catalog": "idle_b_1",
+      "source": "StageF/frames/idle_b_1.png",
+      "sha256": "57dd34fdd867e9ff47c6c5b03aa2639dbbf6a8b996330aabac36184b53592700"
+    },
+    {
+      "catalog": "idle_a_2",
+      "source": "StageA/frames/idle_a_2.png",
+      "sha256": "ae49b0994c61f58b10e4c4c89473867aad0ef268623a7ca780d5863e01bc67da"
+    },
+    {
+      "catalog": "idle_b_2",
+      "source": "StageF/frames/idle_b_2.png",
+      "sha256": "44a180594cb7ab3fa1ec2295491869546c3a7ba9681342844b97a3ade5b45a52"
+    },
+    {
+      "catalog": "idle_a_3",
+      "source": "StageA/frames/idle_a_3.png",
+      "sha256": "1b67101275945452bd49149564f058b9a0e1dfde7f29b59e97c8a34d00df434a"
+    },
+    {
+      "catalog": "idle_b_3",
+      "source": "StageF/frames/idle_b_3.png",
+      "sha256": "c15d4e9646ee34d12c70958a4489c30798b3bc434d24c9531efd991e761e8bbf"
+    },
+    {
+      "catalog": "advance_a_0",
+      "source": "StageB/frames/advance_a_0.png",
+      "sha256": "399db7c784dd5f418ead2bede9d822c7f60522b94f27c8131610db359b431c00"
+    },
+    {
+      "catalog": "advance_b_0",
+      "source": "StageF/frames/advance_b_0.png",
+      "sha256": "4936433366f7ea594b0201d81e0b030b67a3aa69fb1fdd572306e270d91430e8"
+    },
+    {
+      "catalog": "advance_a_1",
+      "source": "StageB/frames/advance_a_1.png",
+      "sha256": "ff06c0fa35b4ba7a962c54965b7ec0e662ac17c91b29d93030cfae53f546fa84"
+    },
+    {
+      "catalog": "advance_b_1",
+      "source": "StageF/frames/advance_b_1.png",
+      "sha256": "9f1c8c1249e85a2cdc0ad6120613c78ecfaf76a1be7b65becbd4dbda92f1ad05"
+    },
+    {
+      "catalog": "advance_a_2",
+      "source": "StageB/frames/advance_a_2.png",
+      "sha256": "a6347c3a5ffdd47a9888ba0a70b87404b5b9d5b63461d2d01579fb427b92e2f9"
+    },
+    {
+      "catalog": "advance_b_2",
+      "source": "StageF/frames/advance_b_2.png",
+      "sha256": "7cd9fcfe26eee4f5c95772897a407abb55400e793a1a3ddf7b381445c157848e"
+    },
+    {
+      "catalog": "advance_a_3",
+      "source": "StageB/frames/advance_a_3.png",
+      "sha256": "5d6963cb7f992d3382ea7e976d8b4b46f596bf27555b00ff7fc0d37ada3972c2"
+    },
+    {
+      "catalog": "advance_b_3",
+      "source": "StageF/frames/advance_b_3.png",
+      "sha256": "dca9692b286282f4fbcc3317d7b80652b9fcc1c3d2b933031f72e120c5d3115b"
+    },
+    {
+      "catalog": "advance_a_4",
+      "source": "StageB/frames/advance_a_4.png",
+      "sha256": "93ee1d151c6489846ca38366a53128f28f29c50824e82511c4f7b63437c75922"
+    },
+    {
+      "catalog": "advance_b_4",
+      "source": "StageF/frames/advance_b_4.png",
+      "sha256": "8b534e5e3ae8e2aecdbb612cb1c6e5dd18e53975bb84f1ba7da41aee277c6578"
+    },
+    {
+      "catalog": "advance_a_5",
+      "source": "StageB/frames/advance_a_5.png",
+      "sha256": "d8dd6966413b63b690155b9f418bd6346f96466c0d8f710a8f63d26b2d41aa6c"
+    },
+    {
+      "catalog": "advance_b_5",
+      "source": "StageF/frames/advance_b_5.png",
+      "sha256": "bab61e83ff5e49e1258edd458437397dfc456ba57c5a4f802e4b2e541e248c6a"
+    },
+    {
+      "catalog": "retreat_a_0",
+      "source": "StageB/frames/retreat_a_0.png",
+      "sha256": "1b95c8a7dd844c592d3d4b369dd86f29b45b87b6b87b3d49ad3c7112daf98c4c"
+    },
+    {
+      "catalog": "retreat_b_0",
+      "source": "StageF/frames/retreat_b_0.png",
+      "sha256": "6d88277f0ce05e10158b82e9f016d5c53d034e8ea2b4a05fd7d11da711dc744b"
+    },
+    {
+      "catalog": "retreat_a_1",
+      "source": "StageB/frames/retreat_a_1.png",
+      "sha256": "348b1df28352f6e4ec8218171de1e36a44b449c32e5b60ce33ebb39f06b69a61"
+    },
+    {
+      "catalog": "retreat_b_1",
+      "source": "StageF/frames/retreat_b_1.png",
+      "sha256": "c70ef5052505f4f1e32247a223e8771920aeea23b0e3730e106cfb3d9c8fa2d4"
+    },
+    {
+      "catalog": "retreat_a_2",
+      "source": "StageB/frames/retreat_a_2.png",
+      "sha256": "a6347c3a5ffdd47a9888ba0a70b87404b5b9d5b63461d2d01579fb427b92e2f9"
+    },
+    {
+      "catalog": "retreat_b_2",
+      "source": "StageF/frames/retreat_b_2.png",
+      "sha256": "7cd9fcfe26eee4f5c95772897a407abb55400e793a1a3ddf7b381445c157848e"
+    },
+    {
+      "catalog": "retreat_a_3",
+      "source": "StageB/frames/retreat_a_3.png",
+      "sha256": "4de899db967f384c7adc1a453bcbb3161564a1fa31b20d024d86e23df6fd7fcd"
+    },
+    {
+      "catalog": "retreat_b_3",
+      "source": "StageF/frames/retreat_b_3.png",
+      "sha256": "166da47e54276e678e109b57e65c22cd81bf50c082dcd54e52b4f1b3085b9d5d"
+    },
+    {
+      "catalog": "retreat_a_4",
+      "source": "StageB/frames/retreat_a_4.png",
+      "sha256": "1778c17a82dc86fdeacbfa78cc31aa1f41d8d0930c37aa513b4f3673174e303d"
+    },
+    {
+      "catalog": "retreat_b_4",
+      "source": "StageF/frames/retreat_b_4.png",
+      "sha256": "337cd5ea3b536e230ebd7c305c427fbbd6fc8772546ee5abd9c96ea9e1d4b85d"
+    },
+    {
+      "catalog": "retreat_a_5",
+      "source": "StageB/frames/retreat_a_5.png",
+      "sha256": "6f619328fdaaad56ca7d4a591f8ec490ef0cb36f608238a8b18a957e53f775e2"
+    },
+    {
+      "catalog": "retreat_b_5",
+      "source": "StageF/frames/retreat_b_5.png",
+      "sha256": "f6c00db87aedaccb05941ba12eb5ec651669d250bf0402e5a478ae7d160f183c"
+    },
+    {
+      "catalog": "guard_a_0",
+      "source": "StageC/frames/guard_entry_0.png",
+      "sha256": "01c36a90c26abce32e3c2434786d0d42bcc1f41b90942cf9a79c68f16b223a30"
+    },
+    {
+      "catalog": "guard_b_0",
+      "source": "StageF/frames/guard_b_0.png",
+      "sha256": "1d8284b46b703a97ec56c26b7755c6bd995030ac5b8863a320af25f5edc81fb3"
+    },
+    {
+      "catalog": "guard_a_1",
+      "source": "StageC/frames/guard_entry_1.png",
+      "sha256": "2b3925a0f12bff1df660e5d7c64774a290353adcbf35d15f554bd44d4ae0fcf3"
+    },
+    {
+      "catalog": "guard_b_1",
+      "source": "StageF/frames/guard_b_1.png",
+      "sha256": "399d83a8b16bb839c1557870601396fb14ae82c29f06099c113967871a1f2ad3"
+    },
+    {
+      "catalog": "guard_a_2",
+      "source": "StageC/frames/guard_entry_2.png",
+      "sha256": "6594cf88f25618f4f20a12a3a465c71aafe1601ca837fdd935b7519e2fec4530"
+    },
+    {
+      "catalog": "guard_b_2",
+      "source": "StageF/frames/guard_b_2.png",
+      "sha256": "c409aa663b347ccfb030ea85efef03a50b99c0d02f10051c7f77d817a828650e"
+    },
+    {
+      "catalog": "guarded_advance_a_0",
+      "source": "StageC/frames/guarded_advance_0.png",
+      "sha256": "260ba46239c5734e18d645dac4e23c7cea8ebae0f7d15e0d6ffa3b1521e21ed7"
+    },
+    {
+      "catalog": "guarded_advance_b_0",
+      "source": "StageF/frames/guarded_advance_b_0.png",
+      "sha256": "caaed8ca4ae57d0f97303dd3e14bdc21e4613d108ad0e4beba1c16c8d822778f"
+    },
+    {
+      "catalog": "guarded_advance_a_1",
+      "source": "StageC/frames/guarded_advance_1.png",
+      "sha256": "4b779f8bf4190d87bb0b083d0810aa61bb9e756b7d4ded47d47a8611b5f433b5"
+    },
+    {
+      "catalog": "guarded_advance_b_1",
+      "source": "StageF/frames/guarded_advance_b_1.png",
+      "sha256": "d8caa5a19d6ac6358904755fd7f3decaa4761fd8b89d47208565ae5dd1429222"
+    },
+    {
+      "catalog": "guarded_advance_a_2",
+      "source": "StageC/frames/guarded_advance_2.png",
+      "sha256": "9c3a17748af36532144408f7aa593aff395fbf89d81d5f9693f0a1e700d981e7"
+    },
+    {
+      "catalog": "guarded_advance_b_2",
+      "source": "StageF/frames/guarded_advance_b_2.png",
+      "sha256": "7a4b1d2609c05ff97ec0bb2c3e164517cfe097f15ed7dbbf9f34550d216ac004"
+    },
+    {
+      "catalog": "guarded_advance_a_3",
+      "source": "StageC/frames/guarded_advance_3.png",
+      "sha256": "2a03d836115851fde90978fee61b2ac852b0252b0d7665f9c9b5e0af4ecf682e"
+    },
+    {
+      "catalog": "guarded_advance_b_3",
+      "source": "StageF/frames/guarded_advance_b_3.png",
+      "sha256": "a8df83be2adc57559b3d7de96e3545b53d058dea2e2ac10362887c8cb83347f7"
+    },
+    {
+      "catalog": "guarded_advance_a_4",
+      "source": "StageC/frames/guarded_advance_4.png",
+      "sha256": "b501595de218eed435b1993b814e5ffded3e49c64bcffb29379a3c7685959022"
+    },
+    {
+      "catalog": "guarded_advance_b_4",
+      "source": "StageF/frames/guarded_advance_b_4.png",
+      "sha256": "c9b3cca7c68a8389b8e96f1c6909bc4f763630a7f02a380d639e32d23ba7c2df"
+    },
+    {
+      "catalog": "guarded_advance_a_5",
+      "source": "StageC/frames/guarded_advance_5.png",
+      "sha256": "61d8eb284890e4724eed4e504fd4f0b9432bb4da82f9462b1054edfe449e8310"
+    },
+    {
+      "catalog": "guarded_advance_b_5",
+      "source": "StageF/frames/guarded_advance_b_5.png",
+      "sha256": "e08cbb21d615357a774afc66633da9e2839fad6458f30140332e8378142fcc0b"
+    },
+    {
+      "catalog": "guarded_retreat_a_0",
+      "source": "StageC/frames/guarded_retreat_0.png",
+      "sha256": "eba93b3d4c6d6a628a8b3f25425a8103111c2dc3de0b5a89167298f40597d602"
+    },
+    {
+      "catalog": "guarded_retreat_b_0",
+      "source": "StageF/frames/guarded_retreat_b_0.png",
+      "sha256": "e49e50498708f2cc11fd9e52a0c0068fe2123e0886f4c4d79061bf61b906b42d"
+    },
+    {
+      "catalog": "guarded_retreat_a_1",
+      "source": "StageC/frames/guarded_retreat_1.png",
+      "sha256": "e23fcccb640b430cdf3ace8d4f5937868a02bc654c1e9b1851c0ac6bd3d65b1d"
+    },
+    {
+      "catalog": "guarded_retreat_b_1",
+      "source": "StageF/frames/guarded_retreat_b_1.png",
+      "sha256": "94b01a5cb04d39df5172afc5e7f254cba6cda9d400edb23e24697cf0f9ff2bf2"
+    },
+    {
+      "catalog": "guarded_retreat_a_2",
+      "source": "StageC/frames/guarded_retreat_2.png",
+      "sha256": "d7e4c9531a0d116c235b259f49d499f96c899e80edeb65e2e9568a37f98dbb59"
+    },
+    {
+      "catalog": "guarded_retreat_b_2",
+      "source": "StageF/frames/guarded_retreat_b_2.png",
+      "sha256": "c679dcb75697cdb2b87bba1abd06f4108c83e91b4a96c623d752aa115899769c"
+    },
+    {
+      "catalog": "guarded_retreat_a_3",
+      "source": "StageC/frames/guarded_retreat_3.png",
+      "sha256": "13d2b2db6f9ce90b6c3f3658996a4b63a11a2180a90d9e7e2744d0beda6770f9"
+    },
+    {
+      "catalog": "guarded_retreat_b_3",
+      "source": "StageF/frames/guarded_retreat_b_3.png",
+      "sha256": "7b896cc889d6e5e18569ad45e3e51456219ced6e613d9a8382fe207ecae65970"
+    },
+    {
+      "catalog": "guarded_retreat_a_4",
+      "source": "StageC/frames/guarded_retreat_4.png",
+      "sha256": "0c4bec58b37e43b9d90759a3e848f0495c3986c615017436fd899e4bf5757981"
+    },
+    {
+      "catalog": "guarded_retreat_b_4",
+      "source": "StageF/frames/guarded_retreat_b_4.png",
+      "sha256": "da31b28fe4afdbf2d6eb339be46ecf5a2fae86495861bc8ecde5560534058a3b"
+    },
+    {
+      "catalog": "guarded_retreat_a_5",
+      "source": "StageC/frames/guarded_retreat_5.png",
+      "sha256": "a111210bfa96b25a1b8671c809a1ebc051ceefb064dc16699f564bebba3b4b66"
+    },
+    {
+      "catalog": "guarded_retreat_b_5",
+      "source": "StageF/frames/guarded_retreat_b_5.png",
+      "sha256": "99319dc9e7b9648d1fedd3125d663f29d0953912f7dcd45201f93e3cb843e76b"
+    },
+    {
+      "catalog": "jab_a_0",
+      "source": "StageD/frames/jab_0.png",
+      "sha256": "192559d49c997dde1bc13ba823c78ddc8079d6145c64f792b83859ed84583edf"
+    },
+    {
+      "catalog": "jab_b_0",
+      "source": "StageF/frames/jab_b_0.png",
+      "sha256": "1846ec8b486e8655978d87ab1e95c8a893b4520dab1984e7b46790ae686e8751"
+    },
+    {
+      "catalog": "jab_a_1",
+      "source": "StageD/frames/jab_1.png",
+      "sha256": "d79031e2d6b9dce31ef37b0bd53889391a263c73fe524a63c7117e1adff46aad"
+    },
+    {
+      "catalog": "jab_b_1",
+      "source": "StageF/frames/jab_b_1.png",
+      "sha256": "63bc870372a419dbcd0c1e736ee1e244552b8443d837700c127d92de146aa5e2"
+    },
+    {
+      "catalog": "jab_a_2",
+      "source": "StageD/frames/jab_2.png",
+      "sha256": "8ac530ec116b09ff4cf8aa2079f79c98a845c99ec290b4e42a72f953e20221c5"
+    },
+    {
+      "catalog": "jab_b_2",
+      "source": "StageF/frames/jab_b_2.png",
+      "sha256": "7fd2d989ca1765c1a5cae306dcc0b5b14920f11a6c2a4ec6bb386e264ca5e8a1"
+    },
+    {
+      "catalog": "jab_a_3",
+      "source": "StageD/frames/jab_3.png",
+      "sha256": "525364dcca99fac234e662452ea6d89d36efc88392c3f8e5971269de9020c95e"
+    },
+    {
+      "catalog": "jab_b_3",
+      "source": "StageF/frames/jab_b_3.png",
+      "sha256": "9b0548f256fe11b7420967faa5aacba42f047a8a4c01a069069ba806a49b2a19"
+    },
+    {
+      "catalog": "jab_a_4",
+      "source": "StageD/frames/jab_4.png",
+      "sha256": "e215deba227289813626c96fd9dd8f8ce43f154e59f52c007ddafd8731bfc8b3"
+    },
+    {
+      "catalog": "jab_b_4",
+      "source": "StageF/frames/jab_b_4.png",
+      "sha256": "a716af3ba120a62ec16683fff5f4e8d4bc1c9e396a67b5954fea2ecaff7ccab8"
+    },
+    {
+      "catalog": "jab_a_5",
+      "source": "StageD/frames/jab_5.png",
+      "sha256": "6ac5cfec0cc5f5c5ced061a6077197eeec3705c8b022b5b1c8df0e752a2a71b3"
+    },
+    {
+      "catalog": "jab_b_5",
+      "source": "StageF/frames/jab_b_5.png",
+      "sha256": "2f1541724ae50bb57d831b7a8b784633879cc0d7ba5786c025769a79e2ac3060"
+    },
+    {
+      "catalog": "jab_recovery_a_0",
+      "source": "StageD/frames/jab_recovery.png",
+      "sha256": "0f7e31bdb6277d7d598f868541ccf024fade0b28b6d7bc7c01447e35235318a5"
+    },
+    {
+      "catalog": "jab_recovery_b_0",
+      "source": "StageF/frames/jab_recovery_b_0.png",
+      "sha256": "c8fb283a35fcf2fedd072b581103b1bbaf5e93cdf13852465b382a8e2f852a94"
+    },
+    {
+      "catalog": "cross_a_0",
+      "source": "StageD/frames/cross_0.png",
+      "sha256": "192559d49c997dde1bc13ba823c78ddc8079d6145c64f792b83859ed84583edf"
+    },
+    {
+      "catalog": "cross_b_0",
+      "source": "StageF/frames/cross_b_0.png",
+      "sha256": "1846ec8b486e8655978d87ab1e95c8a893b4520dab1984e7b46790ae686e8751"
+    },
+    {
+      "catalog": "cross_a_1",
+      "source": "StageD/frames/cross_1.png",
+      "sha256": "ec5c9cafcc98fe5dbe31596d0262ba77473f5690e98ad15465d07ac1464e8620"
+    },
+    {
+      "catalog": "cross_b_1",
+      "source": "StageF/frames/cross_b_1.png",
+      "sha256": "cafe4a6d2a8ceef33e8e7bd2cf80f429440d66bbc1f60f3ce02b62b2ddd61c3a"
+    },
+    {
+      "catalog": "cross_a_2",
+      "source": "StageD/frames/cross_2.png",
+      "sha256": "8b88ce1cb28cc211565c3e96a5e573d0cc7c4788dcacc8da00c63f69bf6eb450"
+    },
+    {
+      "catalog": "cross_b_2",
+      "source": "StageF/frames/cross_b_2.png",
+      "sha256": "d9549b8b76a68337b2ca950c6f73c14961c60d7189fd3506665546cd254674e8"
+    },
+    {
+      "catalog": "cross_a_3",
+      "source": "StageD/frames/cross_3.png",
+      "sha256": "879b3234934130852526fb52ec1c1d8f8f0423f3c4c04c6ec3382de3e5eb3d33"
+    },
+    {
+      "catalog": "cross_b_3",
+      "source": "StageF/frames/cross_b_3.png",
+      "sha256": "1e2bd1537041a6f4a5049372b92718b3f366454bd55bcac8631ba460f26fd4f1"
+    },
+    {
+      "catalog": "cross_a_4",
+      "source": "StageD/frames/cross_4.png",
+      "sha256": "887af82db0b272791c25db9faf884bc77fbac912bd6457ed8ab00a7dd44c8add"
+    },
+    {
+      "catalog": "cross_b_4",
+      "source": "StageF/frames/cross_b_4.png",
+      "sha256": "003c46f997de0863b2b4118da8dac4e38bce456325b572df8d9b6cc3f73f900e"
+    },
+    {
+      "catalog": "cross_a_5",
+      "source": "StageD/frames/cross_5.png",
+      "sha256": "7664780d308bacc8ee691f9d57dec72613dd339546a7a85c5ec3ae51bff27da5"
+    },
+    {
+      "catalog": "cross_b_5",
+      "source": "StageF/frames/cross_b_5.png",
+      "sha256": "60da34f5d71fd6ff555c9d9c041a8020ba31e60eed4a75a8f37bab562370dea3"
+    },
+    {
+      "catalog": "cross_a_6",
+      "source": "StageD/frames/cross_6.png",
+      "sha256": "ad2cfdba6c6a5a9240db13a623c788c4b7be4dfa4e3852191810aa606946d32b"
+    },
+    {
+      "catalog": "cross_b_6",
+      "source": "StageF/frames/cross_b_6.png",
+      "sha256": "2f9efe130f53fd33239b49cb84422720003b89acb9a8da54811221e54cea5b72"
+    },
+    {
+      "catalog": "cross_a_7",
+      "source": "StageD/frames/cross_7.png",
+      "sha256": "f0ba1bed559f349ff6d7275c2d2e4a1bfe9764fc22b368af6e22f7ec3c9a8c3e"
+    },
+    {
+      "catalog": "cross_b_7",
+      "source": "StageF/frames/cross_b_7.png",
+      "sha256": "319b1b8c9653d910c3acd59235d2a807e64b558ecfe09e991d8a0a9f2f3563c1"
+    },
+    {
+      "catalog": "cross_recovery_a_0",
+      "source": "StageD/frames/cross_recovery.png",
+      "sha256": "d2e2b41e6451a12709fc646109a7c9433e2c4835bea96adc221331cf7abd1f94"
+    },
+    {
+      "catalog": "cross_recovery_b_0",
+      "source": "StageF/frames/cross_recovery_b_0.png",
+      "sha256": "a86f6eec576c4b097478fb1ad362f3d3517ed29267ea185042dcb86ee74d9168"
+    },
+    {
+      "catalog": "hit_react_a_0",
+      "source": "StageE/HitReaction/frames/hit_react_a_0.png",
+      "sha256": "11e0fb120169f01bad895288d9af9f87cc1f73c58e4339f3c253e9a8cf126f1b"
+    },
+    {
+      "catalog": "hit_react_b_0",
+      "source": "StageF/frames/hit_react_b_0.png",
+      "sha256": "a0b0615a1c896cbff881306547e9531edc52f4e4b9631311cab4b2a8652e485c"
+    },
+    {
+      "catalog": "hit_react_a_1",
+      "source": "StageE/HitReaction/frames/hit_react_a_1.png",
+      "sha256": "fa2403da2b90d3ac47aecc9ff4b402ae92b7f2e7f4764ef608dd5ff7035287df"
+    },
+    {
+      "catalog": "hit_react_b_1",
+      "source": "StageF/frames/hit_react_b_1.png",
+      "sha256": "b5db49680bdc415c9bd7e37f6e922aa72fcd28a93c2b0ed26d20385a3f4def23"
+    },
+    {
+      "catalog": "hit_react_a_2",
+      "source": "StageE/HitReaction/frames/hit_react_a_2.png",
+      "sha256": "a2ed8889d791c72bce477af41088c7e5cc5c999c4b131dceaa3a189d2e5d06bd"
+    },
+    {
+      "catalog": "hit_react_b_2",
+      "source": "StageF/frames/hit_react_b_2.png",
+      "sha256": "989466fbfd09c9226c9c51e9c96e6b3e9367a0b7ec0240c9f4d1136988da9d7f"
+    },
+    {
+      "catalog": "hit_react_a_3",
+      "source": "StageE/HitReaction/frames/hit_react_a_3.png",
+      "sha256": "b326e062d32b9b0ef4b49d294006524c5c463417f93392fef96f5624ced1ae1e"
+    },
+    {
+      "catalog": "hit_react_b_3",
+      "source": "StageF/frames/hit_react_b_3.png",
+      "sha256": "f40f633f8cf266e1bf225647f91c203b95f7cb54e7bb8f915b1fe53d83309f4b"
+    },
+    {
+      "catalog": "block_jab_a_0",
+      "source": "StageE/BlockRecoil/frames/block_jab_a_0.png",
+      "sha256": "c99dd899bbe055d4886044728c20f51d5a14eabed16b3646fe4693d5ec533120"
+    },
+    {
+      "catalog": "block_jab_b_0",
+      "source": "StageF/frames/block_jab_b_0.png",
+      "sha256": "075d184643fe88baa37871950ac76cf8fd8a23cb943ab70bf733c4e5746cef2e"
+    },
+    {
+      "catalog": "block_jab_a_1",
+      "source": "StageE/BlockRecoil/frames/block_jab_a_1.png",
+      "sha256": "8596dbd5c15af959560cd671005a2fd5e1e821215488e139667b911d34c68073"
+    },
+    {
+      "catalog": "block_jab_b_1",
+      "source": "StageF/frames/block_jab_b_1.png",
+      "sha256": "27926523fde31ac12ad59349b668e67754d8e52b4877fca5b84a92d4b4508d2c"
+    },
+    {
+      "catalog": "block_jab_a_2",
+      "source": "StageE/BlockRecoil/frames/block_jab_a_2.png",
+      "sha256": "7f2b1dbf7481852624c58c48a53d3f1cc66557bdf7266013c856087e4874109c"
+    },
+    {
+      "catalog": "block_jab_b_2",
+      "source": "StageF/frames/block_jab_b_2.png",
+      "sha256": "3f89585ac5504d22eedc7530d9e5823c26d78d57850ab5072172a9ea72e292ca"
+    },
+    {
+      "catalog": "block_cross_a_0",
+      "source": "StageE/BlockRecoil/frames/block_cross_a_0.png",
+      "sha256": "1a2cf1a5b6b7896b0ddab970bde4349386ea916f206ce84626ef07fea30a7fb0"
+    },
+    {
+      "catalog": "block_cross_b_0",
+      "source": "StageF/frames/block_cross_b_0.png",
+      "sha256": "586aabdbeb28da5dec315017be2b0a6a908ef96a1ade9a6166801f7acf1c9f93"
+    },
+    {
+      "catalog": "block_cross_a_1",
+      "source": "StageE/BlockRecoil/frames/block_cross_a_1.png",
+      "sha256": "339989cf0346284a9bdbff7df04b135bddac5d8caf8c06e4f2b568be611e20bc"
+    },
+    {
+      "catalog": "block_cross_b_1",
+      "source": "StageF/frames/block_cross_b_1.png",
+      "sha256": "f5fdebc20aea7ad9e03eb950c833688080db9625a399c1ff504e64c748958da4"
+    },
+    {
+      "catalog": "block_cross_a_2",
+      "source": "StageE/BlockRecoil/frames/block_cross_a_2.png",
+      "sha256": "7682b0de6cb1986aeed141da16e0b52496bc4277d5a32a792c8bceab6444b624"
+    },
+    {
+      "catalog": "block_cross_b_2",
+      "source": "StageF/frames/block_cross_b_2.png",
+      "sha256": "6777db97432f0bfcb2a729e2435b89d0e5a29e347ca1254a392c03482e5442fa"
+    },
+    {
+      "catalog": "down_a_0",
+      "source": "StageE/DownRise/frames/down_a_0.png",
+      "sha256": "ddb8410206669c08f81e1e1bafa180695925fffdc7be0bf4b01e25f36b28fd5b"
+    },
+    {
+      "catalog": "down_b_0",
+      "source": "StageF/frames/down_b_0.png",
+      "sha256": "47be420b0c5f13d6ea3a9e1aaa73c6add6e3a1338cf6127f8cf1dd354e7aba8f"
+    },
+    {
+      "catalog": "rise_a_0",
+      "source": "StageE/DownRise/frames/rise_a_0.png",
+      "sha256": "ddb8410206669c08f81e1e1bafa180695925fffdc7be0bf4b01e25f36b28fd5b"
+    },
+    {
+      "catalog": "rise_b_0",
+      "source": "StageF/frames/rise_b_0.png",
+      "sha256": "47be420b0c5f13d6ea3a9e1aaa73c6add6e3a1338cf6127f8cf1dd354e7aba8f"
+    },
+    {
+      "catalog": "rise_a_1",
+      "source": "StageE/DownRise/frames/rise_a_1.png",
+      "sha256": "c771f3fa4004e453f871386e13acbc8bda664d7bef8056748b4066f26c56437e"
+    },
+    {
+      "catalog": "rise_b_1",
+      "source": "StageF/frames/rise_b_1.png",
+      "sha256": "f05207b7e15778e50b7b94787006fc1152e29861e8aeeaee9a77fdeb8c200c3b"
+    },
+    {
+      "catalog": "rise_a_2",
+      "source": "StageE/DownRise/frames/rise_a_2.png",
+      "sha256": "38fceb6ba278d5d1ab89a28756dbe935702081f66c699bec48ebb5bb3fe18804"
+    },
+    {
+      "catalog": "rise_b_2",
+      "source": "StageF/frames/rise_b_2.png",
+      "sha256": "d55d6bb24b9836752fe525b61c5b797764e9b979cc5155b5f0cf06962f1a5a20"
+    },
+    {
+      "catalog": "rise_a_3",
+      "source": "StageE/DownRise/frames/rise_a_3.png",
+      "sha256": "2227dfa976ca769069937dd8921e2c2b743674425a259e8f23ceba1144543142"
+    },
+    {
+      "catalog": "rise_b_3",
+      "source": "StageF/frames/rise_b_3.png",
+      "sha256": "2688f94de5d68de404d51de0837f04d320c55e1b256eac769afa09b7656334af"
+    },
+    {
+      "catalog": "rise_a_4",
+      "source": "StageE/DownRise/frames/rise_a_4.png",
+      "sha256": "d2d36d76e768a83f5ec1dddabf8c12608f2ebb3346d22affeafdd5732c64e027"
+    },
+    {
+      "catalog": "rise_b_4",
+      "source": "StageF/frames/rise_b_4.png",
+      "sha256": "d0c29dafb8508270e95e9691da60a6a0ca92cea7830591277a8fedf7e017c57e"
+    },
+    {
+      "catalog": "rise_a_5",
+      "source": "StageE/DownRise/frames/rise_a_5.png",
+      "sha256": "5d1363cfc8ebae9b7f0f29bbe3dbaf16b5df006d7d4b4649e703622eba7b1b24"
+    },
+    {
+      "catalog": "rise_b_5",
+      "source": "StageF/frames/rise_b_5.png",
+      "sha256": "092293364e80e9efab765cc89a02fb1c59fe11eb099b8903512a49c39ddf9c16"
+    },
+    {
+      "catalog": "rise_a_6",
+      "source": "StageE/DownRise/frames/rise_a_6.png",
+      "sha256": "2031148c684254976006bc35e84433a974db302d4b4bad9e77bdf09800d88a2d"
+    },
+    {
+      "catalog": "rise_b_6",
+      "source": "StageF/frames/rise_b_6.png",
+      "sha256": "368862c252d763deb1e4d92c813f1097d9ed6b1bd33570a92f68d2655576dbf3"
+    },
+    {
+      "catalog": "rise_a_7",
+      "source": "StageE/DownRise/frames/rise_a_7.png",
+      "sha256": "01c36a90c26abce32e3c2434786d0d42bcc1f41b90942cf9a79c68f16b223a30"
+    },
+    {
+      "catalog": "rise_b_7",
+      "source": "StageF/frames/rise_b_7.png",
+      "sha256": "1d8284b46b703a97ec56c26b7755c6bd995030ac5b8863a320af25f5edc81fb3"
+    },
+    {
+      "catalog": "knockdown_a_0",
+      "source": "StageE/Knockdown/frames/knockdown_a_0.png",
+      "sha256": "6333c2e96f05e7c12edbe1c6750f549075e279ce5d79c28cdebfb2baf5f71b7d"
+    },
+    {
+      "catalog": "knockdown_b_0",
+      "source": "StageF/frames/knockdown_b_0.png",
+      "sha256": "f9c662c12be34369d5240af1bc10f7dbd503f2528732e2e6323bf615060cf244"
+    },
+    {
+      "catalog": "knockdown_a_1",
+      "source": "StageE/Knockdown/frames/knockdown_a_1.png",
+      "sha256": "38fceb6ba278d5d1ab89a28756dbe935702081f66c699bec48ebb5bb3fe18804"
+    },
+    {
+      "catalog": "knockdown_b_1",
+      "source": "StageF/frames/knockdown_b_1.png",
+      "sha256": "d55d6bb24b9836752fe525b61c5b797764e9b979cc5155b5f0cf06962f1a5a20"
+    },
+    {
+      "catalog": "knockdown_a_2",
+      "source": "StageE/Knockdown/frames/knockdown_a_2.png",
+      "sha256": "c771f3fa4004e453f871386e13acbc8bda664d7bef8056748b4066f26c56437e"
+    },
+    {
+      "catalog": "knockdown_b_2",
+      "source": "StageF/frames/knockdown_b_2.png",
+      "sha256": "f05207b7e15778e50b7b94787006fc1152e29861e8aeeaee9a77fdeb8c200c3b"
+    },
+    {
+      "catalog": "knockdown_a_3",
+      "source": "StageE/Knockdown/frames/knockdown_a_3.png",
+      "sha256": "b87b6ee3d6b3b9b7065dc2ed164691002c8e1a43ce2ed29b820b91b6776d36d6"
+    },
+    {
+      "catalog": "knockdown_b_3",
+      "source": "StageF/frames/knockdown_b_3.png",
+      "sha256": "1049709d625dbbf1c9bdf90821e523ec53f6101cc24bab3e27f5ebc3ad514777"
+    },
+    {
+      "catalog": "knockdown_a_4",
+      "source": "StageE/Knockdown/frames/knockdown_a_4.png",
+      "sha256": "c9b57a33578647a2dae99549841f7e0a992523061de5d460dd80fb99ccaae64a"
+    },
+    {
+      "catalog": "knockdown_b_4",
+      "source": "StageF/frames/knockdown_b_4.png",
+      "sha256": "5eda20f5e5f5c5a73734ccab5266ecf47ac1d121732733bb2cff9b7be67d180a"
+    },
+    {
+      "catalog": "knockdown_a_5",
+      "source": "StageE/Knockdown/frames/knockdown_a_5.png",
+      "sha256": "b08e342e81c4cb0b8c805dd47a9fddc76a2672bf5dac6df532b317fb3e23bac4"
+    },
+    {
+      "catalog": "knockdown_b_5",
+      "source": "StageF/frames/knockdown_b_5.png",
+      "sha256": "2c0c59cedf868bd3b5f05aa8d02ce3f539d6cc7c27addb52961a9989ae94562e"
+    },
+    {
+      "catalog": "knockdown_a_6",
+      "source": "StageE/Knockdown/frames/knockdown_a_6.png",
+      "sha256": "baa4a207fb6912e63f65a245bb67901c089c29446036cbea36cb48e5a2579876"
+    },
+    {
+      "catalog": "knockdown_b_6",
+      "source": "StageF/frames/knockdown_b_6.png",
+      "sha256": "3e0547766b7b8e7fc62c03d9ef597d4ddae297c74eda6fc45e3a3da3df876513"
+    },
+    {
+      "catalog": "knockdown_a_7",
+      "source": "StageE/Knockdown/frames/knockdown_a_7.png",
+      "sha256": "ddb8410206669c08f81e1e1bafa180695925fffdc7be0bf4b01e25f36b28fd5b"
+    },
+    {
+      "catalog": "knockdown_b_7",
+      "source": "StageF/frames/knockdown_b_7.png",
+      "sha256": "47be420b0c5f13d6ea3a9e1aaa73c6add6e3a1338cf6127f8cf1dd354e7aba8f"
+    }
+  ]
+}

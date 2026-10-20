@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "frames_checked": 74,
+  "alpha_identical": true,
+  "pixels_outside_palette_mask_identical": true,
+  "dimensions_identical": true,
+  "geometry_resampled": false,
+  "device_validation": "not run"
+}

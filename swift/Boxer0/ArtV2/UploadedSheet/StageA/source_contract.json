@@ -1,0 +1,25 @@
+{
+  "source": "reference_sheet.png",
+  "source_box": [
+    6,
+    48,
+    73,
+    193
+  ],
+  "selected_pose": "Idle pose 1",
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "source_scale": 2.2222222222222223,
+  "source_offset": [
+    182,
+    127
+  ],
+  "integrated": false
+}

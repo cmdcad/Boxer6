@@ -1,0 +1,356 @@
+{
+  "passed": true,
+  "errors": [],
+  "frames": [
+    {
+      "file": "guard_entry_0.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        25321
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        184,
+        129,
+        329,
+        449
+      ]
+    },
+    {
+      "file": "guard_entry_1.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        26554
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        184,
+        128,
+        330,
+        449
+      ]
+    },
+    {
+      "file": "guard_entry_2.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        26431
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        184,
+        127,
+        330,
+        449
+      ]
+    },
+    {
+      "file": "guarded_advance_0.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        28048
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        179,
+        127,
+        377,
+        449
+      ]
+    },
+    {
+      "file": "guarded_advance_1.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        28789
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        162,
+        132,
+        385,
+        449
+      ]
+    },
+    {
+      "file": "guarded_advance_2.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        30075
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        135,
+        133,
+        378,
+        449
+      ]
+    },
+    {
+      "file": "guarded_advance_3.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        27687
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        170,
+        130,
+        358,
+        449
+      ]
+    },
+    {
+      "file": "guarded_advance_4.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        28003
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        171,
+        127,
+        342,
+        449
+      ]
+    },
+    {
+      "file": "guarded_advance_5.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        26567
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        197,
+        127,
+        324,
+        449
+      ]
+    },
+    {
+      "file": "guarded_retreat_0.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        25571
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        174,
+        136,
+        341,
+        449
+      ]
+    },
+    {
+      "file": "guarded_retreat_1.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        27434
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        121,
+        137,
+        360,
+        449
+      ]
+    },
+    {
+      "file": "guarded_retreat_2.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        29698
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        135,
+        133,
+        378,
+        449
+      ]
+    },
+    {
+      "file": "guarded_retreat_3.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        28928
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        156,
+        128,
+        370,
+        449
+      ]
+    },
+    {
+      "file": "guarded_retreat_4.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        27724
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        171,
+        128,
+        329,
+        449
+      ]
+    },
+    {
+      "file": "guarded_retreat_5.png",
+      "checks": {
+        "rgba_512": true,
+        "true_alpha": true,
+        "clear_canvas_edges": true,
+        "one_connected_character": true,
+        "baseline_448": true,
+        "character_height_consistent": true,
+        "both_feet_present": true,
+        "hash_matches": true
+      },
+      "significant_component_sizes": [
+        26796
+      ],
+      "detached_ink_pixels": 0,
+      "bounds": [
+        197,
+        126,
+        326,
+        449
+      ]
+    }
+  ],
+  "limits": [
+    "Asset checks only; visual review also required.",
+    "No SpriteKit integration, XCTest or iPhone playback performed.",
+    "Guarded movement stride must be checked at actual 55/35.75 scene points per second; no zero-sliding claim."
+  ]
+}

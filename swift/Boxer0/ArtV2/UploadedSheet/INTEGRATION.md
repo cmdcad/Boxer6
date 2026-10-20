@@ -1,0 +1,11 @@
+# V2 sprite integration — 2026-10-20
+
+Installed 148 frames (74 per fighter) into the live asset catalog. Blue sources come from prepared Stages A–E; orange sources come from Stage F. `integration_results.json` records every installed source and SHA-256. `integrate_assets.py` rebuilds the catalogs and refuses changed source hashes.
+
+`IdleTestScene.swift` now loads both fighters' guarded advance/retreat sets and selects them only after guard becomes effective, using the existing travel-driven movement frame index. Guard entry, stationary guard, reaction and block priority remain in place. No contact geometry, fighter scale, root, facing, combat timing, movement speed, damage or AI parameters changed.
+
+Validation: `python Tests/validate_v2_assets.py` checks all 148 installed catalogs against their production sources, dimensions, alpha and guarded-walk wiring. `python Tests/validate_task10a.py` and its chained source/asset checks pass. Legacy asset checks now resolve the active production source through `Tests/active_art.py` instead of comparing new catalogs with superseded IdleAnimation artwork. These are source/asset checks, not Swift compilation or execution of the 40 XCTest methods.
+
+Apple validation remains required: build/run the shared scheme and tests in Xcode; on iPhone SE landscape check both fighters' Idle, movement, Guard, guarded movement, punches/contact guides, recovery, hit/block feedback, Knockdown, Down and Rise. Pause and step through Jab frame4 and Cross frame5. Review feet during movement at different viewport scales and guarded speeds: the unchanged travel clock does not establish perfect foot locking for the new art. Existing mixed source softness and the final collapse-to-Down contour difference remain visual review points.
+
+Rollback: `pre_v2_live_assets.zip` is an immutable snapshot of all previously existing affected image sets. Restore its entries into `Boxer0/Assets.xcassets`, remove the newly introduced `guarded_advance_a/b_*` and `guarded_retreat_a/b_*` image sets (24 total), and revert the guarded texture arrays/loading/render branches added to IdleTestScene. Prepared production art stays available. Do not rerun an old artwork generator against the live catalog to roll back.

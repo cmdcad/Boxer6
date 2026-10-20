@@ -1,0 +1,1 @@
+Superseded alternative artwork from the earlier misunderstanding. Not the approved uploaded-sheet replacement source. Not integrated into the live game. Current work is under ArtV2/UploadedSheet. Preserve these files for history only.

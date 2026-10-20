@@ -1,0 +1,33 @@
+{
+  "tool": "built-in imagegen",
+  "straight_contact_edits": [
+    {
+      "name": "jab_3",
+      "prompt": "Precise anatomical correction to this Jab CONTACT sprite. The extended elbow is too bent and too low. Keep the extended blue glove EXACTLY where it is (logical512 center384,189); DO NOT move or enlarge it. Straighten the punching elbow by lifting the elbow about20 logical pixels to the horizontal shoulder-to-fist line. Reposition the punching shoulder slightly left toward the torso if needed so upper arm and forearm form an almost straight line at eye level, with only a tiny natural elbow flex. This is full extension, not a bent-arm partial jab. Preserve head, body placement, nonpunching guard hand, character scale, costume and true transparency. DO NOT extend fist farther right. Single complete opaque figure, no text, guide marks, ghosts or background."
+    },
+    {
+      "name": "cross_4",
+      "prompt": "Precise anatomical correction to this REAR-HAND CROSS CONTACT sprite. The punching elbow is visibly bent too far. Keep the extended blue glove EXACTLY where it is (logical512 center378,186); DO NOT move it right or enlarge it. Lift the elbow about20 logical pixels toward the shoulder-to-fist line, repositioning the rear shoulder slightly left if necessary, so upper arm and forearm form an almost straight full-extension line. Keep the strong turned-back torso/shoulder rotation that distinguishes the Cross, and keep the lead glove protecting the face. Only tiny natural elbow flex at contact. Preserve head, character size, costume, canvas placement and true transparency. Single complete opaque character, no ghosting, no text or background."
+    }
+  ],
+  "cross_withdrawal": {
+    "prompt": "Edit this exact rear-hand Cross sprite into the first WITHDRAWAL pose just after contact. Preserve the turned-back torso, head, lead glove at face, scale and costume. Bring the extended punching fist LEFT by about25 logical pixels and slightly DOWN8px toward the body, bending the elbow more, while starting a small torso unwind. Fist stays in FRONT of the chest, never cocked back behind the shoulder. This is a smooth immediate follow-on from full extension, not a second wind-up. A single solid opaque figure, true transparent background, complete limbs, no crossfade or ghosts. Keep character placement.",
+    "path": "C:\\Users\\oluwa\\.codex\\generated_images\\01a15221-f202-7350-9d49-7869754060bc\\exec-f43e0504-04cf-4e51-a794-456dbcf3d61c.png"
+  },
+  "final_cross_reach": {
+    "prompt": "Very small precise correction. Keep this rear-hand Cross arm straight and keep the same rotated back, face, guarding hand, size, pose and canvas. The punching glove is slightly too far right and low. Move the punching fist LEFT by22 logical pixels and UP by8 pixels on the512canvas, to center(378,186). It must stay at74percent canvas width,36percent height. Shorten the straight forearm's reach modestly so the elbow remains nearly straight; do NOT bend it into a hook or alter torso. Preserve complete figure and true transparency. Do NOT move or rescale the whole boxer. This is a tiny arm-reach correction only, not a new pose. No checkerboard, text or extra limbs.",
+    "path": "C:\\Users\\oluwa\\.codex\\generated_images\\01a15221-f202-7350-9d49-7869754060bc\\exec-2e41dbde-c90c-4e4f-83d9-3fb0370b8b58.png"
+  },
+  "compositing": {
+    "authorized_by_user": true,
+    "exact_original_pixels_from_y": 260,
+    "waist_composite_starts_y": 254,
+    "excluded_idle_forearm": [
+      290,
+      254,
+      512,
+      260
+    ],
+    "note": "The excluded region is Idle's arm beside the belt, not part of the fixed lower body."
+  }
+}

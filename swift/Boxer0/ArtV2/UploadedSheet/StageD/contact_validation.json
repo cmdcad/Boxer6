@@ -1,0 +1,33 @@
+{
+  "contacts": [
+    {
+      "kind": "jab",
+      "configured_center": [
+        384.5,
+        189
+      ],
+      "detected_blue_glove_bbox_center": [
+        380.0,
+        193.5
+      ],
+      "center_distance_px": 6.363961030678928,
+      "circle_blue_coverage": 0.7380191693290735,
+      "note": "Color segmentation is a diagnostic, not artist-authored geometry."
+    },
+    {
+      "kind": "cross",
+      "configured_center": [
+        378,
+        186
+      ],
+      "detected_blue_glove_bbox_center": [
+        385.5,
+        189.5
+      ],
+      "center_distance_px": 8.276472678623424,
+      "circle_blue_coverage": 0.6214073339940536,
+      "note": "Color segmentation is a diagnostic, not artist-authored geometry."
+    }
+  ],
+  "errors": []
+}

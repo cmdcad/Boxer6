@@ -1,0 +1,124 @@
+{
+  "passed": true,
+  "errors": [],
+  "frames": [
+    {
+      "file": "block_jab_a_0.png",
+      "checks": {
+        "rgba512": true,
+        "exact_fixed_lower_body": true,
+        "alpha": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "visible_upper_body_shift": true,
+        "guard_gloves_retained": true,
+        "checksum": true
+      },
+      "head_region_backward_shift_px": 3.325989208633132,
+      "guard_glove_area_ratio": 1.0016769144773616
+    },
+    {
+      "file": "block_jab_a_1.png",
+      "checks": {
+        "rgba512": true,
+        "exact_fixed_lower_body": true,
+        "alpha": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "visible_upper_body_shift": true,
+        "guard_gloves_retained": true,
+        "checksum": true
+      },
+      "head_region_backward_shift_px": 6.573741007194258,
+      "guard_glove_area_ratio": 0.994969256567915
+    },
+    {
+      "file": "block_jab_a_2.png",
+      "checks": {
+        "rgba512": true,
+        "exact_fixed_lower_body": true,
+        "alpha": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "visible_upper_body_shift": true,
+        "guard_gloves_retained": true,
+        "checksum": true
+      },
+      "head_region_backward_shift_px": 1.5260576963530639,
+      "guard_glove_area_ratio": 0.9988820570150923
+    },
+    {
+      "file": "block_cross_a_0.png",
+      "checks": {
+        "rgba512": true,
+        "exact_fixed_lower_body": true,
+        "alpha": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "visible_upper_body_shift": true,
+        "guard_gloves_retained": true,
+        "checksum": true
+      },
+      "head_region_backward_shift_px": 5.719489995048491,
+      "guard_glove_area_ratio": 1.0
+    },
+    {
+      "file": "block_cross_a_1.png",
+      "checks": {
+        "rgba512": true,
+        "exact_fixed_lower_body": true,
+        "alpha": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "visible_upper_body_shift": true,
+        "guard_gloves_retained": true,
+        "checksum": true
+      },
+      "head_region_backward_shift_px": 11.521488754942027,
+      "guard_glove_area_ratio": 0.9927333705980995
+    },
+    {
+      "file": "block_cross_a_2.png",
+      "checks": {
+        "rgba512": true,
+        "exact_fixed_lower_body": true,
+        "alpha": true,
+        "single_silhouette": true,
+        "baseline448": true,
+        "clear_margins": true,
+        "visible_upper_body_shift": true,
+        "guard_gloves_retained": true,
+        "checksum": true
+      },
+      "head_region_backward_shift_px": 2.4585294860421527,
+      "guard_glove_area_ratio": 0.9921743991056456
+    }
+  ],
+  "head_region_shifts_px": {
+    "jab": [
+      3.325989208633132,
+      6.573741007194258,
+      1.5260576963530639
+    ],
+    "cross": [
+      5.719489995048491,
+      11.521488754942027,
+      2.4585294860421527
+    ]
+  },
+  "exact_apng_durations_ms": {
+    "jab": 120,
+    "cross": 160
+  },
+  "image_generation_used": false,
+  "limits": [
+    "Guard posture is preserved from the reference; this is an affine lean, not new anatomical drawings.",
+    "Minor interpolation softening and waist contour changes need visual review.",
+    "No live integration, Swift/XCTest, SpriteKit or iPhone validation performed."
+  ]
+}

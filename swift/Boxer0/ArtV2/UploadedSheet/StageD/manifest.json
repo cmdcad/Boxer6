@@ -1,0 +1,387 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "integrated": false,
+  "tool": "built-in imagegen",
+  "frames": [
+    {
+      "clip": "jab",
+      "index": 0,
+      "file": "frames/jab_0.png",
+      "selected_source": "StageA\\frames\\idle_a_0.png",
+      "source_canvas": [
+        512,
+        512
+      ],
+      "vertical_registration": 0,
+      "duration_ms": 50,
+      "bounds": [
+        184,
+        129,
+        329,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "192559d49c997dde1bc13ba823c78ddc8079d6145c64f792b83859ed84583edf",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "jab",
+      "index": 1,
+      "file": "frames/jab_1.png",
+      "selected_source": "StageD\\source\\repaired\\jab_1.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -1,
+      "duration_ms": 50,
+      "bounds": [
+        184,
+        127,
+        340,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "d79031e2d6b9dce31ef37b0bd53889391a263c73fe524a63c7117e1adff46aad",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "jab",
+      "index": 2,
+      "file": "frames/jab_2.png",
+      "selected_source": "StageD\\source\\repaired\\jab_2.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -1,
+      "duration_ms": 50,
+      "bounds": [
+        184,
+        127,
+        342,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "8ac530ec116b09ff4cf8aa2079f79c98a845c99ec290b4e42a72f953e20221c5",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "jab",
+      "index": 3,
+      "file": "frames/jab_3.png",
+      "selected_source": "StageD\\source\\repaired\\jab_3.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -1,
+      "duration_ms": 50,
+      "bounds": [
+        184,
+        125,
+        404,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "525364dcca99fac234e662452ea6d89d36efc88392c3f8e5971269de9020c95e",
+      "is_contact_frame": true,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "jab",
+      "index": 4,
+      "file": "frames/jab_4.png",
+      "selected_source": "StageD\\source\\repaired\\jab_4.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -1,
+      "duration_ms": 50,
+      "bounds": [
+        184,
+        126,
+        350,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "e215deba227289813626c96fd9dd8f8ce43f154e59f52c007ddafd8731bfc8b3",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "jab",
+      "index": 5,
+      "file": "frames/jab_5.png",
+      "selected_source": "StageD\\source\\repaired\\jab_5.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -1,
+      "duration_ms": 50,
+      "bounds": [
+        184,
+        127,
+        338,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "6ac5cfec0cc5f5c5ced061a6077197eeec3705c8b022b5b1c8df0e752a2a71b3",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "cross",
+      "index": 0,
+      "file": "frames/cross_0.png",
+      "selected_source": "StageA\\frames\\idle_a_0.png",
+      "source_canvas": [
+        512,
+        512
+      ],
+      "vertical_registration": 0,
+      "duration_ms": 60,
+      "bounds": [
+        184,
+        129,
+        329,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "192559d49c997dde1bc13ba823c78ddc8079d6145c64f792b83859ed84583edf",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "cross",
+      "index": 1,
+      "file": "frames/cross_1.png",
+      "selected_source": "StageD\\source\\repaired\\cross_1.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": 0,
+      "duration_ms": 60,
+      "bounds": [
+        179,
+        128,
+        349,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "ec5c9cafcc98fe5dbe31596d0262ba77473f5690e98ad15465d07ac1464e8620",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "cross",
+      "index": 2,
+      "file": "frames/cross_2.png",
+      "selected_source": "StageD\\source\\repaired\\cross_2.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -2,
+      "duration_ms": 60,
+      "bounds": [
+        166,
+        123,
+        329,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "8b88ce1cb28cc211565c3e96a5e573d0cc7c4788dcacc8da00c63f69bf6eb450",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "cross",
+      "index": 3,
+      "file": "frames/cross_3.png",
+      "selected_source": "StageD\\source\\repaired\\cross_3.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -2,
+      "duration_ms": 60,
+      "bounds": [
+        184,
+        124,
+        395,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "879b3234934130852526fb52ec1c1d8f8f0423f3c4c04c6ec3382de3e5eb3d33",
+      "is_contact_frame": false,
+      "genuine_transition_pose": true
+    },
+    {
+      "clip": "cross",
+      "index": 4,
+      "file": "frames/cross_4.png",
+      "selected_source": "StageD\\source\\repaired\\cross_4.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -2,
+      "duration_ms": 60,
+      "bounds": [
+        184,
+        123,
+        407,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "887af82db0b272791c25db9faf884bc77fbac912bd6457ed8ab00a7dd44c8add",
+      "is_contact_frame": true,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "cross",
+      "index": 5,
+      "file": "frames/cross_5.png",
+      "selected_source": "StageD\\source\\repaired\\cross_5.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -1,
+      "duration_ms": 60,
+      "bounds": [
+        184,
+        122,
+        352,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "7664780d308bacc8ee691f9d57dec72613dd339546a7a85c5ec3ae51bff27da5",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "cross",
+      "index": 6,
+      "file": "frames/cross_6.png",
+      "selected_source": "StageD\\source\\repaired\\cross_6.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": 4,
+      "duration_ms": 60,
+      "bounds": [
+        184,
+        108,
+        347,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "ad2cfdba6c6a5a9240db13a623c788c4b7be4dfa4e3852191810aa606946d32b",
+      "is_contact_frame": false,
+      "genuine_transition_pose": true
+    },
+    {
+      "clip": "cross",
+      "index": 7,
+      "file": "frames/cross_7.png",
+      "selected_source": "StageD\\source\\repaired\\cross_7.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -2,
+      "duration_ms": 60,
+      "bounds": [
+        184,
+        125,
+        337,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "f0ba1bed559f349ff6d7275c2d2e4a1bfe9764fc22b368af6e22f7ec3c9a8c3e",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "jab_recovery",
+      "index": 0,
+      "file": "frames/jab_recovery.png",
+      "selected_source": "StageD\\source\\repaired\\jab_recovery.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": -1,
+      "duration_ms": 120,
+      "bounds": [
+        184,
+        126,
+        344,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "0f7e31bdb6277d7d598f868541ccf024fade0b28b6d7bc7c01447e35235318a5",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    },
+    {
+      "clip": "cross_recovery",
+      "index": 0,
+      "file": "frames/cross_recovery.png",
+      "selected_source": "StageD\\source\\repaired\\cross_recovery.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "vertical_registration": 1,
+      "duration_ms": 220,
+      "bounds": [
+        184,
+        130,
+        334,
+        449
+      ],
+      "fixed_lower_body_from_y": 254,
+      "sha256": "d2e2b41e6451a12709fc646109a7c9433e2c4835bea96adc221331cf7abd1f94",
+      "is_contact_frame": false,
+      "genuine_transition_pose": false
+    }
+  ],
+  "jab_contact": {
+    "index": 3,
+    "time_ms": 150,
+    "center": [
+      384.5,
+      189
+    ],
+    "radius": 20
+  },
+  "cross_contact": {
+    "index": 4,
+    "time_ms": 240,
+    "center": [
+      378,
+      186
+    ],
+    "radius": 18
+  },
+  "note": "User-approved fixed lower-body composite starts at y254. The Idle forearm at x>=290,y254..259 is excluded; all pixels y>=260 remain exact Idle. Simulation and live geometry unchanged."
+}

@@ -1,0 +1,138 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "frame_count": 4,
+  "loop_ms": 800,
+  "common_scale": 0.4055766793409379,
+  "frames": [
+    {
+      "file": "frames/idle_a_0.png",
+      "duration_ms": 200,
+      "source_file": "source/idle_a_0_generated.png",
+      "source_metrics": {
+        "bounds": [
+          458,
+          312,
+          814,
+          1102
+        ],
+        "sole_y": 1101,
+        "foot_center": 635.5
+      },
+      "export_metrics": {
+        "bounds": [
+          184,
+          129,
+          329,
+          449
+        ],
+        "sole_y": 448,
+        "foot_center": 256.0
+      },
+      "offset": [
+        -2,
+        2
+      ],
+      "sha256": "01c36a90c26abce32e3c2434786d0d42bcc1f41b90942cf9a79c68f16b223a30"
+    },
+    {
+      "file": "frames/idle_a_1.png",
+      "duration_ms": 200,
+      "source_file": "source/idle_a_1_generated.png",
+      "source_metrics": {
+        "bounds": [
+          457,
+          310,
+          816,
+          1104
+        ],
+        "sole_y": 1103,
+        "foot_center": 636.5
+      },
+      "export_metrics": {
+        "bounds": [
+          184,
+          127,
+          329,
+          449
+        ],
+        "sole_y": 448,
+        "foot_center": 256.0
+      },
+      "offset": [
+        -2,
+        1
+      ],
+      "sha256": "6a56bba0403dfd5fe10981a4c3bd3cc4d10f0a8a637fa388c34e30da6a445c6c"
+    },
+    {
+      "file": "frames/idle_a_2.png",
+      "duration_ms": 200,
+      "source_file": "source/idle_a_3_generated.png",
+      "source_metrics": {
+        "bounds": [
+          457,
+          308,
+          818,
+          1104
+        ],
+        "sole_y": 1103,
+        "foot_center": 637.0
+      },
+      "export_metrics": {
+        "bounds": [
+          183,
+          126,
+          330,
+          449
+        ],
+        "sole_y": 448,
+        "foot_center": 256.0
+      },
+      "offset": [
+        -2,
+        1
+      ],
+      "sha256": "ae49b0994c61f58b10e4c4c89473867aad0ef268623a7ca780d5863e01bc67da"
+    },
+    {
+      "file": "frames/idle_a_3.png",
+      "duration_ms": 200,
+      "source_file": "source/idle_a_2_generated.png",
+      "source_metrics": {
+        "bounds": [
+          459,
+          315,
+          817,
+          1104
+        ],
+        "sole_y": 1103,
+        "foot_center": 639.0
+      },
+      "export_metrics": {
+        "bounds": [
+          184,
+          129,
+          330,
+          449
+        ],
+        "sole_y": 448,
+        "foot_center": 256.5
+      },
+      "offset": [
+        -2,
+        1
+      ],
+      "sha256": "1b67101275945452bd49149564f058b9a0e1dfde7f29b59e97c8a34d00df434a"
+    }
+  ],
+  "integrated": false
+}

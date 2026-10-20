@@ -1,0 +1,32 @@
+{
+  "tool": "built-in imagegen",
+  "transparent_background": true,
+  "reconstructed_frame_count": 4,
+  "reference_roles": {
+    "image1": "Prepared Down: final composition, character proportions and destination",
+    "image2": "Overlapping source strip crop: intended collapse pose and damaged contours",
+    "image3": "Approved Idle: character identity and costume"
+  },
+  "jobs": [
+    {
+      "name": "knockdown_a_3",
+      "ref": "elbows_collapse_reference",
+      "prompt": "Asset: one blue boxer falling-animation sprite on a TRUE TRANSPARENT SQUARE canvas. Image1 is the authoritative final Down pose and image3 is the approved upright character identity. Image2 is a pose reference with overlapping neighbors: reconstruct ONLY the intended central boxer, never copy neighbors, checkerboard or cropped limbs. Match character proportions, compact athletic tan body, short black hair, blue gloves/shorts/lace-up boots, white trim and black ink. Keep logical512x512 canvas, root(256,448), floor/baseline448, right-facing, same character scale as references: head roughly60px on512canvas, no zoom or per-pose fitting. Both COMPLETE legs and boots, exactly two arms/two legs, single solid opaque figure. No labels, ground shadow, impact lines, ghosting or backgrounds. Use generous transparent margins. POSE: fall forward from hands-and-knees onto BENT FOREARMS. Both knees still on floor, hips raised above torso, back curved, head lowered toward the guarding gloves but not yet resting. Torso/back top around logicaly300, head aroundy335, forearms/gloves onfloor448. Rear boots extend LEFT behind knees, face/right gloves point RIGHT. This is a collapse downward, not pushing up or recovery. Restore rear boots hidden by neighbors in Image2."
+    },
+    {
+      "name": "knockdown_a_4",
+      "ref": "side_collapse_reference",
+      "prompt": "Asset: one blue boxer falling-animation sprite on a TRUE TRANSPARENT SQUARE canvas. Image1 is the authoritative final Down pose and image3 is the approved upright character identity. Image2 is a pose reference with overlapping neighbors: reconstruct ONLY the intended central boxer, never copy neighbors, checkerboard or cropped limbs. Match character proportions, compact athletic tan body, short black hair, blue gloves/shorts/lace-up boots, white trim and black ink. Keep logical512x512 canvas, root(256,448), floor/baseline448, right-facing, same character scale as references: head roughly60px on512canvas, no zoom or per-pose fitting. Both COMPLETE legs and boots, exactly two arms/two legs, single solid opaque figure. No labels, ground shadow, impact lines, ghosting or backgrounds. Use generous transparent margins. POSE: knees and elbows give way; roll onto right side into a diagonal half-prone collapse. Hip lowers, torso slopes down toward head/gloves on right, knees partly folded and trailing to left, one forearm supporting the descending upper body. Upper back now aroundy325, head/gloves near final Down location on right, pelvis not fully settled. Restore all overlapping legs/boots using Image1 identity and realistic anatomy. Distinct transition after the bent-forearm knee collapse and BEFORE a flat side-lying pose."
+    },
+    {
+      "name": "knockdown_a_5",
+      "ref": "near_down_reference",
+      "prompt": "Asset: one blue boxer falling-animation sprite on a TRUE TRANSPARENT SQUARE canvas. Image1 is the authoritative final Down pose and image3 is the approved upright character identity. Image2 is a pose reference with overlapping neighbors: reconstruct ONLY the intended central boxer, never copy neighbors, checkerboard or cropped limbs. Match character proportions, compact athletic tan body, short black hair, blue gloves/shorts/lace-up boots, white trim and black ink. Keep logical512x512 canvas, root(256,448), floor/baseline448, right-facing, same character scale as references: head roughly60px on512canvas, no zoom or per-pose fitting. Both COMPLETE legs and boots, exactly two arms/two legs, single solid opaque figure. No labels, ground shadow, impact lines, ghosting or backgrounds. Use generous transparent margins. POSE: genuine intermediate landing transition just before fully Down. Side of torso is approaching the ground, hip settling, rear leg still partly bent at knee, front leg nearly extending LEFT. Head and gloves tuck to the RIGHT as in Image1. Body is lower/flatter than a half-prone collapse but not yet identical to final Down. Back slightly arched above the mat, upper back aroundy335, head near Image1 final position. Continuous anatomy, no duplicate or crossfaded bodies. This missing transition must communicate downward momentum, not a rise."
+    },
+    {
+      "name": "knockdown_a_6",
+      "ref": "near_down_reference",
+      "prompt": "Asset: one blue boxer falling-animation sprite on a TRUE TRANSPARENT SQUARE canvas. Image1 is the authoritative final Down pose and image3 is the approved upright character identity. Image2 is a pose reference with overlapping neighbors: reconstruct ONLY the intended central boxer, never copy neighbors, checkerboard or cropped limbs. Match character proportions, compact athletic tan body, short black hair, blue gloves/shorts/lace-up boots, white trim and black ink. Keep logical512x512 canvas, root(256,448), floor/baseline448, right-facing, same character scale as references: head roughly60px on512canvas, no zoom or per-pose fitting. Both COMPLETE legs and boots, exactly two arms/two legs, single solid opaque figure. No labels, ground shadow, impact lines, ghosting or backgrounds. Use generous transparent margins. POSE: near-final Down settling. Follow Image1 composition VERY closely: boots/legs to left, body horizontal, head/gloves to right, same size and horizontal extent. Change only torso/hip to remain just slightly raised (about8logicalpixels) and knees slightly flexed as weight finishes settling. Head rests near gloves, no new push-up. This frame comes immediately before exact Image1 Down. Restore obscured contours from Image2, no neighbors."
+    }
+  ]
+}

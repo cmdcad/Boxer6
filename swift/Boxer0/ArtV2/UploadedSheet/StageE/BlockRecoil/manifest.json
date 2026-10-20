@@ -1,0 +1,93 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "integrated": false,
+  "image_generation_used": false,
+  "profiles": {
+    "jab": {
+      "duration_ms": 120,
+      "head_recoil_px": [
+        4,
+        8,
+        2
+      ]
+    },
+    "cross": {
+      "duration_ms": 160,
+      "head_recoil_px": [
+        7,
+        14,
+        3
+      ]
+    }
+  },
+  "source_reference": "StageC\\frames\\guard_entry_2.png",
+  "source_sha256": "6594cf88f25618f4f20a12a3a465c71aafe1601ca837fdd935b7519e2fec4530",
+  "upper_body_pivot_y": 258,
+  "fixed_lower_body_from_y": 258,
+  "method": "Scripted 2D upper-body lean; no redraw, root translation or vertical scaling.",
+  "frames": [
+    {
+      "kind": "jab",
+      "index": 0,
+      "file": "frames/block_jab_a_0.png",
+      "head_recoil_px": 4,
+      "duration_ms": 40.0,
+      "sha256": "c99dd899bbe055d4886044728c20f51d5a14eabed16b3646fe4693d5ec533120"
+    },
+    {
+      "kind": "jab",
+      "index": 1,
+      "file": "frames/block_jab_a_1.png",
+      "head_recoil_px": 8,
+      "duration_ms": 40.0,
+      "sha256": "8596dbd5c15af959560cd671005a2fd5e1e821215488e139667b911d34c68073"
+    },
+    {
+      "kind": "jab",
+      "index": 2,
+      "file": "frames/block_jab_a_2.png",
+      "head_recoil_px": 2,
+      "duration_ms": 40.0,
+      "sha256": "7f2b1dbf7481852624c58c48a53d3f1cc66557bdf7266013c856087e4874109c"
+    },
+    {
+      "kind": "cross",
+      "index": 0,
+      "file": "frames/block_cross_a_0.png",
+      "head_recoil_px": 7,
+      "duration_ms": 53.333333333333336,
+      "sha256": "1a2cf1a5b6b7896b0ddab970bde4349386ea916f206ce84626ef07fea30a7fb0"
+    },
+    {
+      "kind": "cross",
+      "index": 1,
+      "file": "frames/block_cross_a_1.png",
+      "head_recoil_px": 14,
+      "duration_ms": 53.333333333333336,
+      "sha256": "339989cf0346284a9bdbff7df04b135bddac5d8caf8c06e4f2b568be611e20bc"
+    },
+    {
+      "kind": "cross",
+      "index": 2,
+      "file": "frames/block_cross_a_2.png",
+      "head_recoil_px": 3,
+      "duration_ms": 53.333333333333336,
+      "sha256": "7682b0de6cb1986aeed141da16e0b52496bc4277d5a32a792c8bceab6444b624"
+    }
+  ],
+  "preview_note": "APNG uses exact rational timing; GIF Cross frame times are quantized to10ms.",
+  "limits": [
+    "Guard posture is preserved from the reference; this is an affine lean, not new anatomical drawings.",
+    "Minor interpolation softening and waist contour changes need visual review.",
+    "No live integration, Swift/XCTest, SpriteKit or iPhone validation performed."
+  ]
+}

@@ -1,3 +1,4 @@
+from active_art import frame
 from pathlib import Path
 import json
 import re
@@ -13,8 +14,8 @@ view=(root/'Boxer0/ContentView.swift').read_text(encoding='utf-8')
 manifest=json.loads((root/'IdleAnimation/bidirectional_manifest.json').read_text())
 assert len(manifest['variants'])==35
 for item in manifest['variants']:
-    src=Image.open(root/f"IdleAnimation/frames/{item['source']}.png").convert('RGBA')
-    dst=Image.open(root/f"IdleAnimation/frames/{item['target']}.png").convert('RGBA')
+    src=Image.open(frame(item['source'])).convert('RGBA')
+    dst=Image.open(frame(item['target'])).convert('RGBA')
     assert dst.size==(512,512) and dst.getchannel('A').tobytes()==src.getchannel('A').tobytes()
     assert dst.tobytes()!=src.tobytes()
     asset=Image.open(root/f"Boxer0/Assets.xcassets/{item['target']}.imageset/{item['target']}.png")

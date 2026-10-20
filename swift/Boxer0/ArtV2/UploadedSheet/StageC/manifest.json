@@ -1,0 +1,485 @@
+{
+  "canvas": [
+    512,
+    512
+  ],
+  "root": [
+    256,
+    448
+  ],
+  "baseline": 448,
+  "facing": "right",
+  "integrated": false,
+  "tool": "built-in imagegen",
+  "guard_entry_ms": 120,
+  "guard_effective_at_ms": 120,
+  "guarded_loop_ms": 480,
+  "frames": [
+    {
+      "clip": "guard_entry",
+      "index": 0,
+      "file": "frames/guard_entry_0.png",
+      "selected_source": "StageA\\frames\\idle_a_0.png",
+      "source_canvas": [
+        512,
+        512
+      ],
+      "duration_ms": 40,
+      "vertical_registration": 0,
+      "measurements": {
+        "bounds": [
+          184,
+          129,
+          329,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 206.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 446,
+          "sole_x": 311.0,
+          "ground_gap": 2
+        }
+      },
+      "sha256": "01c36a90c26abce32e3c2434786d0d42bcc1f41b90942cf9a79c68f16b223a30"
+    },
+    {
+      "clip": "guard_entry",
+      "index": 1,
+      "file": "frames/guard_entry_1.png",
+      "selected_source": "StageC\\source\\repaired\\guard_entry_1.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 40,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          184,
+          128,
+          330,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 206.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 445,
+          "sole_x": 300.5,
+          "ground_gap": 3
+        }
+      },
+      "sha256": "2b3925a0f12bff1df660e5d7c64774a290353adcbf35d15f554bd44d4ae0fcf3"
+    },
+    {
+      "clip": "guard_entry",
+      "index": 2,
+      "file": "frames/guard_entry_2.png",
+      "selected_source": "StageC\\source\\repaired\\guard_entry_2.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 40,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          184,
+          127,
+          330,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 206.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 445,
+          "sole_x": 300.0,
+          "ground_gap": 3
+        }
+      },
+      "sha256": "6594cf88f25618f4f20a12a3a465c71aafe1601ca837fdd935b7519e2fec4530"
+    },
+    {
+      "clip": "guarded_advance",
+      "index": 0,
+      "file": "frames/guarded_advance_0.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_advance_0.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          179,
+          127,
+          377,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 207.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 436,
+          "sole_x": 320.5,
+          "ground_gap": 12
+        }
+      },
+      "sha256": "260ba46239c5734e18d645dac4e23c7cea8ebae0f7d15e0d6ffa3b1521e21ed7"
+    },
+    {
+      "clip": "guarded_advance",
+      "index": 1,
+      "file": "frames/guarded_advance_1.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_advance_1.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          162,
+          132,
+          385,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 191.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 436,
+          "sole_x": 328.5,
+          "ground_gap": 12
+        }
+      },
+      "sha256": "4b779f8bf4190d87bb0b083d0810aa61bb9e756b7d4ded47d47a8611b5f433b5"
+    },
+    {
+      "clip": "guarded_advance",
+      "index": 2,
+      "file": "frames/guarded_advance_2.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_advance_2.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          135,
+          133,
+          378,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 174.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 342.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "9c3a17748af36532144408f7aa593aff395fbf89d81d5f9693f0a1e700d981e7"
+    },
+    {
+      "clip": "guarded_advance",
+      "index": 3,
+      "file": "frames/guarded_advance_3.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_advance_3.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": 0,
+      "measurements": {
+        "bounds": [
+          170,
+          130,
+          358,
+          449
+        ],
+        "rear": {
+          "sole_y": 442,
+          "sole_x": 203.5,
+          "ground_gap": 6
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 326.0,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "2a03d836115851fde90978fee61b2ac852b0252b0d7665f9c9b5e0af4ecf682e"
+    },
+    {
+      "clip": "guarded_advance",
+      "index": 4,
+      "file": "frames/guarded_advance_4.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_advance_4.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          171,
+          127,
+          342,
+          449
+        ],
+        "rear": {
+          "sole_y": 439,
+          "sole_x": 205.5,
+          "ground_gap": 9
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 309.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "b501595de218eed435b1993b814e5ffded3e49c64bcffb29379a3c7685959022"
+    },
+    {
+      "clip": "guarded_advance",
+      "index": 5,
+      "file": "frames/guarded_advance_5.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_advance_5.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          197,
+          127,
+          324,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 221.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 446,
+          "sole_x": 293.5,
+          "ground_gap": 2
+        }
+      },
+      "sha256": "61d8eb284890e4724eed4e504fd4f0b9432bb4da82f9462b1054edfe449e8310"
+    },
+    {
+      "clip": "guarded_retreat",
+      "index": 0,
+      "file": "frames/guarded_retreat_0.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_retreat_0.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          174,
+          136,
+          341,
+          449
+        ],
+        "rear": {
+          "sole_y": 438,
+          "sole_x": 209.0,
+          "ground_gap": 10
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 310.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "eba93b3d4c6d6a628a8b3f25425a8103111c2dc3de0b5a89167298f40597d602"
+    },
+    {
+      "clip": "guarded_retreat",
+      "index": 1,
+      "file": "frames/guarded_retreat_1.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_retreat_1.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          121,
+          137,
+          360,
+          449
+        ],
+        "rear": {
+          "sole_y": 444,
+          "sole_x": 155.5,
+          "ground_gap": 4
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 327.5,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "e23fcccb640b430cdf3ace8d4f5937868a02bc654c1e9b1851c0ac6bd3d65b1d"
+    },
+    {
+      "clip": "guarded_retreat",
+      "index": 2,
+      "file": "frames/guarded_retreat_2.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_retreat_2.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          135,
+          133,
+          378,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 174.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 448,
+          "sole_x": 342.0,
+          "ground_gap": 0
+        }
+      },
+      "sha256": "d7e4c9531a0d116c235b259f49d499f96c899e80edeb65e2e9568a37f98dbb59"
+    },
+    {
+      "clip": "guarded_retreat",
+      "index": 3,
+      "file": "frames/guarded_retreat_3.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_retreat_3.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          156,
+          128,
+          370,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 191.0,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 431,
+          "sole_x": 352.0,
+          "ground_gap": 17
+        }
+      },
+      "sha256": "13d2b2db6f9ce90b6c3f3658996a4b63a11a2180a90d9e7e2744d0beda6770f9"
+    },
+    {
+      "clip": "guarded_retreat",
+      "index": 4,
+      "file": "frames/guarded_retreat_4.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_retreat_4.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          171,
+          128,
+          329,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 207.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 440,
+          "sole_x": 316.5,
+          "ground_gap": 8
+        }
+      },
+      "sha256": "0c4bec58b37e43b9d90759a3e848f0495c3986c615017436fd899e4bf5757981"
+    },
+    {
+      "clip": "guarded_retreat",
+      "index": 5,
+      "file": "frames/guarded_retreat_5.png",
+      "selected_source": "StageC\\source\\repaired\\guarded_retreat_5.png",
+      "source_canvas": [
+        1254,
+        1254
+      ],
+      "duration_ms": 80,
+      "vertical_registration": -1,
+      "measurements": {
+        "bounds": [
+          197,
+          126,
+          326,
+          449
+        ],
+        "rear": {
+          "sole_y": 448,
+          "sole_x": 222.5,
+          "ground_gap": 0
+        },
+        "lead": {
+          "sole_y": 446,
+          "sole_x": 295.5,
+          "ground_gap": 2
+        }
+      },
+      "sha256": "a111210bfa96b25a1b8671c809a1ebc051ceefb064dc16699f564bebba3b4b66"
+    }
+  ],
+  "preview_note": "Entry GIF holds last pose for review; production timing remains 3x40ms."
+}
