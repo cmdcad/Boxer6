@@ -21,7 +21,7 @@ for item in manifest['variants']:
     assert dst.tobytes()==asset.tobytes()
 assert scene.count('tracker.evaluate(')==1
 assert 'resolveContact(.blue' in scene and 'resolveContact(.orange' in scene
-assert scene.count('health.receive(event)')==1
+assert scene.count('health.receive(event, simultaneous: simultaneous)')==1
 assert ': (blueGuardEffectiveAtContact ?? blueGuard.isEffective)' in scene
 assert 'private var blueReaction = HitReactionPlayback()' in scene
 assert 'private var blueKnockdown = KnockdownPlayback()' in scene
@@ -31,7 +31,7 @@ assert 'contactEvaluated' in punch and 'context?.completed = true' in contact
 assert 'blue.applyDamage(PunchDamage.amount(for: event.kind))' in contact
 assert 'orange.applyDamage(PunchDamage.amount(for: event.kind))' in contact
 assert 'cpuStartedThisTick' in scene and 'cpuOffense.disable()' in scene
-assert 'Blue Rise' in view and 'CPU Attack:' in view and '9A ' in view
+assert 'Blue Rise' in view and 'CPU Attack:' in view and '9B ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

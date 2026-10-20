@@ -24,6 +24,9 @@ final class IdlePlayback: ObservableObject {
     @Published var positionX = 0
     @Published var velocityX = 0
     @Published var inputGeneration = 0
+    @Published var vulnerabilityText = ""
+    @Published var counterSummary = ""
+    @Published var lastCounterText = ""
     @Published var blueAction = "READY"
     @Published var orangeAction = "READY"
     @Published var guardHeld = false
@@ -112,6 +115,9 @@ final class IdlePlayback: ObservableObject {
         jabAssetsAvailable = scene.jabAssetsAvailable
         jabContact = scene.showsJabContact
         jabContactCount = scene.jabContactCount
+        vulnerabilityText = "Vulnerable Blue: \(scene.isAttackVulnerable(.blue) ? "YES" : "NO") · Orange: \(scene.isAttackVulnerable(.orange) ? "YES" : "NO")"
+        counterSummary = scene.counterSummary
+        lastCounterText = scene.lastCounterText
         blueAction = scene.blueActionLabel
         orangeAction = scene.orangeActionLabel
         guardHeld = scene.guardHeld
@@ -293,6 +299,7 @@ struct ContentView: View {
             Text(playback.latestResultText)
             orangeAnimationReadout
             combatReadout
+            counterReadout
             assetWarnings
             contactGeometryReadout
         }
@@ -330,6 +337,15 @@ struct ContentView: View {
             Text("Blue Guard: \(playback.blueGuardStatus) | FX: \(playback.blueBlockFX)")
             Text("Blue Action: \(playback.blueAction) | Orange Action: \(playback.orangeAction)")
         }
+    }
+
+    private var counterReadout: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(playback.vulnerabilityText)
+            Text(playback.counterSummary)
+            Text(playback.lastCounterText)
+        }
+        .font(Font.system(size: 11, weight: .semibold, design: .monospaced))
     }
 
     @ViewBuilder
@@ -422,7 +438,7 @@ struct ContentView: View {
 
     var statusLabel: some View {
         VStack(spacing: 2) {
-            Text("9A · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
+            Text("9B · \(playback.clipName) \(playback.frameIndex + 1)/\(playback.frameCount)")
             Text("x \(playback.positionX) · v \(playback.velocityX)")
             if !playback.jabAssetsAvailable {
                 Text("Jab assets missing").foregroundColor(.red)

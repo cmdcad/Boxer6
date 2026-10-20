@@ -8,11 +8,11 @@ model = (root/'Boxer0/PunchContact.swift').read_text(encoding='utf-8')
 view = (root/'Boxer0/ContentView.swift').read_text(encoding='utf-8')
 assert 'guard state == .standing, health.current == 0' in model
 assert 'defeatRecorded = true' in model and 'defeatRecorded = false' in model
-assert 'guard canExchangePunches else { return false }' in model
+assert 'guard canExchangePunches || simultaneous else { return false }' in model
 assert 'health.canExchangePunches && jabAssetsAvailable' in scene
 assert 'health.canExchangePunches && crossAssetsAvailable' in scene
 handler = scene[scene.index('private func resolveContact'):scene.index('private func advanceOrange')]
-assert handler.index('guard health.canExchangePunches else { return }') < handler.index('tracker.evaluate(')
+assert handler.index('guard health.canExchangePunches else { return nil }') < handler.index('tracker.evaluate(')
 # 8A now allows the accepted final HIT recoil before the fall.
 assert 'if reactionAssetsAvailable { reaction.receive' in handler
 orange = scene[scene.index('private func advanceOrange'):scene.index('private var movementDirection')]
@@ -24,7 +24,7 @@ for expected in ['health.reset()', 'punch.cancel()', 'contactTracker.finish()', 
 for forbidden in ['rootA.', 'rootB.', 'contactTracker =', 'isPlaying =']:
     assert forbidden not in reset
 assert 'DEFEATED' in view and 'state == .defeated' in view
-assert '9A ' in view
+assert '9B ' in view
 print('PASS: eligibility before contact counters, one-shot defeat model, blocked post-defeat contacts, standing-only idle/step, clean reset, HUD source checks')
 compiler = shutil.which('swiftc')
 if compiler:

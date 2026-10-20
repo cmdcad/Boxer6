@@ -23,7 +23,7 @@ assert 'if canRequestGuard { requestGuard(true) }' in scene
 assert 'guardEffectiveAtContact = guardPlayback.isEffective' in scene
 assert ': (blueGuardEffectiveAtContact ?? blueGuard.isEffective)' in scene
 assert 'defensiveAI.cancel(reseed: true)' in scene
-assert 'CPU: ON' in view and 'playback.cpuStatus' in view and '9A ' in view
+assert 'CPU: ON' in view and 'playback.cpuStatus' in view and '9B ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

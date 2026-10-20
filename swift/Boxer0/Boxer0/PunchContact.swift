@@ -74,6 +74,8 @@ struct PunchContactEvent {
     let target: CGRect
     let attacker: SpriteCanvasTransform
     let defender: SpriteCanvasTransform
+    var isCounterAttempt = false
+    var isSuccessfulCounter: Bool { isCounterAttempt && result == .hit }
     var attackerID: FighterID = .blue
     var defenderID: FighterID { attackerID.opponent }
     var centerDistance: CGFloat { PunchContactGeometry.distance(center: center, target: target) }
@@ -107,6 +109,8 @@ struct FighterSpacing {
 /// Receives contact markers, never render-frame polling. One evaluation per
 /// accepted punch, independent of pause, repeated markers or frame stepping.
 struct PunchContactTracker {
+    private(set) var counterAttempts = 0
+    private(set) var successfulCounters = 0
     private(set) var jabContacts = 0
     private(set) var crossContacts = 0
     private(set) var hits = 0
@@ -119,10 +123,12 @@ struct PunchContactTracker {
     private(set) var context: AttackContext?
 
     mutating func begin(_ kind: PunchKind, attackerID: FighterID = .blue,
-                        attackID: Int? = nil, startTime: Double = 0) {
+                        attackID: Int? = nil, startTime: Double = 0, counterAttempt: Bool = false) {
         sequence = attackID ?? (sequence + 1)
         context = AttackContext(id: sequence, attacker: attackerID, defender: attackerID.opponent,
                                 kind: kind, startTime: startTime)
+        context?.isCounterAttempt = counterAttempt
+        if counterAttempt { counterAttempts += 1 }
         activeKind = kind
         evaluated = false
     }
@@ -144,6 +150,8 @@ struct PunchContactTracker {
                                       center: center, radius: radius, target: target,
                                       attacker: attacker, defender: defender)
         event.attackerID = context?.attacker ?? .blue
+        event.isCounterAttempt = context?.isCounterAttempt ?? false
+        if event.isSuccessfulCounter { successfulCounters += 1 }
         if kind == .jab { jabContacts += 1 } else { crossContacts += 1 }
         switch result {
         case .hit: hits += 1
@@ -211,8 +219,8 @@ struct FighterHealthState {
     // Tracker sequences are monotonic for this scene. Resetting health must
     // retain this watermark so replaying an old event cannot damage again.
     @discardableResult
-    mutating func receive(_ event: PunchContactEvent) -> Bool {
-        guard canExchangePunches else { return false }
+    mutating func receive(_ event: PunchContactEvent, simultaneous: Bool = false) -> Bool {
+        guard canExchangePunches || simultaneous else { return false }
         if event.attackerID == .blue {
             guard event.sequence > lastContactSequence else { return false }
             lastContactSequence = event.sequence

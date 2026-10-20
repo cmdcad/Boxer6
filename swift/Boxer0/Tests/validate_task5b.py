@@ -55,10 +55,10 @@ for i in range(8):
     assert image.tobytes()==Image.open(ROOT/f'IdleAnimation/frames/cross_a_{i}.png').tobytes()
 print('PASS: four non-idle reaction poses, 240 ms preview, fixed lower body/SVG groups, recoil direction, original limb lengths and cross-render regression')
 update=scene[scene.index('override func update'):scene.index('private var lastPublishedFrame')]
-assert update.index('guard isPlaying, hasFocus')<update.index('advanceOrange(dt)')<update.index('punch.advance(dt, preserveContactPose: true)')<update.index('handlePunchEvent(event)')<update.index('applyFrames()')
+assert update.index('guard isPlaying, hasFocus')<update.index('advanceOrange(dt)')<update.index('advanceActiveAttacks(dt)')<update.index('applyFrames()')
 assert update.count('advanceOrange(dt)')==1
 step=scene[scene.index('func stepFrame()'):scene.index('func setSpeed(')]
-assert step.index('advanceOrange(effectStep)')<step.index('punch.advance(effectStep, preserveContactPose: true)')<step.index('handlePunchEvent(event)')<step.index('applyFrames()')
+assert step.index('advanceOrange(effectStep)')<step.index('advanceActiveAttacks(effectStep)')<step.index('applyFrames()')
 handler=scene[scene.index('private func resolveContact'):scene.index('private func advanceOrange')]
 assert handler.index('tracker.evaluate(')<handler.index('reaction.receive(.hit, from: event.kind)')<handler.index('onPunchContact?(event)')
 assert 'DispatchQueue' not in handler and 'async' not in handler and 'SKAction' not in handler

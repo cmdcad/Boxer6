@@ -11,7 +11,7 @@ assert 'var jabDuration = 0.12' in model and 'var crossDuration = 0.22' in model
 assert 'private var blueRecovery = PunchRecovery()' in scene and 'private var orangeRecovery = PunchRecovery()' in scene
 assert scene.count('blueRecovery.completeAttack()')==1 and scene.count('orangeRecovery.completeAttack()')==1
 update=scene[scene.index('override func update'):scene.index('private var lastPublishedFrame')]
-assert update.index('guard isPlaying, hasFocus')<update.index('advancePhysicalRecovery(dt)')<update.index('punch.advance(dt')
+assert update.index('guard isPlaying, hasFocus')<update.index('advancePhysicalRecovery(dt)')<update.index('advanceActiveAttacks(dt)')
 assert '&& !blueRecovery.isRecovering && !blueBlockFeedback.isActive && !guardHeld' in scene
 assert '&& !orangeRecovery.isRecovering' in scene
 assert 'guardHeld && canHoldGuard && !punch.isActive && !blueVisualBusy && !blueRecovery.isRecovering' in scene
@@ -23,7 +23,7 @@ assert 'cpuOffense.cancelPreparation()' in scene
 assert 'if blueVisualBusy || blueCombatState == .defeated || blueRecovery.isRecovering || blueBlockFeedback.isActive' in scene
 assert 'blueBlockFeedback.isActive && playerGuardAssetsAvailable' in scene
 assert 'blockFeedback.isActive && blockRecoilAssetsAvailable' in scene
-assert 'Blue Action:' in view and 'Orange Action:' in view and '9A ' in view
+assert 'Blue Action:' in view and 'Orange Action:' in view and '9B ' in view
 for file in (root/'Boxer0').glob('*.swift'):
     code=re.sub(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"','',file.read_text(encoding='utf-8'))
     depth=0

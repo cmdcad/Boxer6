@@ -79,6 +79,17 @@ final class IdleTestScene: SKScene {
             orangeAccumulator = 0
         }
     }
+    func isAttackVulnerable(_ fighter: FighterID) -> Bool {
+        if fighter == .blue {
+            return blueCombatState == .standing && !blueVisualBusy && (punch.isActive || blueRecovery.isRecovering)
+        }
+        return orangeCombatState == .standing && !reaction.isActive && !knockdown.hasStarted
+            && (orangePunch.isActive || orangeRecovery.isRecovering)
+    }
+    var counterSummary: String {
+        "Counters Blue \(contactTracker.successfulCounters)/\(contactTracker.counterAttempts) · Orange \(cpuContactTracker.successfulCounters)/\(cpuContactTracker.counterAttempts)"
+    }
+    private(set) var lastCounterText = "Last Counter: -"
     private var blueRecovery = PunchRecovery()
     private var orangeRecovery = PunchRecovery()
     var blueActionLabel: String {
@@ -510,10 +521,8 @@ final class IdleTestScene: SKScene {
             advanceOrange(dt)
         }
         if punch.isActive {
-            let event = punch.advance(dt, preserveContactPose: true)
-            handlePunchEvent(event)
+            advanceActiveAttacks(dt)
             guardEffectiveAtContact = nil
-            advanceCPUAttack(dt)
             applyFrames()
             publishIfNeeded()
             return
@@ -521,7 +530,7 @@ final class IdleTestScene: SKScene {
 
         if blueVisualBusy || blueCombatState == .defeated || blueRecovery.isRecovering || blueBlockFeedback.isActive {
             motion.stop()
-            advanceCPUAttack(dt)
+            advanceActiveAttacks(dt)
             applyFrames(); publishIfNeeded()
             return
         }
@@ -554,7 +563,7 @@ final class IdleTestScene: SKScene {
         if motion.velocity == 0 { settleIdle() }
         blueXFraction = rootA.position.x / max(size.width, 1)
         originA.position = rootA.position
-        advanceCPUAttack(dt)
+        advanceActiveAttacks(dt)
 
         applyFrames()
         publishIfNeeded()
@@ -642,14 +651,11 @@ final class IdleTestScene: SKScene {
         // Every action receives the same simulation duration; step does not
         // silently advance a50ms Jab while only40ms elapses for guard/recovery.
         advanceOrange(effectStep)
-        if punch.isActive {
-            let event = punch.advance(effectStep, preserveContactPose: true)
-            handlePunchEvent(event)
-        } else if !blueVisualBusy && blueCombatState == .standing && !blueRecovery.isRecovering {
+        if !punch.isActive && !blueVisualBusy && blueCombatState == .standing && !blueRecovery.isRecovering {
             animateBoxer(&blueAccumulator, frame: &frameIndex, clip: activeClip,
                          speed: playbackSpeed.rawValue, dt: effectStep)
         }
-        advanceCPUAttack(effectStep)
+        advanceActiveAttacks(effectStep)
         applyFrames(); onPlaybackChange?()
     }
 
@@ -700,7 +706,8 @@ final class IdleTestScene: SKScene {
             guard cpuEnabled, canCPUAttack, orangePunch.start(kind) else { return false }
             orangeRecovery.begin(kind)
             attackSequence += 1
-            cpuContactTracker.begin(kind, attackerID: .orange, attackID: attackSequence, startTime: simulationTime)
+            cpuContactTracker.begin(kind, attackerID: .orange, attackID: attackSequence, startTime: simulationTime,
+                                    counterAttempt: isAttackVulnerable(.blue))
             stopCPUFootwork()
             defensiveAI.cancel()
             cpuStartedThisTick = true
@@ -712,7 +719,8 @@ final class IdleTestScene: SKScene {
         blueRecovery.begin(kind)
         motion.stop()
         attackSequence += 1
-        contactTracker.begin(kind, attackerID: .blue, attackID: attackSequence, startTime: simulationTime)
+        contactTracker.begin(kind, attackerID: .blue, attackID: attackSequence, startTime: simulationTime,
+                             counterAttempt: isAttackVulnerable(.orange))
         punchStartSequence += 1
         defensiveAI.observe(sequence: punchStartSequence, kind: kind,
                             inRange: predictedContact(.blue, kind: kind), eligible: canRequestGuard)
@@ -731,8 +739,9 @@ final class IdleTestScene: SKScene {
             target: b.sceneRect(fromImage: contactGeometry.defenderTarget))
     }
 
-    private func resolveContact(_ attacker: FighterID, kind: PunchKind) {
-        guard health.canExchangePunches else { return }
+    @discardableResult
+    private func resolveContact(_ attacker: FighterID, kind: PunchKind, deferImpact: Bool = false) -> PunchContactEvent? {
+        guard health.canExchangePunches else { return nil }
         var tracker = attacker == .blue ? contactTracker : cpuContactTracker
         let contact = tracker.evaluate(kind,
             attacker: canvasTransform(for: attacker == .blue ? boxerA : boxerB),
@@ -741,8 +750,18 @@ final class IdleTestScene: SKScene {
                 ? (guardEffectiveAtContact ?? guardPlayback.isEffective)
                 : (blueGuardEffectiveAtContact ?? blueGuard.isEffective))
         if attacker == .blue { contactTracker = tracker } else { cpuContactTracker = tracker }
-        guard let event = contact else { return }
-        health.receive(event)
+        guard let event = contact else { return nil }
+        if !deferImpact { applyContact(event) }
+        return event
+    }
+
+    private func applyContact(_ event: PunchContactEvent, simultaneous: Bool = false) {
+        health.receive(event, simultaneous: simultaneous)
+        if event.isCounterAttempt {
+            let actor = event.attackerID == .blue ? "BLUE" : "ORANGE"
+            let kind = event.kind == .jab ? "JAB" : "CROSS"
+            lastCounterText = "Last Counter: \(actor) \(kind) \(event.result.rawValue)"
+        }
         if event.result == .hit {
             if event.defenderID == .orange {
                 orangeRecovery.cancel()
@@ -774,7 +793,6 @@ final class IdleTestScene: SKScene {
     }
 
     private func handlePunchEvent(_ event: (contact: Bool, completed: Bool)) {
-        if event.contact { resolveContact(.blue, kind: punch.kind) }
         if event.completed {
             contactTracker.finish(); motion.stop(); settleIdle()
             blueRecovery.completeAttack()
@@ -785,17 +803,39 @@ final class IdleTestScene: SKScene {
     private func advanceCPUOffense(_ dt: Double) {
         if !health.canExchangePunches { cpuOffense.disable(); return }
         if let kind = cpuOffense.advance(dt, enabled: cpuEnabled, eligible: canCPUAttack,
-            jabInRange: predictedContact(.orange, kind: .jab), crossInRange: predictedContact(.orange, kind: .cross)) {
+            jabInRange: predictedContact(.orange, kind: .jab), crossInRange: predictedContact(.orange, kind: .cross),
+            opponentVulnerable: isAttackVulnerable(.blue)) {
             if !beginAttack(.orange, kind: kind) { cpuOffense.cancel() }
         }
     }
-    private func advanceCPUAttack(_ dt: Double) {
-        if cpuStartedThisTick { cpuStartedThisTick = false; return }
-        guard orangePunch.isActive else { return }
-        let kind = orangePunch.kind
-        let event = orangePunch.advance(dt, preserveContactPose: true)
-        if event.contact { resolveContact(.orange, kind: kind) }
-        if event.completed {
+    private func advanceActiveAttacks(_ dt: Double) {
+        let blueKind = punch.kind
+        let orangeKind = orangePunch.kind
+        let blueTime = punch.timeUntilContact ?? .infinity
+        let orangeTime = orangePunch.timeUntilContact ?? .infinity
+        let blueEvent = punch.advance(dt, preserveContactPose: true)
+        let orangeEvent: (contact: Bool, completed: Bool)
+        if cpuStartedThisTick {
+            cpuStartedThisTick = false
+            orangeEvent = (false, false)
+        } else { orangeEvent = orangePunch.advance(dt, preserveContactPose: true) }
+        if blueEvent.contact && orangeEvent.contact && abs(blueTime-orangeTime) < 1e-9 {
+            // Snapshot both legal contacts BEFORE reactions cancel either clock.
+            let blueContact = resolveContact(.blue, kind: blueKind, deferImpact: true)
+            let orangeContact = resolveContact(.orange, kind: orangeKind, deferImpact: true)
+            if let event = blueContact { applyContact(event, simultaneous: true) }
+            if let event = orangeContact { applyContact(event, simultaneous: true) }
+        } else if blueTime <= orangeTime {
+            if blueEvent.contact { resolveContact(.blue, kind: blueKind) }
+            if orangeEvent.contact && orangePunch.isActive { resolveContact(.orange, kind: orangeKind) }
+        } else {
+            if orangeEvent.contact { resolveContact(.orange, kind: orangeKind) }
+            if blueEvent.contact && punch.isActive { resolveContact(.blue, kind: blueKind) }
+        }
+        if blueEvent.completed && blueRecovery.phase == .attacking {
+            handlePunchEvent(blueEvent)
+        } else if punch.isActive { frameIndex = punch.frameIndex }
+        if orangeEvent.completed && orangeRecovery.phase == .attacking {
             cpuContactTracker.finish(); cpuOffense.finished()
             orangeRecovery.completeAttack()
             orangeFrame = 0; orangeAccumulator = 0

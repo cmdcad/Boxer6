@@ -49,7 +49,7 @@ for folder in ['Boxer0','Tests']:
         assert not re.search(r'\b(?:if|guard|while)\s+let\s+\w+\s*\{',text)
         assert text.count('{') == text.count('}'),file
 assert scene.count('tracker.evaluate(') == 1
-assert 'guard health.canExchangePunches else { return }' in scene
+assert 'guard health.canExchangePunches else { return nil }' in scene
 assert 'contactTracker.begin(kind, attackerID: .blue' in scene and 'contactTracker.finish()' in scene
 assert 'SKPhysicsBody' not in source+scene
 project = (ROOT/'Boxer0.xcodeproj/project.pbxproj').read_text()

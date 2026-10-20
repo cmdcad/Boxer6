@@ -38,7 +38,7 @@ assert 'blue.reset()' not in recover and 'lastContactSequence =' not in recover
 reset=scene[scene.index('func resetHealth()'):scene.index('var contactGeometry')]
 assert 'knockdown.cancel()' in reset
 assert 'Blue Rise' in view and '.disabled(!playback.canRise)' in view
-assert 'playback.orangeCombatState.rawValue' in view and '9A ' in view
+assert 'playback.orangeCombatState.rawValue' in view and '9B ' in view
 print('PASS: eight integrated transparent poses, baseline/root contract, exact down/idle endpoints, down-only Rise, shared clock, orange-only completion health policy, reset and HUD source checks')
 compiler=shutil.which('swiftc')
 if compiler:

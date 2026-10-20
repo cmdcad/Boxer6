@@ -89,6 +89,7 @@ struct AttackContext {
     let defender: FighterID
     let kind: PunchKind
     let startTime: Double
+    var isCounterAttempt = false
     var contactEvaluated = false
     var completed = false
 }
@@ -97,6 +98,7 @@ enum CPUOffenseState: String { case ready, preparing, attacking, cooldown }
 struct CPUOffense {
     var decisionInterval = 0.30
     var jabWeight = 0.70
+    var counterOpportunityAttackChance = 0.65
     var jabPreparation = 0.18
     var crossPreparation = 0.28
     var jabCooldown = 0.65
@@ -125,7 +127,7 @@ struct CPUOffense {
         remaining = max(minimumCompletedInterval, kind == .jab ? jabCooldown : crossCooldown)
     }
     mutating func advance(_ dt: Double, enabled: Bool, eligible: Bool,
-                          jabInRange: Bool, crossInRange: Bool) -> PunchKind? {
+                          jabInRange: Bool, crossInRange: Bool, opponentVulnerable: Bool = false) -> PunchKind? {
         guard dt.isFinite, dt >= 0 else { return nil }
         if state == .attacking { return nil }
         if state == .cooldown {
@@ -142,6 +144,11 @@ struct CPUOffense {
         }
         remaining = decisionInterval
         guard jabInRange || crossInRange else { return nil }
+        if opponentVulnerable {
+            randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
+            let opportunityDraw = Double(randomState >> 11) / 9007199254740992.0
+            guard opportunityDraw < min(1, max(0, counterOpportunityAttackChance)) else { return nil }
+        }
         randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
         let draw = Double(randomState >> 11) / 9007199254740992.0
         kind = !crossInRange ? .jab : (!jabInRange ? .cross : (draw < jabWeight ? .jab : .cross))

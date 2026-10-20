@@ -27,7 +27,7 @@ assert Image.open(root/'IdleAnimation/frames/down_b_0.png').tobytes()==Image.ope
 assert 'static let duration = 0.64' in model and 'static let frameDuration = 0.08' in model
 assert 'guard !hasStarted' in model
 handler=scene[scene.index('private func resolveContact'):scene.index('private func startKnockdownIfReady')]
-assert handler.index('health.receive(event)')<handler.index('reaction.receive(.hit, from: event.kind)')
+assert handler.index('health.receive(event, simultaneous: simultaneous)')<handler.index('reaction.receive(.hit, from: event.kind)')
 assert 'health.canExchangePunches && reactionAssetsAvailable' not in handler
 start=scene[scene.index('private func startKnockdownIfReady'):scene.index('private func advanceOrange')]
 assert 'orangeCombatState == .defeated, !reaction.isActive' in start
@@ -40,7 +40,7 @@ for forbidden in ['rootA.', 'rootB.', '.position', '.xScale', '.yScale', 'Timer'
 reset=scene[scene.index('func resetHealth()'):scene.index('var contactGeometry')]
 assert 'knockdown.cancel()' in reset and 'reaction.cancel()' in reset
 assert 'Text("Orange: down")' in view and 'playback.orangeFrameCount' in view
-assert '9A ' in view
+assert '9B ' in view
 print('PASS: all nine integrated RGBA assets, baseline448, matching down pose, manifest, scene-clock sequence, final recoil, reset, diagnostics and unchanged transforms')
 compiler=shutil.which('swiftc')
 if compiler:
