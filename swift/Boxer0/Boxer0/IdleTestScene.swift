@@ -1534,9 +1534,34 @@ final class IdleTestScene: SKScene {
         } else {
             boxerB.texture = orangeBounceAvailable ? orangeBounceV3[orangeBounceFrame] : idleB[orangeFrame % idleB.count]
         }
+        applyOrangeVisualPose()
         applyImpactEmphasis()
         textureCanvasInfo = "child A\(Int(boxerA.size.width)) B\(Int(boxerB.size.width)) · tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0))"
         updateContactGuides()
+    }
+
+    /// Orange V1 art already faces left. The scene mirrors legacy right-facing
+    /// textures via rootB.xScale; cancel that mirror for the approved V1 images.
+    /// Only the sprite child is transformed: roots, hit points and combat clocks
+    /// are not moved. Normal and heavy reactions have distinct recoil envelopes.
+    private func applyOrangeVisualPose() {
+        let approvedReaction = reaction.isActive && reaction.approvedOrangeArt
+        let approvedBounce = orangeCombatState == .standing && !reaction.isActive
+            && !knockdown.hasStarted && !orangePunch.isActive && !orangeRecovery.isRecovering
+            && !blockFeedback.isActive && !guardPlayback.isSelected
+            && orangeLocomotionClip == .idle && orangeBounceAvailable
+        boxerB.xScale = approvedReaction || approvedBounce ? -1 : 1
+        boxerB.yScale = 1
+        boxerB.zRotation = 0
+
+        guard approvedReaction else { return }
+        let progress = Double(reaction.frameIndex) / Double(max(1, reaction.activeFrameCount - 1))
+        let isHeavy = reaction.profile?.punch == .cross
+        // The cross recoils farther and holds a visible off-balance pose.
+        // The final pose settles at zero so bounce resumes without a jump.
+        let envelope = pow(sin(.pi * progress), isHeavy ? 0.65 : 1.4)
+        boxerB.zRotation = CGFloat((isHeavy ? -9.0 : -2.0) * .pi / 180 * envelope)
+        boxerB.yScale = CGFloat(1 - (isHeavy ? 0.035 : 0.008) * envelope)
     }
 
     private func applyImpactEmphasis() {
