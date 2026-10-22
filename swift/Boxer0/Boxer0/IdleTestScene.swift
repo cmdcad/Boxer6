@@ -1131,6 +1131,8 @@ final class IdleTestScene: SKScene {
             if reaction.advance(dt * (reaction.approvedOrangeArt ? playbackSpeed.rawValue : 1)) {
                 orangeFrame = 0
                 orangeAccumulator = 0
+                // Last approved pose matches guard 00; resume bounce at 01.
+                if orangeBounceAvailable { orangeBounceFrame = 1; orangeBounceAccumulator = 0 }
                 // Display fall frame zero now; never consume this tick twice.
                 startKnockdownIfReady()
             }
@@ -1270,6 +1272,7 @@ final class IdleTestScene: SKScene {
         reaction.setApprovedOrangeArt(orangeNormalV1.count == 18 && orangeHeavyV1.count == 14)
         hitReactB = loadPunchTextures(prefix: "hit_react_b", count: HitReactionPlayback.frameCount)
         reactionAssetsAvailable = hitReactB.count == HitReactionPlayback.frameCount
+            || (orangeNormalV1.count == 18 && orangeHeavyV1.count == 14)
         knockdownB = loadPunchTextures(prefix: "knockdown_b", count: KnockdownPlayback.frameCount)
         downB = loadPunchTextures(prefix: "down_b", count: 1)
         knockdownAssetsAvailable = knockdownB.count == KnockdownPlayback.frameCount && downB.count == 1
@@ -1500,8 +1503,11 @@ final class IdleTestScene: SKScene {
             boxerB.texture = downB[0]
         } else if reaction.isActive && reactionAssetsAvailable {
             let approved = reaction.profile?.punch == .cross ? orangeHeavyV1 : orangeNormalV1
-            boxerB.texture = reaction.approvedOrangeArt && reaction.frameIndex < approved.count
-                ? approved[reaction.frameIndex] : hitReactB[reaction.frameIndex]
+            if reaction.approvedOrangeArt && reaction.frameIndex < approved.count {
+                boxerB.texture = approved[reaction.frameIndex]
+            } else if reaction.frameIndex < hitReactB.count {
+                boxerB.texture = hitReactB[reaction.frameIndex]
+            }
         } else if orangePunch.isActive && orangePunchAssetsAvailable {
             let textures = orangePunch.kind == .jab ? jabB : crossB
             boxerB.texture = textures[orangePunch.frameIndex]
