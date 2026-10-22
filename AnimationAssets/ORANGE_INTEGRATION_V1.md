@@ -28,3 +28,6 @@ The package was statically verified for 512×512 RGBA frames, named image sets a
 
 ## Repository tracking
 This commit records the approved animation definitions and integration instructions only. The local ZIP, PNG binaries, and replacement Swift files **have not been uploaded or committed**. Do not mark the SpriteKit integration as merged or device-tested until these steps are completed.
+
+## October 22 integration update
+The current `swift/Boxer0/Boxer0/HitReactionPlayback.swift` and `IdleTestScene.swift` now contain approved Orange V1 playback wiring on this branch (commits `cda715c`, `ec4fbea`, `c03939c`). Blue retains its original four-frame reaction. The new Orange image sets are **not yet in GitHub**. An asset-only local ZIP `Boxer0_Orange_V1_Assets_For_Current_Game.zip` contains the 49 image sets to copy into the existing asset catalog. Existing `ContentView.swift` controls are unchanged; the animations trigger from real jab/cross hit events. This is an unbuilt, untested source merge; not a verified playable release.
