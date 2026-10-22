@@ -1307,7 +1307,20 @@ final class IdleTestScene: SKScene {
     private func loadNumberedTextures(prefix: String, count: Int) -> [SKTexture] {
         let images = (0..<count).compactMap { UIImage(named: String(format: "%@_%02d", prefix, $0)) }
         guard images.count == count, images.allSatisfy({ $0.cgImage?.width == 512 && $0.cgImage?.height == 512 }) else { return [] }
-        return images.map { let texture = SKTexture(image: $0); texture.filteringMode = .linear; return texture }
+        return images.map { image in
+            // Approved Orange art faces left already. Pre-flip its pixels so
+            // rootB's existing mirror restores left-facing art without changing
+            // the SpriteKit child transform used by contact geometry.
+            let renderer = UIGraphicsImageRenderer(size: image.size)
+            let corrected = renderer.image { context in
+                context.cgContext.translateBy(x: image.size.width, y: 0)
+                context.cgContext.scaleBy(x: -1, y: 1)
+                image.draw(at: .zero)
+            }
+            let texture = SKTexture(image: corrected)
+            texture.filteringMode = .linear
+            return texture
+        }
     }
 
     private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
@@ -1540,17 +1553,13 @@ final class IdleTestScene: SKScene {
         updateContactGuides()
     }
 
-    /// Orange V1 art already faces left. The scene mirrors legacy right-facing
-    /// textures via rootB.xScale; cancel that mirror for the approved V1 images.
-    /// Only the sprite child is transformed: roots, hit points and combat clocks
-    /// are not moved. Normal and heavy reactions have distinct recoil envelopes.
+    /// Approved Orange art is corrected when textures load. Keep the SpriteKit
+    /// child unmirrored so the established contact geometry is unchanged.
+    /// Normal and heavy reactions have distinct recoil envelopes.
     private func applyOrangeVisualPose() {
         let approvedReaction = reaction.isActive && reaction.approvedOrangeArt
-        let approvedBounce = orangeCombatState == .standing && !reaction.isActive
-            && !knockdown.hasStarted && !orangePunch.isActive && !orangeRecovery.isRecovering
-            && !blockFeedback.isActive && !guardPlayback.isSelected
-            && orangeLocomotionClip == .idle && orangeBounceAvailable
-        boxerB.xScale = approvedReaction || approvedBounce ? -1 : 1
+        // Keep child geometry at +1: contact and spacing transforms rely on it.
+        boxerB.xScale = 1
         boxerB.yScale = 1
         boxerB.zRotation = 0
 
