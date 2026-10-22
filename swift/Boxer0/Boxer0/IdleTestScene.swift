@@ -332,6 +332,12 @@ final class IdleTestScene: SKScene {
         applyFrames(); onPlaybackChange?()
     }
     private var reaction = HitReactionPlayback()
+    private var orangeBounceV3: [SKTexture] = []
+    private var orangeNormalV1: [SKTexture] = []
+    private var orangeHeavyV1: [SKTexture] = []
+    private var orangeBounceFrame = 0
+    private var orangeBounceAccumulator = 0.0
+    private var orangeBounceAvailable: Bool { orangeBounceV3.count == 17 }
     private var knockdown = KnockdownPlayback()
     private var guardPlayback = GuardPlayback()
     private var defensiveAI = DefensiveAI()
@@ -420,10 +426,12 @@ final class IdleTestScene: SKScene {
             && !(orangeRecovery.kind == .jab ? jabRecoveryB : crossRecoveryB).isEmpty
     }
     var orangeAnimationName: String {
-        orangeHasDedicatedRecoveryPose ? "\(orangeClip.rawValue)_recovery" : orangeClip.rawValue
+        reaction.isActive && reaction.approvedOrangeArt ? (reaction.profile?.punch == .cross ? "orange_heavy_v1" : "orange_normal_v1") : (orangeHasDedicatedRecoveryPose ? "\(orangeClip.rawValue)_recovery" : orangeClip.rawValue)
     }
     var orangeFrameCount: Int {
+        if reaction.isActive && reaction.approvedOrangeArt { return reaction.activeFrameCount }
         if orangeHasDedicatedRecoveryPose { return 1 }
+        if orangeClip == .idle && orangeBounceAvailable { return orangeBounceV3.count }
         switch orangeClip {
         case .idle, .hitReact: return 4
         case .advance, .retreat, .jab: return 6
@@ -438,6 +446,7 @@ final class IdleTestScene: SKScene {
         if orangePunch.isActive { return orangePunch.frameIndex }
         if orangeHasDedicatedRecoveryPose { return 0 }
         if orangeRecovery.isRecovering { return orangeRecovery.kind.recoveryPoseFrame }
+        if orangeClip == .idle && orangeBounceAvailable { return orangeBounceFrame }
         return guardPlayback.isSelected ? guardPlayback.frameIndex : orangeFrame
     }
     private var contactTracker = PunchContactTracker()
@@ -468,6 +477,7 @@ final class IdleTestScene: SKScene {
         punch.cancel()
         contactTracker.finish()
         reaction.cancel()
+        orangeBounceFrame = 0; orangeBounceAccumulator = 0
         knockdown.cancel()
         guardPlayback.cancel()
         blockFeedback.cancel()
@@ -621,6 +631,7 @@ final class IdleTestScene: SKScene {
         clearBlueGuardInput()
         punch.cancel()
         reaction.cancel()
+        orangeBounceFrame = 0; orangeBounceAccumulator = 0
         knockdown.cancel()
         orangePunch.cancel(); cpuContactTracker.finish()
         blueReaction.cancel(); blueKnockdown.cancel()
@@ -811,7 +822,8 @@ final class IdleTestScene: SKScene {
         var duration = activeClip.cycleDuration / Double(activeClip.frameCount)
         if punch.isActive { duration = min(duration, punch.kind.frameDuration) }
         if orangePunch.isActive { duration = min(duration, orangePunch.kind.frameDuration) }
-        if blueReaction.isActive || reaction.isActive { duration = min(duration, HitReactionPlayback.frameDuration) }
+        if blueReaction.isActive { duration = min(duration, HitReactionPlayback.frameDuration) }
+        if reaction.isActive { duration = min(duration, reaction.activeFrameDuration / (reaction.approvedOrangeArt ? playbackSpeed.rawValue : 1)) }
         if blueKnockdown.clip == .knockdown || knockdown.clip == .knockdown { duration = min(duration, KnockdownPlayback.frameDuration) }
         if blueKnockdown.clip == .rise || knockdown.clip == .rise { duration = min(duration, KnockdownPlayback.riseFrameDuration) }
         if blueGuard.isSelected || guardPlayback.isSelected { duration = min(duration, GuardPlayback.frameDuration) }
@@ -962,6 +974,7 @@ final class IdleTestScene: SKScene {
                     orangePunch.cancel(); cpuContactTracker.finish(); cpuOffense.finished()
                 } else { cpuOffense.cancelPreparation() }
                 if reactionAssetsAvailable { reaction.receive(.hit, from: event.kind) }
+                orangeBounceFrame = 0; orangeBounceAccumulator = 0
                 orangeFrame = 0; orangeAccumulator = 0
                 startKnockdownIfReady()
             } else {
@@ -1115,9 +1128,11 @@ final class IdleTestScene: SKScene {
         if knockdown.hasStarted {
             if knockdown.advance(dt) { completeOrangeRecovery() }
         } else if reaction.isActive {
-            if reaction.advance(dt) {
+            if reaction.advance(dt * (reaction.approvedOrangeArt ? playbackSpeed.rawValue : 1)) {
                 orangeFrame = 0
                 orangeAccumulator = 0
+                // Last approved pose matches guard 00; resume bounce at 01.
+                if orangeBounceAvailable { orangeBounceFrame = 1; orangeBounceAccumulator = 0 }
                 // Display fall frame zero now; never consume this tick twice.
                 startKnockdownIfReady()
             }
@@ -1128,6 +1143,17 @@ final class IdleTestScene: SKScene {
             advanceCPUFootwork(dt, guardEntry: !wasEffective)
         } else if orangeCombatState == .standing {
             advanceCPUFootwork(dt)
+        }
+        // Independent approved bounce clock. Root movement stays in CPU footwork.
+        if orangeCombatState == .standing && !reaction.isActive && !knockdown.hasStarted
+            && !guardPlayback.isSelected && !orangePunch.isActive && !orangeRecovery.isRecovering
+            && !blockFeedback.isActive && orangeLocomotionClip == .idle && orangeBounceAvailable {
+            orangeBounceAccumulator += dt * playbackSpeed.rawValue
+            let interval = 1.105 / Double(orangeBounceV3.count)
+            while orangeBounceAccumulator >= interval {
+                orangeBounceAccumulator -= interval
+                orangeBounceFrame = (orangeBounceFrame + 1) % orangeBounceV3.count
+            }
         }
     }
 
@@ -1240,8 +1266,13 @@ final class IdleTestScene: SKScene {
         crossRecoveryB = loadPunchTextures(prefix: "cross_recovery_b", count: 1)
         jabAssetsAvailable = jabA.count == PunchKind.jab.frameCount
         crossAssetsAvailable = crossA.count == PunchKind.cross.frameCount
+        orangeBounceV3 = loadNumberedTextures(prefix: "orange_bounce", count: 17)
+        orangeNormalV1 = loadNumberedTextures(prefix: "orange_normal", count: 18)
+        orangeHeavyV1 = loadNumberedTextures(prefix: "orange_heavy", count: 14)
+        reaction.setApprovedOrangeArt(orangeNormalV1.count == 18 && orangeHeavyV1.count == 14)
         hitReactB = loadPunchTextures(prefix: "hit_react_b", count: HitReactionPlayback.frameCount)
         reactionAssetsAvailable = hitReactB.count == HitReactionPlayback.frameCount
+            || (orangeNormalV1.count == 18 && orangeHeavyV1.count == 14)
         knockdownB = loadPunchTextures(prefix: "knockdown_b", count: KnockdownPlayback.frameCount)
         downB = loadPunchTextures(prefix: "down_b", count: 1)
         knockdownAssetsAvailable = knockdownB.count == KnockdownPlayback.frameCount && downB.count == 1
@@ -1271,6 +1302,12 @@ final class IdleTestScene: SKScene {
         blockCrossB = loadPunchTextures(prefix: "block_cross_b", count: BlockFeedbackPlayback.frameCount)
         blockRecoilAssetsAvailable = blockJabB.count == BlockFeedbackPlayback.frameCount
             && blockCrossB.count == BlockFeedbackPlayback.frameCount
+    }
+
+    private func loadNumberedTextures(prefix: String, count: Int) -> [SKTexture] {
+        let images = (0..<count).compactMap { UIImage(named: String(format: "%@_%02d", prefix, $0)) }
+        guard images.count == count, images.allSatisfy({ $0.cgImage?.width == 512 && $0.cgImage?.height == 512 }) else { return [] }
+        return images.map { let texture = SKTexture(image: $0); texture.filteringMode = .linear; return texture }
     }
 
     private func loadPunchTextures(prefix: String, count: Int) -> [SKTexture] {
@@ -1465,7 +1502,12 @@ final class IdleTestScene: SKScene {
         } else if knockdown.clip == .down && knockdownAssetsAvailable {
             boxerB.texture = downB[0]
         } else if reaction.isActive && reactionAssetsAvailable {
-            boxerB.texture = hitReactB[reaction.frameIndex]
+            let approved = reaction.profile?.punch == .cross ? orangeHeavyV1 : orangeNormalV1
+            if reaction.approvedOrangeArt && reaction.frameIndex < approved.count {
+                boxerB.texture = approved[reaction.frameIndex]
+            } else if reaction.frameIndex < hitReactB.count {
+                boxerB.texture = hitReactB[reaction.frameIndex]
+            }
         } else if orangePunch.isActive && orangePunchAssetsAvailable {
             let textures = orangePunch.kind == .jab ? jabB : crossB
             boxerB.texture = textures[orangePunch.frameIndex]
@@ -1490,7 +1532,7 @@ final class IdleTestScene: SKScene {
         } else if orangeLocomotionClip == .retreat && !retreatB.isEmpty {
             boxerB.texture = retreatB[orangeFrame % retreatB.count]
         } else {
-            boxerB.texture = idleB[orangeFrame % idleB.count]
+            boxerB.texture = orangeBounceAvailable ? orangeBounceV3[orangeBounceFrame] : idleB[orangeFrame % idleB.count]
         }
         applyImpactEmphasis()
         textureCanvasInfo = "child A\(Int(boxerA.size.width)) B\(Int(boxerB.size.width)) · tex A\(Int(boxerA.texture?.size().width ?? 0)) B\(Int(boxerB.texture?.size().width ?? 0))"

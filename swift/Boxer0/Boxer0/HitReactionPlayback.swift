@@ -32,6 +32,11 @@ struct HitReactionPlayback {
     private(set) var frameIndex = 0
     private var accumulator = 0.0
     private var elapsed = 0.0
+    // Orange-only approved art. Blue retains the original four 60ms poses.
+    private(set) var approvedOrangeArt = false
+    var activeFrameCount: Int { approvedOrangeArt ? (profile?.punch == .cross ? 14 : 18) : Self.frameCount }
+    var activeFrameDuration: Double { approvedOrangeArt ? (profile?.punch == .cross ? 1.0 / 18.0 : 1.0 / 20.0) : Self.frameDuration }
+    mutating func setApprovedOrangeArt(_ available: Bool) { approvedOrangeArt = available }
     private(set) var profile: HitFeedbackProfile?
     var emphasisAmount: Double {
         guard isActive, let profile = profile else { return 0 }
@@ -55,14 +60,14 @@ struct HitReactionPlayback {
         guard isActive, dt.isFinite, dt >= 0 else { return false }
         accumulator += dt
         elapsed += dt
-        while accumulator + 1e-10 >= Self.frameDuration {
-            accumulator = max(0, accumulator - Self.frameDuration)
-            if frameIndex == Self.frameCount - 1 {
+        while accumulator + 1e-10 >= activeFrameDuration {
+            accumulator = max(0, accumulator - activeFrameDuration)
+            if frameIndex == activeFrameCount - 1 {
                 cancel()
                 return true
             }
             frameIndex += 1
-            if frameIndex == Self.frameCount - 1 && accumulator + 1e-10 >= Self.frameDuration {
+            if frameIndex == activeFrameCount - 1 && accumulator + 1e-10 >= activeFrameDuration {
                 // Keep final recovery visible on a delayed render tick.
                 accumulator = 0
                 return false
@@ -74,7 +79,7 @@ struct HitReactionPlayback {
     @discardableResult
     mutating func step() -> Bool {
         accumulator = 0
-        return advance(Self.frameDuration)
+        return advance(activeFrameDuration)
     }
 
     mutating func cancel() {
