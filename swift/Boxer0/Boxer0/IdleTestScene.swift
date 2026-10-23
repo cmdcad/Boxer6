@@ -435,30 +435,68 @@ final class IdleTestScene: SKScene {
         orangeRecovery.isRecovering && usesDedicatedRecoveryPoses
             && !(orangeRecovery.kind == .jab ? jabRecoveryB : crossRecoveryB).isEmpty
     }
-    var orangeAnimationName: String {
-        reaction.isActive && reaction.approvedOrangeArt ? (reaction.profile?.punch == .cross ? "orange_heavy_v1" : "orange_normal_v1") : (orangeHasDedicatedRecoveryPose ? "\(orangeClip.rawValue)_recovery" : orangeClip.rawValue)
-    }
-    var orangeFrameCount: Int {
-        if reaction.isActive && reaction.approvedOrangeArt { return reaction.activeFrameCount }
-        if orangeHasDedicatedRecoveryPose { return 1 }
-        if orangeClip == .idle && orangeBounceAvailable { return orangeBounceV3.count }
-        switch orangeClip {
-        case .idle, .hitReact: return 4
-        case .advance, .retreat, .jab: return 6
-        case .knockdown, .rise, .cross: return 8
-        case .down: return 1
-        case .guardPose: return 3
+    // Report the actual texture family and index selected by applyFrames(),
+    // not merely the high-level action state. This distinguishes approved
+    // bounce/jab/reaction art from provisional cross, guard and movement art.
+    // Diagnostic-only: does not alter playback, rendering or hit detection.
+    private var orangePresentedAnimation: (name: String, index: Int, count: Int) {
+        if knockdown.clip == .knockdown && knockdownAssetsAvailable {
+            return ("knockdown_b", knockdown.frameIndex, knockdownB.count)
         }
+        if knockdown.clip == .rise && riseAssetsAvailable {
+            return ("rise_b", knockdown.frameIndex, riseB.count)
+        }
+        if knockdown.clip == .down && knockdownAssetsAvailable {
+            return ("down_b", 0, downB.count)
+        }
+        if reaction.isActive && reactionAssetsAvailable {
+            let approved = reaction.profile?.punch == .cross ? orangeHeavyV1 : orangeNormalV1
+            if reaction.approvedOrangeArt && reaction.frameIndex < approved.count {
+                return (reaction.profile?.punch == .cross ? "orange_heavy" : "orange_normal",
+                        reaction.frameIndex, approved.count)
+            }
+            if reaction.frameIndex < hitReactB.count {
+                return ("hit_react_b", reaction.frameIndex, hitReactB.count)
+            }
+        }
+        if orangePunch.isActive && orangePunchAssetsAvailable {
+            return (orangePunch.kind == .jab ? "jab_b" : "cross_b",
+                    orangePunch.frameIndex, orangePunch.kind == .jab ? jabB.count : crossB.count)
+        }
+        if blockFeedback.isActive && blockRecoilAssetsAvailable {
+            return (blockFeedback.kind == .cross ? "block_cross_b" : "block_jab_b",
+                    blockFeedback.frameIndex, blockFeedback.kind == .cross ? blockCrossB.count : blockJabB.count)
+        }
+        if orangeRecovery.isRecovering {
+            let jab = orangeRecovery.kind == .jab
+            let dedicated = jab ? jabRecoveryB : crossRecoveryB
+            if usesDedicatedRecoveryPoses && !dedicated.isEmpty {
+                return (jab ? "jab_recovery_b" : "cross_recovery_b", 0, dedicated.count)
+            }
+            return (jab ? "jab_b" : "cross_b", orangeRecovery.kind.recoveryPoseFrame,
+                    jab ? jabB.count : crossB.count)
+        }
+        if guardPlayback.isSelected && guardAssetsAvailable {
+            if guardPlayback.isEffective && orangeLocomotionClip == .advance && !guardedAdvanceB.isEmpty {
+                return ("guarded_advance_b", orangeFrame % guardedAdvanceB.count, guardedAdvanceB.count)
+            }
+            if guardPlayback.isEffective && orangeLocomotionClip == .retreat && !guardedRetreatB.isEmpty {
+                return ("guarded_retreat_b", orangeFrame % guardedRetreatB.count, guardedRetreatB.count)
+            }
+            return ("guard_b", guardPlayback.frameIndex, guardB.count)
+        }
+        if orangeLocomotionClip == .advance && !advanceB.isEmpty {
+            return ("advance_b", orangeFrame % advanceB.count, advanceB.count)
+        }
+        if orangeLocomotionClip == .retreat && !retreatB.isEmpty {
+            return ("retreat_b", orangeFrame % retreatB.count, retreatB.count)
+        }
+        if orangeBounceAvailable { return ("orange_bounce", orangeBounceFrame, orangeBounceV3.count) }
+        return ("idle_b", orangeFrame % max(1, idleB.count), idleB.count)
     }
-    var orangeFrameIndex: Int {
-        if knockdown.hasStarted { return knockdown.frameIndex }
-        if reaction.isActive { return reaction.frameIndex }
-        if orangePunch.isActive { return orangePunch.frameIndex }
-        if orangeHasDedicatedRecoveryPose { return 0 }
-        if orangeRecovery.isRecovering { return orangeRecovery.kind.recoveryPoseFrame }
-        if orangeClip == .idle && orangeBounceAvailable { return orangeBounceFrame }
-        return guardPlayback.isSelected ? guardPlayback.frameIndex : orangeFrame
-    }
+    var orangeAnimationName: String { orangePresentedAnimation.name }
+    var orangeFrameCount: Int { orangePresentedAnimation.count }
+    var orangeFrameIndex: Int { orangePresentedAnimation.index }
     private var contactTracker = PunchContactTracker()
     private var health = FighterHealthState()
     var blueHealth: FighterHealth { health.blue }
