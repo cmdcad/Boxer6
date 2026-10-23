@@ -83,11 +83,18 @@ final class IdleTestScene: SKScene {
         cpuDistance.reset()
         setOrangeLocomotion(.idle)
     }
+    // Restart the approved bounce from its shared stance when a non-reaction
+    // action returns to idle. Keep root position and contact geometry untouched.
+    private func restartOrangeBounceAtStance() {
+        orangeBounceFrame = 0
+        orangeBounceAccumulator = 0
+    }
     private func setOrangeLocomotion(_ clip: FighterClip) {
         if orangeLocomotionClip != clip {
             orangeLocomotionClip = clip
             orangeFrame = 0
             orangeAccumulator = 0
+            if clip == .idle { restartOrangeBounceAtStance() }
         }
     }
     func isAttackVulnerable(_ fighter: FighterID) -> Bool {
@@ -131,6 +138,7 @@ final class IdleTestScene: SKScene {
     private func advancePhysicalRecovery(_ dt: Double) {
         let blueReady = blueRecovery.advance(dt)
         let orangeReady = orangeRecovery.advance(dt)
+        if orangeReady { restartOrangeBounceAtStance() }
         if blueReady || orangeReady { onPlaybackChange?() }
     }
     private var punch = PunchPlayback()
@@ -408,6 +416,8 @@ final class IdleTestScene: SKScene {
         }
         // Releasing guard ends protection immediately; an existing block recoil
         // finishes before idle/movement/another attack resumes.
+        // Don't resume a frozen mid-bounce pose after guard release.
+        if !selected { restartOrangeBounceAtStance() }
         orangeFrame = 0
         orangeAccumulator = 0
     }
