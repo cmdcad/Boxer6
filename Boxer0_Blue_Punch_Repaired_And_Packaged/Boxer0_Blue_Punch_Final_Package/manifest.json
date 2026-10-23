@@ -1,0 +1,52 @@
+{
+  "project": "Boxer0",
+  "status": "review-ready; not yet visually approved",
+  "sprite_size": [
+    512,
+    512
+  ],
+  "root_top_left": [
+    256,
+    448
+  ],
+  "repair": {
+    "source_frame": 195,
+    "method": "copy intact missing glove-tip region from aligned adjacent repaired frame 196",
+    "normalized_pixel_region": [
+      367,
+      172,
+      392,
+      220
+    ]
+  },
+  "actions": [
+    {
+      "name": "blue_punch_attack",
+      "source_frames": [
+        190,
+        212
+      ],
+      "count": 23,
+      "fps": 24,
+      "loop": false,
+      "duration_seconds": 0.9583333333333334
+    },
+    {
+      "name": "blue_punch_recovery",
+      "source_frames": [
+        213,
+        225
+      ],
+      "count": 13,
+      "fps": 18,
+      "loop": false,
+      "duration_seconds": 0.7222222222222222
+    }
+  ],
+  "notes": [
+    "Source frames 185\u2013189 preserved as optional lead-in.",
+    "Contact/damage frame must be selected after gameplay review.",
+    "World displacement controlled by SpriteKit.",
+    "This repair reuses existing source artwork, not generated anatomy."
+  ]
+}
