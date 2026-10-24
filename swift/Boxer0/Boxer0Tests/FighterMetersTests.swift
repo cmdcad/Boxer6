@@ -282,4 +282,31 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
     }
 
+    func testCPUDefenseSlowsWhenAwarenessDrops() {
+        var full = DefensiveAI()
+        full.randomDraw = { 0 }
+        full.setEnabled(true)
+        full.observe(sequence: 1, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(full.timeToTransition, 0.10, accuracy: 1e-8)
+
+        var tired = DefensiveAI()
+        tired.randomDraw = { 0 }
+        tired.setEnabled(true)
+        tired.observe(sequence: 1, kind: .cross, inRange: true, eligible: true,
+                      awarenessPenalty: 0.15)
+        XCTAssertEqual(tired.timeToTransition, 0.25, accuracy: 1e-8)
+        XCTAssertNil(tired.advance(0.10))
+        XCTAssertNil(tired.advance(0.149))
+        XCTAssertNotNil(tired.advance(0.001))
+    }
+
+    func testDefensiveReactionPenaltyIsBounded() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0 }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .jab, inRange: true, eligible: true,
+                   awarenessPenalty: 100)
+        XCTAssertEqual(ai.timeToTransition, 0.57, accuracy: 1e-8)
+    }
+
 }
