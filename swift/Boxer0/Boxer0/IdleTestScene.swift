@@ -204,6 +204,39 @@ final class IdleTestScene: SKScene {
         }
         blueBlockFeedback.advance(dt)
     }
+    // Phase 5B: earned blocks and a narrow, player-triggered slip window.
+    // Pivot and side-switch require separate geometry and are not enabled here.
+    private(set) var consecutiveBlueBlocks = 0
+    var blueEnhancedEscapeReady: Bool { consecutiveBlueBlocks >= 2 }
+    private var slipContactExpiresAt = -1.0
+    private var slipCooldownUntil = 0.0
+
+    func requestBlueSlip() {
+        guard isPlaying, hasFocus, health.canExchangePunches,
+              blueCombatState == .standing, !blueVisualBusy,
+              !punch.isActive, !blueGuard.isSelected,
+              simulationTime >= slipCooldownUntil else { return }
+        slipCooldownUntil = simulationTime + 0.75
+        let approaching = orangePunch.isActive
+            && (orangePunch.timeUntilContact ?? .infinity) > 0
+            && (orangePunch.timeUntilContact ?? .infinity) <= 0.18
+        slipContactExpiresAt = approaching ? simulationTime + 0.22 : -1
+        showEvadeCue(approaching ? "SLIP!" : "SLIP", success: approaching)
+        onPlaybackChange?()
+    }
+
+    private func showEvadeCue(_ title: String, success: Bool) {
+        let cue = SKLabelNode(text: title)
+        cue.fontName = "AvenirNext-Bold"
+        cue.fontSize = 17
+        cue.fontColor = success ? .systemGreen : .systemBlue
+        cue.position = CGPoint(x: rootA.position.x, y: rootA.position.y + 115)
+        cue.zPosition = 1000
+        addChild(cue)
+        cue.run(.sequence([.group([.moveBy(x: 0, y: 24, duration: 0.35),
+                                      .fadeOut(withDuration: 0.35)]), .removeFromParent()]))
+    }
+
     private var blueReaction = HitReactionPlayback()
     private var blueKnockdown = KnockdownPlayback()
     private var cpuOffense = CPUOffense()
@@ -974,6 +1007,7 @@ final class IdleTestScene: SKScene {
     }
 
     func cancelMovement() {
+        slipContactExpiresAt = -1
         lastTime = 0
         clearHeldInput()
         clearBlueGuardInput()
@@ -1060,6 +1094,13 @@ final class IdleTestScene: SKScene {
     @discardableResult
     private func resolveContact(_ attacker: FighterID, kind: PunchKind, deferImpact: Bool = false) -> PunchContactEvent? {
         guard health.canExchangePunches else { return nil }
+        // A timed diagonal slip avoids this one incoming CPU punch. It does
+        // not create permanent invulnerability or award points.
+        if attacker == .orange && simulationTime <= slipContactExpiresAt {
+            slipContactExpiresAt = -1
+            logCombat("SLIP_AVOID", fighter: .blue)
+            return nil
+        }
         var tracker = attacker == .blue ? contactTracker : cpuContactTracker
         let contact = tracker.evaluate(kind,
             attacker: canvasTransform(for: attacker == .blue ? boxerA : boxerB),
@@ -1122,6 +1163,14 @@ final class IdleTestScene: SKScene {
             let actor = event.attackerID == .blue ? "BLUE" : "ORANGE"
             let kind = event.kind == .jab ? "JAB" : "CROSS"
             lastCounterText = "Last Counter: \(actor) \(kind) \(event.result.rawValue)"
+        }
+        if event.defenderID == .blue {
+            if event.result == .block {
+                consecutiveBlueBlocks = min(2, consecutiveBlueBlocks + 1)
+                if consecutiveBlueBlocks == 2 { showEvadeCue("ESCAPE READY", success: true) }
+            } else if event.result == .hit {
+                consecutiveBlueBlocks = 0
+            }
         }
         if event.result == .hit {
             if event.defenderID == .orange {
