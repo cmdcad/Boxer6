@@ -100,11 +100,18 @@
 - [x] Place persistent Dev/Hide Dev toggle between the current movement buttons and Jab; keep expanded Pause/Step tools on a conditional row so gameplay space is reclaimed when Dev is hidden. Xcode layout verification pending.
 - [ ] Design the final D-pad as a circular, multi-direction input surface (including diagonals and future contextual melee/defense gestures); the current two-direction hold pad is an interim control only. Preserve distinct gestures, touch cancellation, and movement/evade eligibility; do not invent unapproved melee behavior.
 
-### Phase 5B Evade design — approved behavioral requirements (implementation pending)
+### Phase 5B Evade design — partial implementation, Xcode verification pending
 
-- [ ] Evade is controlled through directional D-pad inputs, not a separate Evade button. Keep ordinary movement when an enhanced escape is unavailable.
-- [ ] CPU not attacking: a short slip, with no side switch.
-- [ ] CPU punch approaching: a correctly timed slip can evade contact; mistiming remains vulnerable to the ordinary hit rules.
+- [x] Circular eight-sector D-pad with drag/release/cancel handling; left/right and diagonal horizontal components retain existing movement.
+- [x] Vertical/diagonal entry requests a brief SLIP cue. A request during the final 180 ms of an approaching CPU punch can avoid that one contact; a mistimed request does not cancel damage. This is an initial tuning rule, not the complete defensive system.
+- [x] Track consecutive successful Blue blocks; two blocks show ESCAPE READY, and a clean hit clears the chain. Enhanced pivot/switch is **not yet wired**.
+- [ ] Verify SpriteKit timed slip, pad input cancellation, CPU contact timing and multi-touch on Mac/device; current Linux environment cannot run SpriteKit tests.
+
+
+
+- [x] Evade begins through directional D-pad input, not a separate Evade button. Enhanced escape remains unavailable until geometry is implemented.
+- [x] CPU not attacking: a short SLIP visual cue, with no side switch or contact immunity.
+- [x] CPU punch approaching: initial 180 ms timed-slip contact avoidance; mistiming remains vulnerable. Device verification pending.
 - [ ] Player near ropes: pivot away to create space. Use the outer quarter of each arena side as an initial rope-pressure trigger, subject to playtesting.
 - [ ] CPU committed to a suitable punch AND a clear exit exists: duck-and-switch to the opposite side; update fighter facing and positions safely without passing through contact geometry.
 - [ ] Successive successful blocks earn the enhanced pivot/side-switch opportunity. Provisional starting threshold: two consecutive blocks; a clean hit breaks the chain. Basic slip must remain available without earning the opportunity.
