@@ -1,0 +1,311 @@
+From a22ad3167596988709f88bc9fa2235dbd077b198 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 24 Oct 2026 15:09:26 +0000
+Subject: [PATCH] Phase 1: CombatTuning, FighterStats, FighterMeters (not yet
+ wired into scene) + tests
+
+---
+ swift/Boxer0/Boxer0.xcodeproj/project.pbxproj | 14 +++-
+ swift/Boxer0/Boxer0/CombatTuning.swift        | 59 ++++++++++++++
+ swift/Boxer0/Boxer0/FighterMeters.swift       | 79 +++++++++++++++++++
+ .../Boxer0Tests/FighterMetersTests.swift      | 69 ++++++++++++++++
+ 4 files changed, 219 insertions(+), 2 deletions(-)
+ create mode 100644 swift/Boxer0/Boxer0/CombatTuning.swift
+ create mode 100644 swift/Boxer0/Boxer0/FighterMeters.swift
+ create mode 100644 swift/Boxer0/Boxer0Tests/FighterMetersTests.swift
+
+diff --git a/swift/Boxer0/Boxer0.xcodeproj/project.pbxproj b/swift/Boxer0/Boxer0.xcodeproj/project.pbxproj
+index 2be15c4..6a26451 100644
+--- a/swift/Boxer0/Boxer0.xcodeproj/project.pbxproj
++++ b/swift/Boxer0/Boxer0.xcodeproj/project.pbxproj
+@@ -15,10 +15,13 @@
+ 		4E9E6D093085A68700DAD680 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E9E6D083085A68700DAD680 /* Preview Assets.xcassets */; };
+ 		4E9E6D113085A90000DAD680 /* IdleTestScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D103085A90000DAD680 /* IdleTestScene.swift */; };
+ 		4E9E6D123085A90000DAD680 /* FootworkMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D133085A90000DAD680 /* FootworkMotion.swift */; };
++		9C00000000000000000000B2 /* FighterMeters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C00000000000000000000A2 /* FighterMeters.swift */; };
++		9C00000000000000000000B1 /* CombatTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C00000000000000000000A1 /* CombatTuning.swift */; };
+ 		4E9E6D143085A90000DAD680 /* JabPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D153085A90000DAD680 /* JabPlayback.swift */; };
+ 		4E9E6D163085A90000DAD680 /* PunchContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D173085A90000DAD680 /* PunchContact.swift */; };
+ 		4E9E6D183085A90000DAD680 /* HitReactionPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */; };
+ 		9C0000000000000000000004 = {isa = PBXBuildFile; fileRef = 9C0000000000000000000003; };
++		9C00000000000000000000B3 = {isa = PBXBuildFile; fileRef = 9C00000000000000000000A3; };
+ /* End PBXBuildFile section */
+ 
+ /* Begin PBXFileReference section */
+@@ -29,10 +32,13 @@
+ 		4E9E6D053085A68700DAD680 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+ 		4E9E6D083085A68700DAD680 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+ 		4E9E6D133085A90000DAD680 /* FootworkMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FootworkMotion.swift; sourceTree = "<group>"; };
++		9C00000000000000000000A2 /* FighterMeters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FighterMeters.swift; sourceTree = "<group>"; };
++		9C00000000000000000000A1 /* CombatTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatTuning.swift; sourceTree = "<group>"; };
+ 		4E9E6D153085A90000DAD680 /* JabPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabPlayback.swift; sourceTree = "<group>"; };
+ 		4E9E6D173085A90000DAD680 /* PunchContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PunchContact.swift; sourceTree = "<group>"; };
+ 		4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HitReactionPlayback.swift; sourceTree = "<group>"; };
+ 		9C0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatTests.swift; sourceTree = "<group>"; };
++		9C00000000000000000000A3 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FighterMetersTests.swift; sourceTree = "<group>"; };
+ 		9C0000000000000000000002 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = Boxer0Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+ /* End PBXFileReference section */
+ 
+@@ -73,6 +79,8 @@
+ 				4E9E6D033085A68100DAD680 /* ContentView.swift */,
+ 				4E9E6D103085A90000DAD680 /* IdleTestScene.swift */,
+ 				4E9E6D133085A90000DAD680 /* FootworkMotion.swift */,
++				9C00000000000000000000A2 /* FighterMeters.swift */,
++				9C00000000000000000000A1 /* CombatTuning.swift */,
+ 				4E9E6D153085A90000DAD680 /* JabPlayback.swift */,
+ 				4E9E6D173085A90000DAD680 /* PunchContact.swift */,
+ 				4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */,
+@@ -90,7 +98,7 @@
+ 			path = "Preview Content";
+ 			sourceTree = "<group>";
+ 		};
+-		9C000000000000000000000D = {isa = PBXGroup; children = (9C0000000000000000000003,); path = Boxer0Tests; sourceTree = "<group>"; };
++		9C000000000000000000000D = {isa = PBXGroup; children = (9C0000000000000000000003, 9C00000000000000000000A3,); path = Boxer0Tests; sourceTree = "<group>"; };
+ /* End PBXGroup section */
+ 
+ /* Begin PBXNativeTarget section */
+@@ -167,6 +175,8 @@
+ 				4E9E6D043085A68100DAD680 /* ContentView.swift in Sources */,
+ 				4E9E6D113085A90000DAD680 /* IdleTestScene.swift in Sources */,
+ 				4E9E6D123085A90000DAD680 /* FootworkMotion.swift in Sources */,
++				9C00000000000000000000B2 /* FighterMeters.swift in Sources */,
++				9C00000000000000000000B1 /* CombatTuning.swift in Sources */,
+ 				4E9E6D143085A90000DAD680 /* JabPlayback.swift in Sources */,
+ 				4E9E6D163085A90000DAD680 /* PunchContact.swift in Sources */,
+ 				4E9E6D183085A90000DAD680 /* HitReactionPlayback.swift in Sources */,
+@@ -174,7 +184,7 @@
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
+-		9C0000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (9C0000000000000000000004,); runOnlyForDeploymentPostprocessing = 0; };
++		9C0000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (9C0000000000000000000004, 9C00000000000000000000B3,); runOnlyForDeploymentPostprocessing = 0; };
+ /* End PBXSourcesBuildPhase section */
+ 
+ /* Begin XCBuildConfiguration section */
+diff --git a/swift/Boxer0/Boxer0/CombatTuning.swift b/swift/Boxer0/Boxer0/CombatTuning.swift
+new file mode 100644
+index 0000000..97665d4
+--- /dev/null
++++ b/swift/Boxer0/Boxer0/CombatTuning.swift
+@@ -0,0 +1,59 @@
++import Foundation
++
++/// Single home for combat numbers. Placeholder values for feel-testing.
++/// Phase 1: defined only; nothing reads these yet. Times are in seconds.
++struct CombatTuning {
++    // Match
++    var rounds = 8
++    var roundSeconds = 120.0
++
++    // Fighter caps
++    var maxStamina = 100.0
++    var maxHealth = 100.0
++    var maxAwareness = 100.0
++    var loseHealthBelow = 40.0
++    var roundStartHealthRegen = 10.0
++
++    // Timing
++    var attackCooldown = 1.0
++    var defenseActivation = 0.5
++    var baseReaction = 0.05
++    var maxReaction = 0.6
++    var grabHoldMax = 3.0
++    var consecutiveHeadHitReset = 3.0   // assumption: streak expires after this long
++
++    // Awareness
++    var consecutiveGrowth = 1.2
++    var unguardedFraction = 1.0 / 3.0
++    var heavyUnguardedFraction = 1.0 / 2.0
++    var withdrawDropFactor = 0.5
++
++    // Health damage (used from phase 2)
++    var bodyHealthDamage = 3.0
++    var headHealthDamage = 4.0
++    var consecutiveHeadDamage = 10.0
++
++    // Stamina
++    var guardCostPercent = 5.0
++    var swayCost = 0.0
++    var regenIdle = 8.0, regenGrab = 5.0, regenWithdraw = 12.0   // per second
++    var grabStaminaBelow = 50.0
++
++    // Points
++    var headPoints = 3, bodyPoints = 1, guardedPoints = 1
++
++    // CPU
++    var defendInWindow = 0.5
++    var defendAfterHit = 0.9
++    var idleGuardDropAfter = 3.0
++    var idleGuardDropChance = 0.5
++
++    func levelMultiplier(attacker: Int, defender: Int) -> Double {
++        Double(attacker + 1) / Double(defender + 1)
++    }
++}
++
++/// Per-fighter level holder. Level stats are injected later; both fighters are level 1.
++struct FighterStats {
++    var level = 1
++}
+diff --git a/swift/Boxer0/Boxer0/FighterMeters.swift b/swift/Boxer0/Boxer0/FighterMeters.swift
+new file mode 100644
+index 0000000..a57bd31
+--- /dev/null
++++ b/swift/Boxer0/Boxer0/FighterMeters.swift
+@@ -0,0 +1,79 @@
++import Foundation
++
++enum HitZone { case head, body }
++enum RegenMode { case guarding, idle, grab, withdraw }
++
++/// Stamina and awareness for one fighter. Pure value type, not yet wired into the scene.
++/// Awareness 0 is a knockout. Consecutive-hit escalation applies to unguarded head hits only.
++struct FighterMeters {
++    let tuning: CombatTuning
++    private(set) var stamina: Double
++    private(set) var awareness: Double
++    private(set) var consecutiveHeadHits = 0
++    private var sinceHeadHit = 0.0
++
++    init(tuning: CombatTuning = CombatTuning()) {
++        self.tuning = tuning
++        stamina = tuning.maxStamina
++        awareness = tuning.maxAwareness
++    }
++
++    var isKnockedOut: Bool { awareness <= 0 }
++
++    /// Grab needs low stamina and the too-close distance state.
++    func canStartGrab(isTooClose: Bool) -> Bool {
++        isTooClose && stamina < tuning.grabStaminaBelow
++    }
++
++    /// Returns the awareness dropped. A guarded hit costs stamina only.
++    @discardableResult
++    mutating func receiveHit(zone: HitZone, guarded: Bool, heavy: Bool = false,
++                             withdrawing: Bool = false, levelMultiplier: Double = 1) -> Double {
++        if guarded {
++            let cost = tuning.maxStamina * tuning.guardCostPercent / 100 * levelMultiplier
++            stamina = max(0, stamina - cost)
++            return 0
++        }
++        var n = 1
++        if zone == .head {
++            consecutiveHeadHits += 1
++            sinceHeadHit = 0
++            n = consecutiveHeadHits
++        }
++        let fraction = heavy ? tuning.heavyUnguardedFraction : tuning.unguardedFraction
++        var drop = tuning.maxAwareness * fraction * pow(tuning.consecutiveGrowth, Double(n - 1))
++        if withdrawing { drop *= tuning.withdrawDropFactor }
++        let before = awareness
++        awareness = max(0, awareness - drop)
++        return before - awareness
++    }
++
++    /// Call when a defense succeeds (sway, withdraw, block) to end a head-hit streak.
++    mutating func endHeadHitStreak() { consecutiveHeadHits = 0; sinceHeadHit = 0 }
++
++    mutating func spendSway() { stamina = max(0, stamina - tuning.swayCost) }
++
++    mutating func advance(_ dt: Double, mode: RegenMode) {
++        guard dt.isFinite, dt > 0 else { return }
++        if consecutiveHeadHits > 0 {
++            sinceHeadHit += dt
++            if sinceHeadHit >= tuning.consecutiveHeadHitReset { endHeadHitStreak() }
++        }
++        switch mode {
++        case .guarding: break
++        case .idle: stamina = min(tuning.maxStamina, stamina + tuning.regenIdle * dt)
++        case .grab: stamina = min(tuning.maxStamina, stamina + tuning.regenGrab * dt)
++        case .withdraw:
++            stamina = min(tuning.maxStamina, stamina + tuning.regenWithdraw * dt)
++            awareness = min(tuning.maxAwareness, awareness + tuning.regenWithdraw * dt)
++        }
++    }
++
++    /// Awareness-driven delay: baseReaction at full awareness, slower as it drops.
++    /// Also usable as the attack lockout. Clamped to maxReaction.
++    var reactionDelay: Double {
++        guard awareness > 0 else { return tuning.maxReaction }
++        return min(tuning.maxReaction,
++                   tuning.baseReaction * tuning.maxAwareness / awareness)
++    }
++}
+diff --git a/swift/Boxer0/Boxer0Tests/FighterMetersTests.swift b/swift/Boxer0/Boxer0Tests/FighterMetersTests.swift
+new file mode 100644
+index 0000000..d9eb21c
+--- /dev/null
++++ b/swift/Boxer0/Boxer0Tests/FighterMetersTests.swift
+@@ -0,0 +1,69 @@
++import XCTest
++@testable import Boxer0
++
++final class FighterMetersTests: XCTestCase {
++    func testThreeConsecutiveUnguardedHeadHitsKnockOut() {
++        var m = FighterMeters()
++        XCTAssertEqual(m.receiveHit(zone: .head, guarded: false), 100.0 / 3.0, accuracy: 1e-9)
++        XCTAssertEqual(m.receiveHit(zone: .head, guarded: false), 40.0, accuracy: 1e-9)
++        XCTAssertFalse(m.isKnockedOut)
++        m.receiveHit(zone: .head, guarded: false)
++        XCTAssertTrue(m.isKnockedOut)
++    }
++
++    func testBodyHitsDoNotEscalate() {
++        var m = FighterMeters()
++        let a = m.receiveHit(zone: .body, guarded: false)
++        let b = m.receiveHit(zone: .body, guarded: false)
++        XCTAssertEqual(a, b, accuracy: 1e-9)
++        XCTAssertEqual(m.consecutiveHeadHits, 0)
++    }
++
++    func testHeavyAndWithdrawFactors() {
++        var heavy = FighterMeters()
++        XCTAssertEqual(heavy.receiveHit(zone: .body, guarded: false, heavy: true), 50, accuracy: 1e-9)
++        var away = FighterMeters()
++        XCTAssertEqual(away.receiveHit(zone: .body, guarded: false, withdrawing: true), 100.0 / 6.0, accuracy: 1e-9)
++    }
++
++    func testGuardedHitCostsStaminaOnly() {
++        var m = FighterMeters()
++        XCTAssertEqual(m.receiveHit(zone: .head, guarded: true), 0)
++        XCTAssertEqual(m.stamina, 95, accuracy: 1e-9)
++        XCTAssertEqual(m.awareness, 100)
++    }
++
++    func testGrabGate() {
++        var m = FighterMeters()
++        XCTAssertFalse(m.canStartGrab(isTooClose: true))
++        for _ in 0..<10 { m.receiveHit(zone: .head, guarded: true, levelMultiplier: 2) }
++        XCTAssertLessThan(m.stamina, 50)
++        XCTAssertTrue(m.canStartGrab(isTooClose: true))
++        XCTAssertFalse(m.canStartGrab(isTooClose: false))
++    }
++
++    func testRegenAndClamp() {
++        var m = FighterMeters()
++        m.receiveHit(zone: .head, guarded: false)
++        m.advance(1, mode: .guarding)
++        XCTAssertEqual(m.awareness, 100.0 - 100.0 / 3.0, accuracy: 1e-9)
++        m.advance(10, mode: .withdraw)
++        XCTAssertEqual(m.awareness, 100, accuracy: 1e-9)
++        XCTAssertEqual(m.stamina, 100, accuracy: 1e-9)
++    }
++
++    func testHeadHitStreakExpires() {
++        var m = FighterMeters()
++        m.receiveHit(zone: .head, guarded: false)
++        m.advance(3.1, mode: .idle)
++        XCTAssertEqual(m.consecutiveHeadHits, 0)
++    }
++
++    func testReactionDelayScalesWithAwareness() {
++        var m = FighterMeters()
++        XCTAssertEqual(m.reactionDelay, 0.05, accuracy: 1e-9)
++        m.receiveHit(zone: .body, guarded: false)
++        XCTAssertGreaterThan(m.reactionDelay, 0.05)
++        XCTAssertLessThanOrEqual(m.reactionDelay, 0.6)
++    }
++}
+-- 
+2.43.0
