@@ -247,6 +247,13 @@ struct FighterHealthState {
         return true
     }
 
+    /// Between-round health recovery does not revive a defeated fighter.
+    mutating func beginNextRound(heal amount: Int) {
+        guard canExchangePunches else { return }
+        blue.heal(amount)
+        orange.heal(amount)
+    }
+
     /// Awareness KO is independent of the legacy integer health meter.
     @discardableResult
     mutating func receiveAwarenessKO(for defender: FighterID) -> Bool {
