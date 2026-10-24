@@ -312,7 +312,7 @@ final class IdleTestScene: SKScene {
     var testCanCPUAttack: Bool { canCPUAttack }
     var testCPUWithdrawalActive: Bool { cpuWithdrawal.active }
     func testDamageOrangeAwareness() {
-        combatMeters.orange.receiveHit(zone: .head, guarded: false)
+        combatMeters.testDamageOrangeAwareness()
     }
     var testBlueRecovery: PunchRecovery { blueRecovery }
     var testOrangeRecovery: PunchRecovery { orangeRecovery }

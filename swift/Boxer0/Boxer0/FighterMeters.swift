@@ -123,4 +123,10 @@ struct CombatMetersState {
 
     mutating func recoverBlue() { blue = FighterMeters() }
     mutating func recoverOrange() { orange = FighterMeters() }
+
+#if DEBUG
+    mutating func testDamageOrangeAwareness() {
+        orange.receiveHit(zone: .head, guarded: false)
+    }
+#endif
 }
