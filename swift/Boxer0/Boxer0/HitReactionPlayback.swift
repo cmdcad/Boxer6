@@ -245,7 +245,7 @@ struct DefensiveAIProfile {
 }
 
 enum DefensiveAIState: String { case idle, reacting, guarding }
-enum DefensiveAIRequest { case raise, release }
+enum DefensiveAIRequest: Equatable { case raise, release }
 
 /// Receives accepted punch-start identities, never random per-frame polling.
 struct DefensiveAI {
