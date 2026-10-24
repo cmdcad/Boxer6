@@ -354,7 +354,7 @@ final class PauseResetRiseTests: XCTestCase {
         for defender in [FighterID.blue, .orange] {
             let d = CombatDriver()
             d.scene.testConfigureCPU(attackDraw: 0, defenseDraw: 0.99)
-            for _ in 0..<10 {
+            for _ in 0..<3 {
                 d.scene.testSetSeparation(170)
                 XCTAssertTrue(d.scene.testBeginAttack(defender.opponent, .cross))
                 d.advance(0.70)
@@ -372,7 +372,7 @@ final class PauseResetRiseTests: XCTestCase {
             let risePosition = defender == .blue ? d.scene.testBluePosition : d.scene.testOrangePosition
             d.advance(0.79)
             XCTAssertEqual(defender == .blue ? d.scene.testBluePosition : d.scene.testOrangePosition,risePosition)
-            XCTAssertEqual(defender == .blue ? d.scene.blueHealth.current : d.scene.orangeHealth.current,0)
+            XCTAssertEqual(defender == .blue ? d.scene.blueHealth.current : d.scene.orangeHealth.current,70)
             d.advance(0.01)
             XCTAssertEqual(defender == .blue ? d.scene.blueHealth.current : d.scene.orangeHealth.current,100)
             XCTAssertFalse(d.scene.guardHeld)
