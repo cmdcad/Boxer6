@@ -44,9 +44,9 @@
 - [ ] Regenerate stamina by state: no guard fastest, grab second-fastest, withdraw fast. Art-gated grab/withdraw behavior must not be falsely shown as available.
 - [ ] Regenerate health only at round start, approximately +10, capped at 100; implement the round boundary in Phase 3 rather than on arbitrary timers.
 - [x] Feed awareness KO (zero) and strict health-below-40 loss into existing defeat/knockdown handling; both fighters supported. Existing jab/cross health damage remains provisional pending OPEN item 3.
-- [ ] Display meters read-only in the development HUD; add focused hit/block/streak/KO/threshold tests and deliberately update affected old tests.
+- [x] Display read-only Health, Stamina and Awareness bars for both fighters in the existing top HUD; publish whole-percentage changes to avoid unnecessary UI updates. Scene hit/block/KO/threshold tests added; Xcode visual and regression verification pending.
 
-**Checkpoint:** Phase 2A and the Phase 2B defeat transition source are committed; legacy defeat tests updated deliberately, and new tests cover awareness KO and the 40-health boundary. **Mac build/tests and memory profiling remain the immediate gate**. Meter HUD, health-damage tuning, and final head-hit streak health rules are still pending; do not claim Phase 2 complete.
+**Checkpoint:** Phase 2A and the Phase 2B defeat transition source are committed; legacy defeat tests updated deliberately, and new tests cover awareness KO and the 40-health boundary. **Mac build/tests and memory profiling remain the immediate gate**. Meter HUD source is committed but unverified on-device. Health-damage tuning and final head-hit streak health rules remain pending; do not claim Phase 2 complete.
 
 ## Phase 3 — Match state and scoring
 
@@ -150,7 +150,7 @@ These items come from `new_direction.md`. They are **not** settled by this task 
 ## Immediate next three agent tasks
 
 1. **Mac regression checkpoint:** clean-build `phase1-v2`, run `FighterMetersTests` and `CombatTests`, and use Xcode Memory Graph/Instruments to retest the prior `IdleTestScene.swift:1407` crash. Capture the exact diagnostic if it recurs.
-2. **Phase 2 remaining work:** add debug HUD meter readout and finish head-hit streak health damage after resolving OPEN damage/precedence rules; inspect any new Xcode test failures before further gameplay changes.
+2. **Phase 2 remaining work:** visually verify the three-meter HUD on both fighters, then finish head-hit streak health damage after resolving OPEN damage/precedence rules; inspect any new Xcode test failures before further gameplay changes.
 3. **Phase 3 match-state skeleton:** timer, eight rounds, points, draw/KO, and round-start health regen; defer body scoring in live gameplay until body art exists.
 
 **Review discipline:** each task ends with a commit, focused verification results, and an explicit list of Xcode/device checks that remain unverified. This file tracks planned and completed work; it is not evidence that a feature has passed device testing.
