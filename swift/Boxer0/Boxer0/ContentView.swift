@@ -374,23 +374,25 @@ struct ContentView: View {
                     
                 }
 
-            VStack(spacing: 8) {
-                HStack(alignment: .bottom, spacing: 12) {
-                    PressHoldButton(title: "Hold Retreat", pressed: playback.holdRetreat, inputGeneration: playback.inputGeneration, action: playback.setRetreat)
-                    Spacer()
-                    if showsDevelopmentDiagnostics { statusLabel }
-                    Spacer()
-                    PressHoldButton(title: "Hold Advance", pressed: playback.holdAdvance, inputGeneration: playback.inputGeneration, action: playback.setAdvance)
-                }
-                .frame(minHeight: 52)
+            HStack(alignment: .center, spacing: 12) {
+                movementPad
+                Spacer(minLength: 4)
                 HStack(spacing: 8) {
                     punchButton("Jab", enabled: playback.canJab, action: playback.jab)
                     punchButton("Cross", enabled: playback.canCross, action: playback.cross)
                     playerGuardControl
-                    debugControls
                 }
-                .frame(height: 54)
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+            HStack(spacing: 8) {
+                if showsDevelopmentDiagnostics { statusLabel }
+                Spacer(minLength: 0)
+                debugControls
+            }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 6)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 12)
             .padding(.bottom, 8)
@@ -689,6 +691,36 @@ struct ContentView: View {
             )
             .allowsHitTesting(enabled)
             .opacity(enabled ? 1 : 0.55)
+    }
+
+    /// Phase 5B: first move-pad integration. Left/right remain the existing
+    /// press-and-hold retreat/advance commands, with their cancellation rules.
+    /// Diagonal evade gestures are deliberately deferred until their contact
+    /// and block-chain eligibility rules are implemented.
+    private var movementPad: some View {
+        HStack(spacing: 4) {
+            movePadDirection("chevron.left", label: "Retreat",
+                             pressed: playback.holdRetreat, action: playback.setRetreat)
+            movePadDirection("chevron.right", label: "Advance",
+                             pressed: playback.holdAdvance, action: playback.setAdvance)
+        }
+        .padding(5)
+        .background(Color.white.opacity(0.65),
+                    in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Movement pad")
+    }
+
+    private func movePadDirection(_ symbol: String, label: String, pressed: Bool,
+                                  action: @escaping (Bool) -> Void) -> some View {
+        Image(systemName: symbol)
+            .font(.system(size: 22, weight: .bold))
+            .foregroundColor(Color(red: 0.08, green: 0.20, blue: 0.36))
+            .frame(width: 54, height: 52)
+            .background(pressed ? Color.blue.opacity(0.25) : Color.white,
+                        in: RoundedRectangle(cornerRadius: 10))
+            .overlay(HoldTouchSurface(title: label, inputGeneration: playback.inputGeneration,
+                                      action: action))
     }
 
     var debugControls: some View {
