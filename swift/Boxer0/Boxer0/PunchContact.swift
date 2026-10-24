@@ -193,7 +193,15 @@ struct FighterCombatStatus {
 
     @discardableResult
     mutating func receiveHealth(_ health: FighterHealth) -> Bool {
-        guard state == .standing, health.current == 0 else { return false }
+        // Phase 2: a fighter loses below 40, not at zero.
+        guard state == .standing,
+              Double(health.current) < CombatTuning().loseHealthBelow else { return false }
+        return defeat()
+    }
+
+    @discardableResult
+    mutating func defeat() -> Bool {
+        guard state == .standing else { return false }
         state = .defeated
         defeatRecorded = true
         return true
@@ -237,6 +245,13 @@ struct FighterHealthState {
             blueCombat.receiveHealth(blue)
         }
         return true
+    }
+
+    /// Awareness KO is independent of the legacy integer health meter.
+    @discardableResult
+    mutating func receiveAwarenessKO(for defender: FighterID) -> Bool {
+        if defender == .blue { return blueCombat.defeat() }
+        return orangeCombat.defeat()
     }
 
     /// Debug recovery policy: only orange is restored, only after visual completion.
