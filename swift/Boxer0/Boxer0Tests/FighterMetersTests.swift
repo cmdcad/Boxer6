@@ -109,4 +109,40 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(meters.reactionDelay, CombatTuning().maxReaction, accuracy: 1e-9)
     }
 
+    func testSceneContactWiresHeadAwarenessBothDirections() {
+        for attacker in [FighterID.blue, .orange] {
+            let driver = CombatDriver(distance: 170)
+            let scene = driver.scene
+            XCTAssertTrue(scene.testBeginAttack(attacker, .jab))
+            driver.advance(0.15)
+            let defenderAwareness = attacker == .blue ? scene.orangeMeters.awareness : scene.blueMeters.awareness
+            let attackerAwareness = attacker == .blue ? scene.blueMeters.awareness : scene.orangeMeters.awareness
+            XCTAssertEqual(defenderAwareness, 100 - 100.0 / 3, accuracy: 1e-8)
+            XCTAssertEqual(attackerAwareness, 100, accuracy: 1e-8)
+        }
+    }
+
+    func testSceneGuardCostsStaminaButNotAwareness() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        scene.testSetOrangeGuard(true)
+        driver.advance(0.12)
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+        driver.advance(0.15)
+        XCTAssertEqual(scene.orangeMeters.awareness, 100, accuracy: 1e-8)
+        XCTAssertEqual(scene.orangeMeters.stamina, 95, accuracy: 1e-8)
+        XCTAssertEqual(scene.orangeMeters.consecutiveHeadHits, 0)
+    }
+
+    func testSceneResetRestoresMeters() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+        driver.advance(0.15)
+        XCTAssertLessThan(scene.orangeMeters.awareness, 100)
+        scene.resetHealth()
+        XCTAssertEqual(scene.orangeMeters.awareness, 100, accuracy: 1e-8)
+        XCTAssertEqual(scene.orangeMeters.stamina, 100, accuracy: 1e-8)
+    }
+
 }
