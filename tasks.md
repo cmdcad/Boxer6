@@ -5,7 +5,7 @@
 ## Status — 2026-10-24
 
 - **Current priority: Phase 2 — wire meters into existing combat.**
-- **Phase 1 — code supplied, not integrated into master:** `tools/phase1.patch` contains `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift`, and project references. The brief says Phase 1 was delivered on `phase1-tuning-meters`, but that branch was **not found** in the repository's current branch listing (which includes `phase1-v2`). Confirm whether the patch or a branch should be the integration source; do not claim these files are on master.
+- **Phase 1 — implemented on master, expanded tests on `phase1-v2`:** commit `1d0ffb3` introduced `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift` and their Xcode project references on `master`. The separate `tools/phase1.patch` is a historical delivery artifact, not a missing integration prerequisite. `phase1-v2` was fast-forwarded from master, then expanded with three focused tests. **Xcode compilation and test execution are still pending on a Mac.**
 - **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
 - **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
 - **Blue jab:** directional correction, selective kit recoloring, and provisional lighter proportions are committed, but visual correctness is **not verified in Xcode**.
@@ -21,14 +21,16 @@
 5. Push completed, coherent changes for review under the existing workflow. Clearly state what was not compiled or visually tested. Avoid binary sprite uploads through the GitHub text-file workflow.
 6. Do not invent answers to the OPEN rules below. Preserve existing behavior or isolate provisional values until resolved.
 
-## Phase 1 — Foundation (patch delivered; integration/verification pending)
+## Phase 1 — Foundation (source complete; Xcode verification pending)
 
-- [x] Receive `tools/phase1.patch` containing `CombatTuning`, `FighterStats`, `FighterMeters` and meter tests.
-- [ ] Resolve patch-versus-branch source and apply foundation files to a development branch against current master, checking for conflicts.
-- [ ] Confirm Xcode target membership and run `FighterMetersTests` plus existing tests.
-- [ ] Preserve both fighters at **level 1**; later level codes/stats are injected through `FighterStats`.
+- [x] Integrate `CombatTuning`, `FighterStats`, `FighterMeters` and meter tests in `master` (`1d0ffb3`). The patch is a historical copy.
+- [x] Confirm Xcode project **text references** for both implementation files and `FighterMetersTests.swift`; runtime target compilation remains unverified.
+- [x] Fast-forward `phase1-v2` from master (without rewriting master) and add three focused meter tests: default caps/level, guard and streak separation, and clamp/reaction limits.
+- [x] Preserve both fighters at **level 1** via default `FighterStats`; level injection is deferred.
+- [ ] **Mac checkpoint:** open `swift/Boxer0/Boxer0.xcodeproj`, build the app, run `FighterMetersTests` and the existing test suite; record actual results before marking verified.
+- [ ] Confirm provisional tuning values with user before using them in live combat (especially guard activation and damage).
 
-**Checkpoint:** Foundation compiles, tests pass, and meter types are available to the scene. Do not equate patch delivery with verified integration.
+**Checkpoint:** Phase 1 implementation and test registration are source-complete; **do not claim test pass or phase verification** until Xcode runs. Phase 2 wiring is not part of Phase 1.
 
 ## Phase 2 — Wire health, stamina, and awareness (NEXT)
 
@@ -112,7 +114,7 @@ These items come from `new_direction.md`. They are **not** settled by this task 
 
 ## Immediate next three agent tasks
 
-1. **Phase 1 patch integration audit:** verify source branch/patch, apply foundation on a development branch, inspect Xcode target membership, run tests where possible.
+1. **Phase 1 Mac verification:** build and run `FighterMetersTests` plus the existing test suite from `phase1-v2`; address failures before Phase 2.
 2. **Phase 2 meters wiring:** connect contact, guard, health threshold, awareness KO, streak and debug HUD without a wholesale scene rewrite; test deterministically.
 3. **Phase 3 match-state skeleton:** timer, eight rounds, points, draw/KO, and round-start health regen; defer body scoring in live gameplay until body art exists.
 
