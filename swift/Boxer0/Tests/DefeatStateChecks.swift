@@ -12,17 +12,17 @@ struct DefeatStateChecks {
             var health = FighterHealthState()
             precondition(health.canExchangePunches)
             precondition(health.blueCombat.state == .standing && !health.blueCombat.defeatRecorded)
-            let total = kind == .jab ? 20 : 10
+            let total = kind == .jab ? 13 : 7
             for sequence in 1...total {
                 precondition(health.receive(event(sequence, kind)))
                 precondition(health.orangeCombat.state == (sequence == total ? .defeated : .standing))
                 precondition(health.orangeCombat.defeatRecorded == (sequence == total))
             }
-            precondition(health.orange.current == 0 && !health.canExchangePunches)
+            precondition(health.orange.current == (kind == .jab ? 35 : 30) && !health.canExchangePunches)
             precondition(!health.receive(event(total, kind)))
             precondition(!health.receive(event(total + 1, .cross)))
             precondition(!health.receive(event(total + 2, .jab, .miss)))
-            precondition(health.orange.current == 0 && health.orangeCombat.defeatRecorded)
+            precondition(health.orange.current == (kind == .jab ? 35 : 30) && health.orangeCombat.defeatRecorded)
             health.reset()
             precondition(health.orange.current == 100 && health.blue.current == 100)
             precondition(health.canExchangePunches && !health.orangeCombat.defeatRecorded)
@@ -41,12 +41,12 @@ struct DefeatStateChecks {
 
         // Task 6C extends the final HIT to play its own recoil before knockdown.
         var health = FighterHealthState()
-        for i in 1...9 { health.receive(event(i, .cross)) }
+        for i in 1...6 { health.receive(event(i, .cross)) }
         var reaction = HitReactionPlayback()
         reaction.receive(.hit, from: .jab)
         reaction.step()
         precondition(reaction.frameIndex == 1)
-        health.receive(event(10, .cross))
+        health.receive(event(7, .cross))
         reaction.receive(.hit, from: .cross)
         precondition(reaction.frameIndex == 0 && reaction.profile?.punch == .cross)
         while reaction.isActive { reaction.step() }
