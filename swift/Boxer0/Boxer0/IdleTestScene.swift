@@ -508,6 +508,7 @@ final class IdleTestScene: SKScene {
     private var contactTracker = PunchContactTracker()
     private var health = FighterHealthState()
     private var combatMeters = CombatMetersState()
+    private(set) var match = MatchState()
     var blueMeters: FighterMeters { combatMeters.blue }
     var orangeMeters: FighterMeters { combatMeters.orange }
     var blueHealth: FighterHealth { health.blue }
