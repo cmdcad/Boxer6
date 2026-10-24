@@ -90,12 +90,19 @@ final class IdleTestScene: SKScene {
         orangeBounceAccumulator = 0
     }
     private func setOrangeLocomotion(_ clip: FighterClip) {
-        if orangeLocomotionClip != clip {
-            orangeLocomotionClip = clip
+        guard orangeLocomotionClip != clip else { return }
+        let previous = orangeLocomotionClip
+        orangeLocomotionClip = clip
+        // A reversal keeps the existing footwork phase instead of snapping
+        // the legs back to frame zero. The guarded/unguarded walking clips
+        // share the same travel clock; guard selection must not reset it.
+        let reversing = (previous == .advance && clip == .retreat)
+            || (previous == .retreat && clip == .advance)
+        if !reversing {
             orangeFrame = 0
             orangeAccumulator = 0
-            if clip == .idle { restartOrangeBounceAtStance() }
         }
+        if clip == .idle { restartOrangeBounceAtStance() }
     }
     func isAttackVulnerable(_ fighter: FighterID) -> Bool {
         if fighter == .blue {
@@ -1408,8 +1415,8 @@ final class IdleTestScene: SKScene {
         return images.compactMap { image -> SKTexture? in
             guard let cgImage = image.cgImage else { return nil }
             let input = CIImage(cgImage: cgImage)
-            // Hue adjustment is applied only to warm-colored pixels, leaving
-            // neutral outlines/highlights intact. Preserve original alpha.
+            // Hue-shift the approved artwork into Blue's palette while
+            // retaining the original silhouette, shading and alpha.
             let recolored = input.applyingFilter("CIHueAdjust", parameters: [
                 kCIInputAngleKey: CGFloat.pi
             ])
