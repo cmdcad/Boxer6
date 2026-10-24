@@ -1,106 +1,119 @@
-## Boxer0 — Remaining Development Tasks
+# Boxer0 / Boxer6 — Development Tasks
 
-With Orange's bounce and hit reactions integrated, the next goal is to move Boxer0 from an animation test scene toward a polished, playable boxing game.
+**Source of truth:** [new_direction.md](new_direction.md) (agent brief v2, added in commit `9eae3d4`). This roadmap supersedes the earlier seven-phase priority ordering where they conflict. The animation work remains valuable, but the next implementation milestone is **combat meters**. Blue is the player; Orange is the CPU. Xcode project: `swift/Boxer0`.
 
-The following roadmap separates implemented features that still need verification from new development work.
+## Status — 2026-10-24
 
-Overall roadmap
+- **Current priority: Phase 2 — wire meters into existing combat.**
+- **Phase 1 — code supplied, not integrated into master:** `tools/phase1.patch` contains `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift`, and project references. The brief says Phase 1 was delivered on `phase1-tuning-meters`, but that branch was **not found** in the repository's current branch listing (which includes `phase1-v2`). Confirm whether the patch or a branch should be the integration source; do not claim these files are on master.
+- **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
+- **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
+- **Blue jab:** directional correction, selective kit recoloring, and provisional lighter proportions are committed, but visual correctness is **not verified in Xcode**.
+- **Orange bounce:** runtime height normalization committed; device verification outstanding.
+- **Tests:** no claim of passing Xcode tests or simulator/device verification.
 
-Phase 3 of 7
+## Working rules
 
-Estimated project progression, not a measured completion percentage.
+1. One focused task, one commit, one verification checkpoint. Work within existing combat code; do not rewrite `IdleTestScene` wholesale.
+2. Keep existing tests green unless an explicit rule change requires updating them; add focused tests for every new mechanic.
+3. Implement only what available visuals can represent. Defer sway, grab, body attacks and unprovided animations; store tunables and states without pretending the visuals exist.
+4. Use `CombatTuning` for parameters and separate value types for meters and match state. Keep Blue and Orange behavior symmetric unless a CPU rule explicitly differs.
+5. Push completed, coherent changes for review under the existing workflow. Clearly state what was not compiled or visually tested. Avoid binary sprite uploads through the GitHub text-file workflow.
+6. Do not invent answers to the OPEN rules below. Preserve existing behavior or isolate provisional values until resolved.
 
-### Phase 2 — Finish Orange animation integration
+## Phase 1 — Foundation (patch delivered; integration/verification pending)
 
-Implemented in source; final device verification pending
+- [x] Receive `tools/phase1.patch` containing `CombatTuning`, `FighterStats`, `FighterMeters` and meter tests.
+- [ ] Resolve patch-versus-branch source and apply foundation files to a development branch against current master, checking for conflicts.
+- [ ] Confirm Xcode target membership and run `FighterMetersTests` plus existing tests.
+- [ ] Preserve both fighters at **level 1**; later level codes/stats are injected through `FighterStats`.
 
-- Install the Orange Reaction V2 image sets.
-- Verify Orange faces Blue during bounce, punches, guarding, and recovery.
-- Confirm normal and heavy reactions are visibly different.
-- Verify smooth transitions back to bounce.
-- Check animation alignment, feet placement, and unwanted jumps.
-- Commit the approved V2 assets to GitHub.
+**Checkpoint:** Foundation compiles, tests pass, and meter types are available to the scene. Do not equate patch delivery with verified integration.
 
-Deliverable: Orange has reliable, visually distinct reactions throughout gameplay.
+## Phase 2 — Wire health, stamina, and awareness (NEXT)
 
-### Phase 3 — Complete both fighters' animation systems
+- [ ] Add per-fighter meters in the scene using `FighterMeters` and `CombatTuning`; avoid duplicating state across `FighterHealthState` and new meters.
+- [ ] Route `PunchContactResult.hit` to **unguarded head-hit** meter changes and `.block` to **guarded head-hit** changes; retain existing simultaneous-hit semantics (both contacts land in full).
+- [ ] Awareness: 0–100, independent of stamina; **0 = KO**. Unguarded head-hit awareness loss starts at one-third maximum and escalates by approximately `1.2^(n-1)` for consecutive head hits. Body hits never escalate. Low awareness prolongs attack lockout; guard/sway/withdraw remain eligible.
+- [ ] Health: maximum 100; **health below 40 loses** (instead of existing zero threshold). Apply the new consecutive-head-hit rule, while keeping unresolved single-hit damage tunable.
+- [ ] Stamina: maximum 100. Guarded hits consume stamina only, with **no awareness reduction**; account for guard's separate point cost in the match layer.
+- [ ] Regenerate stamina by state: no guard fastest, grab second-fastest, withdraw fast. Art-gated grab/withdraw behavior must not be falsely shown as available.
+- [ ] Regenerate health only at round start, approximately +10, capped at 100; implement the round boundary in Phase 3 rather than on arbitrary timers.
+- [ ] Feed awareness KO and health-threshold loss into existing defeat/knockdown handling.
+- [ ] Display meters read-only in the development HUD; add focused hit/block/streak/KO/threshold tests and deliberately update affected old tests.
 
-**Current priority — Phase 3E/3F.** Shared Orange Jab V2 with Blue at runtime; Orange bounce texture correction now explicitly rasterizes to match the jab silhouette (source bounce 354px vs jab 295px) with foot baseline aligned. Guard/locomotion handoffs partially refined. Source-level changes are on master; Xcode/device visual verification remains pending.
+**Checkpoint:** deterministic meter transitions and KO behavior tested, with current jab/cross still head-only.
 
-- Audit Blue's jab, cross, recovery, guard, and movement animations. (In progress: shared Blue jab source implemented; visual review pending.)
-- Audit Orange's corresponding animations.
-- Standardize sprite dimensions, anchor points, and animation transitions. (In progress: Orange bounce raster normalization committed; needs on-device confirmation.)
-- Eliminate visual glitches when actions interrupt one another. (In progress: Orange locomotion reversals retain footwork phase.)
-- Verify knockdown and getting-up sequences.
-- Establish a consistent animation registry for both fighters.
+## Phase 3 — Match state and scoring
 
-Deliverable: Two complete, consistently animated boxers.
+- [ ] Add standalone `MatchState` value type: **8 rounds × 2 minutes**, round clock, points, KO and end-of-match results.
+- [ ] Points to attacker: head hit **3**, body hit **1** (when body art exists), guarded hit **1**. A tie is a **draw**, not a forced winner.
+- [ ] Apply health regeneration at round start; do **not** assume stamina or awareness reset between rounds.
+- [ ] Add minimal timer, points, round and result UI, without redesigning the full game screen.
+- [ ] Test time boundaries, points, draw, KO, and round transitions.
 
+**Checkpoint:** complete deterministic match progression and scoring.
 
-### Video2 reference extraction — 2026-10-24
+## Phase 4 — Attack timing and CPU defense
 
-- Received `Video2_Frame_Groups.zip`: 73 full-color RGB gameplay screenshots in six **Blue** attack groups (14 + 14 + 14 jab/punch; 12 + 9 low/body; 10 uppercut). These are not isolated transparent sprite assets.
-- Added `tools/extract_video2_sprites.py` to produce draft 512x512 alpha-isolated frames from the screenshots, with the text and HUD outside the crop. **The extracted frames are not production-ready**: Blue/Orange overlap and the targeting reticle can contaminate the alpha mask; missing limbs behind Orange must be redrawn.
-- The archive contains no independently authored Orange attack frames or isolated bilateral reactions. These cannot be faithfully reconstructed just by renaming Blue frames.
-- **Do not mark Body Hook or Uppercut implemented yet.** The app still has the existing Cross gameplay path. Next deliverable is cleaned transparent sprites for both fighters and per-attack bilateral reactions, then combat/UI integration and Xcode verification.
-- A local preview ZIP was prepared for visual inspection; binary sprite frames have **not** been pushed to GitHub because the connected GitHub text-file workflow does not provide local file upload.
+- [ ] Introduce **1000ms attack cooldown at level 1**, faster with higher injected levels.
+- [ ] Awareness-dependent attack lockout; do not impose a new delay before guard after a punch.
+- [ ] Preserve full simultaneous-hit and mid-attack vulnerability semantics.
+- [ ] CPU defense chance **above 50%** during the player's attack window; **above 90%** immediately after being attacked once; increase with level.
+- [ ] Awareness-dependent CPU reaction delay, starting at **50ms** with full awareness; guard last-attacked zone (head only for now).
+- [ ] After **3 seconds without attack**, CPU drops guard with **50% chance**; allow defensive stamina-preservation choices.
+- [ ] Keep current **120ms guard entry** until OPEN guard-activation rule is resolved; do not silently wire `defenseActivation = 0.5`.
+- [ ] Update CPU and guard tests with seeded/injected randomness.
 
-### Phase 4 — Refine combat mechanics
+**Checkpoint:** cooldown, reaction, and defensive choices pass deterministic tests.
 
-**Updated punch roadmap (2026-10-23):** Replace Cross/Heavy Punch with **Body Hook** and **Uppercut**, alongside Jab. Create attack-specific reactions for both fighters, grounded in the supplied gameplay video. Blue must retain its lighter build, and new sprite art must not contain baked-in text. Existing Cross remains in the code until its replacements are playable; this is a pending milestone, not a completed feature. See `swift/Boxer0/Tasks/phase3f_blue_jab_and_new_attack_art.md`.
+## Phase 5 — Withdraw and distance defense
 
-Existing combat logic should be tested and improved rather than rewritten.
+- [ ] Reuse retreat animation and distance controller to represent an **out-of-reach withdraw state**.
+- [ ] Withdraw counts as defense; loses no points; regenerates stamina and awareness quickly.
+- [ ] Provisionally halve incoming awareness loss while withdrawing **only after confirming OPEN item 4**.
+- [ ] Test transition into/out of range, counterplay, and CPU defensive decisions.
 
-- Verify jab and cross contact detection.
-- Refine hit distance and glove-to-target accuracy.
-- Distinguish light and heavy punch damage, recoil, and recovery.
-- Validate blocking, counterattacks, and stun.
-- Refine knockback and fighter spacing.
-- Verify knockdowns and round-ending conditions.
+**Checkpoint:** withdraw state is playable with existing art and consistent contact rules.
 
-Deliverable: Responsive, predictable boxing interactions.
+## Phase 6 — Art-gated mechanics and fighter animation completion
 
-### Phase 5 — Improve computer opponent intelligence
+- [ ] Cleanly isolate Video2 frames: remove text, targeting graphics, background and overlaps; reconstruct missing limbs; align 512px transparent frames to consistent foot anchors.
+- [ ] Author Blue as a genuinely **lighter-built** boxer, not merely a recolored Orange; check facing, glove colors and pose continuity. Keep Orange heavier-built.
+- [ ] Create distinct **Jab, Body Hook and Uppercut** attack animations and attack-specific receiving reactions for **both** fighters, based on the video; existing Orange reactions may be replaced if mismatched.
+- [ ] When verified artwork exists, replace **Cross/Heavy Punch** with Body Hook and Uppercut in controls, `PunchKind`, CPU selection, collision zones, recovery, meters, scoring, diagnostics and tests. Until then jab/cross remain head-only legacy functionality.
+- [ ] Add body zone and body-hit level scaling when body attack art is ready. Uppercut targeting must be defined from actual glove path, not guessed from the old cross geometry.
+- [ ] Defer **sway**, **grab** (stamina <50, held up to 3 seconds), one-two, duck, left/right combinations, heavy hits and level injection until rules/art support them.
+- [ ] Verify Orange bounce normalization, Blue jab direction/color/size, guard transitions, both knockdown/rise sequences, and all punch-to-reaction handoffs on device.
 
-- Refine Orange's attack selection.
-- Improve advancing, retreating, and defensive positioning.
-- Add readable attack preparation and recovery.
-- Prevent repetitive attacks and unnatural movement.
-- Tune AI difficulty across levels.
-- Test defensive and aggressive fighting behavior.
+**Checkpoint:** complete bilateral animations with no baked-in text and verified gameplay, not just extracted PNGs.
 
-Deliverable: An opponent that behaves like a boxer rather than a scripted animation sequence.
+## Phase 7 — UI polish, system testing, and prototype release
 
-### Phase 6 — Build the finished gameplay interface
+- [ ] Touch control refinement, pause/restart/match result, arena and sound/impact polish.
+- [ ] Debug overlay optional; readable health, stamina, awareness, score and round UI.
+- [ ] Test iPhone screen sizes, FPS, memory, full eight-round matches and CPU levels.
+- [ ] Xcode/simulator/device verification and TestFlight readiness.
 
-- Refine movement, punch, and guard controls for touch.
-- Add or polish the round timer, health indicators, and score display.
-- Introduce round-start and round-end presentations.
-- Add pause, resume, restart, and match-result flows.
-- Replace development diagnostics with an optional debug overlay.
-- Polish the arena, background, and visual effects.
+## OPEN — user decisions required before affected rules are wired
 
-Deliverable: A playable game interface suitable for testing outside development mode.
+These items come from `new_direction.md`. They are **not** settled by this task update.
 
-### Phase 7 — Testing and release preparation
+| # | Rule | Current provisional interpretation / action |
+|---|---|---|
+| 1 | Guard activation: 500ms earlier vs immediate CPU wording | Keep existing 120ms; do not wire 500ms without confirmation |
+| 2 | Guard stamina cost: `(ld+1)/10 of 100` vs about 5% | Patch uses 5% × `(attackerLevel+1)/(defenderLevel+1)`; confirm `ld` |
+| 3 | Single head/body health damage | Patch placeholders 4/3; existing jab/cross damage 5/10; confirm |
+| 4 | Withdraw halves incoming awareness loss? | Assumed yes in brief, not approved |
+| 5 | Head-hit streak resets after 3s or successful defense? | Assumed, not approved |
+| 6 | Grab ends on release, 3s cap or lost closeness? | Assumed, not approved |
+| 7 | Stamina/awareness round reset? | No reset assumed; only health regen specified |
+| 8 | Loss precedence when awareness 0 and health <40 on same hit | Unspecified; decide before implementing result resolution |
 
-- Test on different iPhone screen sizes.
-- Verify frame rate and memory performance.
-- Fix animation timing inconsistencies.
-- Add sound effects and impact feedback.
-- Test complete matches and difficulty progression.
-- Prepare a TestFlight build.
+## Immediate next three agent tasks
 
-Deliverable: A stable, playable Boxer0 prototype.
+1. **Phase 1 patch integration audit:** verify source branch/patch, apply foundation on a development branch, inspect Xcode target membership, run tests where possible.
+2. **Phase 2 meters wiring:** connect contact, guard, health threshold, awareness KO, streak and debug HUD without a wholesale scene rewrite; test deterministically.
+3. **Phase 3 match-state skeleton:** timer, eight rounds, points, draw/KO, and round-start health regen; defer body scoring in live gameplay until body art exists.
 
-## Recommended next three agent tasks
-
-| Order | Task                                   | Scope                                                                         |
-| ----- | -------------------------------------- | ----------------------------------------------------------------------------- |
-| 1     | Orange V2 integration and verification | Replace assets, test facing, reactions, and transitions                       |
-| 2     | Full fighter animation audit           | Identify missing, inconsistent, or visually weak animation sequences          |
-| 3     | Combat responsiveness pass             | Improve contact feedback, hit accuracy, and timing without rewriting gameplay |
-
-I recommend keeping the development incremental: one focused task, one GitHub commit, and one verification checkpoint at a time.
-
-Immediate checkpoint: pull latest master, clean-build in Xcode, review Orange bounce and Blue jab facing, kit color and lighter silhouette. Blue jab correction is source-committed but not device verified. Next: source new Body Hook/Uppercut art and bilateral hit reactions, then replace Cross throughout gameplay. Engineering tasks can be pushed after each session without waiting for approval; new sprite-frame requirements remain an art checkpoint.
+**Review discipline:** each task ends with a commit, focused verification results, and an explicit list of Xcode/device checks that remain unverified. This file tracks planned and completed work; it is not evidence that a feature has passed device testing.
