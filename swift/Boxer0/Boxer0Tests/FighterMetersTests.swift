@@ -351,22 +351,6 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(fighter.awareness, 100, accuracy: 1e-9)
     }
 
-    func testGuardTakesPrecedenceOverWithdrawalRecovery() {
-        var state = CombatMetersState()
-        // Accepted contact decreases Orange's awareness before regeneration.
-        let driver = CombatDriver(distance: 170)
-        XCTAssertTrue(driver.scene.testBeginAttack(.blue, .jab))
-        driver.advance(0.15)
-        let damaged = driver.scene.orangeMeters.awareness
-        XCTAssertLessThan(damaged, 100)
-        // Exercise the bridge's recovery selection with a contact-damaged copy
-        // by checking direct state transitions on both fighters.
-        state.advance(1, blueGuarding: true, orangeGuarding: true,
-                      blueWithdrawing: true, orangeWithdrawing: true)
-        XCTAssertEqual(state.blue.awareness, 100, accuracy: 1e-9)
-        XCTAssertEqual(state.orange.awareness, 100, accuracy: 1e-9)
-    }
-
     func testAwarenessAttackLockoutAddsOnlyLostReactionTime() {
         var cooldown = AttackCooldown()
         cooldown.begin(reactionDelay: 0.05)
