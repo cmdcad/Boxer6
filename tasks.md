@@ -98,6 +98,18 @@
 - [ ] Keep current controls throughout Phase 5. Then build the move pad and revised Jab/Cross/Guard layout, separating gameplay and developer controls; preserve existing movement and attack commands.
 - [ ] Test touch ergonomics, hold/release cancellation, and landscape sizing before Phase 6 adds new moves.
 
+### Phase 5B Evade design — approved behavioral requirements (implementation pending)
+
+- [ ] Evade is controlled through directional D-pad inputs, not a separate Evade button. Keep ordinary movement when an enhanced escape is unavailable.
+- [ ] CPU not attacking: a short slip, with no side switch.
+- [ ] CPU punch approaching: a correctly timed slip can evade contact; mistiming remains vulnerable to the ordinary hit rules.
+- [ ] Player near ropes: pivot away to create space. Use the outer quarter of each arena side as an initial rope-pressure trigger, subject to playtesting.
+- [ ] CPU committed to a suitable punch AND a clear exit exists: duck-and-switch to the opposite side; update fighter facing and positions safely without passing through contact geometry.
+- [ ] Successive successful blocks earn the enhanced pivot/side-switch opportunity. Provisional starting threshold: two consecutive blocks; a clean hit breaks the chain. Basic slip must remain available without earning the opportunity.
+- [ ] Preserve attack-window timing and spatial constraints; a failed or mistimed evade never grants automatic invulnerability.
+- [ ] Until finished sprite frames exist, show the activated action graphically in SpriteKit: brief SLIP/PIVOT/SWITCH cue, motion trail/arc and destination marker or position transition. Missed timing gets distinct feedback. These are temporary visuals, not new fighter sprites.
+- [ ] Test D-pad gesture recognition, accidental activations, rope boundaries, contact vulnerability, earned-block reset/consumption, mirrored sides, cooldown and animation cancellation.
+
 ## Phase 6 — Art-gated mechanics and fighter animation completion
 
 - [ ] Before producing Phase 6 art, review existing idle/unguarded versus raised-guard poses for both fighters; preserve a visibly exposed face in unguarded stance and verify frame-to-frame anchor consistency.
