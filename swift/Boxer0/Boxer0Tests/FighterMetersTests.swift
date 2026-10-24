@@ -448,7 +448,7 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertFalse(scene.blueIsWithdrawing)
     }
 
-    func testCPUWithdrawalLeavesRecoveryModeAtSeventyFiveAwareness() {
+    func testCPUWithdrawalStaysActiveBelowSeventyFiveAwareness() {
         var policy = CPUWithdrawalPolicy()
         policy.update(awareness: 49)
         XCTAssertTrue(policy.active)
@@ -462,7 +462,7 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertTrue(policy.active)
         meters.advance(1, mode: .withdraw)
         policy.update(awareness: meters.awareness)
-        XCTAssertFalse(policy.active)
+        XCTAssertTrue(policy.active)
     }
 
     func testCPUWithdrawalPolicyHysteresisAndReset() {
