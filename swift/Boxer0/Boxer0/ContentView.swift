@@ -197,12 +197,46 @@ final class IdlePlayback: ObservableObject {
         syncFromScene()
     }
 
-    // CPU stays disabled throughout the silent 5-to-0 haptic countdown.
-    // Generation invalidation makes pending callbacks harmless after cancellation.
+    // Future Settings switch. The current default starts a countdown only if
+    // the player has not interacted during the first five seconds.
+    var autoStartCountdownEnabled = true
     @Published private(set) var cpuStarting = false
     private var cpuStartGeneration = 0
+    private var idleStartGeneration = 0
+    private var sessionActive = false
+    private var playerResponded = false
+    private var didPlayLaunchHaptic = false
+
+    func beginSession() {
+        guard !sessionActive else { return }
+        sessionActive = true
+        playerResponded = false
+        if !didPlayLaunchHaptic {
+            didPlayLaunchHaptic = true
+            let feedback = UIImpactFeedbackGenerator(style: .medium)
+            feedback.prepare()
+            feedback.impactOccurred()
+        }
+        guard autoStartCountdownEnabled, !scene.cpuEnabled else { return }
+        idleStartGeneration += 1
+        let generation = idleStartGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            guard let self = self, self.sessionActive, !self.playerResponded,
+                  self.idleStartGeneration == generation,
+                  !self.cpuStarting, !self.scene.cpuEnabled else { return }
+            self.startCPUCountdown()
+        }
+    }
+
+    /// Any deliberate player input prevents unattended auto-start this session.
+    func playerDidInteract() {
+        guard sessionActive else { return }
+        playerResponded = true
+        idleStartGeneration += 1
+    }
 
     func toggleCPU() {
+        playerDidInteract()
         if cpuStarting {
             cancelCPUStart()
             return
@@ -212,14 +246,18 @@ final class IdlePlayback: ObservableObject {
             syncFromScene()
             return
         }
+        startCPUCountdown()
+    }
+
+    private func startCPUCountdown() {
+        guard sessionActive, !cpuStarting, !scene.cpuEnabled else { return }
         cpuStarting = true
         cpuStartGeneration += 1
         let generation = cpuStartGeneration
         for second in 0...5 {
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(second)) { [weak self] in
-                guard let self = self, self.cpuStarting,
+                guard let self = self, self.sessionActive, self.cpuStarting,
                       self.cpuStartGeneration == generation else { return }
-                // Five regular ticks, then a distinct final start confirmation.
                 if second < 5 {
                     let feedback = UIImpactFeedbackGenerator(style: .medium)
                     feedback.prepare()
@@ -239,6 +277,12 @@ final class IdlePlayback: ObservableObject {
     func cancelCPUStart() {
         cpuStartGeneration += 1
         cpuStarting = false
+    }
+
+    func endSession() {
+        sessionActive = false
+        idleStartGeneration += 1
+        cancelCPUStart()
     }
 
     func toggleGuard() {
@@ -348,17 +392,21 @@ struct ContentView: View {
         .onAppear {
             playback.scene.debugOverlaysEnabled = showsDevelopmentDiagnostics
             playback.syncFromScene()
+            playback.beginSession()
         }
+        .simultaneousGesture(TapGesture().onEnded {
+            playback.playerDidInteract()
+        })
         .onChange(of: showsDevelopmentDiagnostics) { enabled in
             playback.scene.debugOverlaysEnabled = enabled
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             playback.cancelMovement()
-            playback.cancelCPUStart()
+            playback.endSession()
         }
         .onDisappear {
             playback.cancelMovement()
-            playback.cancelCPUStart()
+            playback.endSession()
         }
     }
 
