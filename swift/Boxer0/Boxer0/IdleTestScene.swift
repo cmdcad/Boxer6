@@ -310,6 +310,10 @@ final class IdleTestScene: SKScene {
     var testBlueLimits: ClosedRange<CGFloat> { movementLimits() }
     var testOrangeLimits: ClosedRange<CGFloat> { orangeMovementLimits() }
     var testCanCPUAttack: Bool { canCPUAttack }
+    var testCPUWithdrawalActive: Bool { cpuWithdrawal.active }
+    func testDamageOrangeAwareness() {
+        combatMeters.orange.receiveHit(zone: .head, guarded: false)
+    }
     var testBlueRecovery: PunchRecovery { blueRecovery }
     var testOrangeRecovery: PunchRecovery { orangeRecovery }
     var testBlueCooldown: Double { blueAttackCooldown.remaining }
@@ -1032,7 +1036,12 @@ final class IdleTestScene: SKScene {
             && !predictedContact(.orange, kind: .cross)
     }
     var orangeIsWithdrawing: Bool {
-        cpuEnabled && orangeMotion.velocity > 1e-8 && !guardPlayback.isSelected
+        // At the arena boundary velocity becomes zero. A CPU already in
+        // tactical withdrawal must still recover while safely out of reach,
+        // otherwise it can become permanently stranded below 75 awareness.
+        cpuEnabled && !guardPlayback.isSelected
+            && !orangePunch.isActive && !reaction.isActive && !knockdown.hasStarted
+            && (orangeMotion.velocity > 1e-8 || cpuWithdrawal.active)
             && !predictedContact(.blue, kind: .jab)
             && !predictedContact(.blue, kind: .cross)
     }
