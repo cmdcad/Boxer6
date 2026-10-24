@@ -102,6 +102,10 @@
 
 ### Phase 5B Evade design — partial implementation, Xcode verification pending
 
+- [x] Temporary SpriteKit cue now distinguishes `SLIP · ATTEMPT`, `SLIP · TIMED`, and actual contact avoidance `EVADED!`, with a ring effect; **timed** is only eligibility, not a confirmed evade.
+- [ ] Reproduce reported Orange retreat when Blue holds forward at close range, especially while Orange guards. Existing `advanceCPUFootwork` uses distance intent and `orangeMovementLimits()` derives its lower bound from Blue's position, so this may be automatic spacing rather than collision pushback. Do not change movement until device reproduction and desired behavior are agreed.
+
+
 - [x] Circular eight-sector D-pad with drag/release/cancel handling; left/right and diagonal horizontal components retain existing movement.
 - [x] Vertical/diagonal entry requests a brief SLIP cue. A request during the final 180 ms of an approaching CPU punch can avoid that one contact; a mistimed request does not cancel damage. This is an initial tuning rule, not the complete defensive system.
 - [x] Track consecutive successful Blue blocks; two blocks show ESCAPE READY, and a clean hit clears the chain. Enhanced pivot/switch is **not yet wired**.
