@@ -347,16 +347,22 @@ final class IdlePlayback: ObservableObject {
         syncFromScene()
     }
 
-    /// Single source of movement-pad input. Vertical/diagonal directions are
-    /// preserved as intent for Phase 5B Evade, but do not grant immunity yet.
+    /// Single source of movement-pad input; vertical entry requests a slip.
+    /// Only a correctly timed incoming CPU punch can be avoided.
+    private var previousPadVertical = 0
     func setPadDirection(horizontal: Int, vertical: Int) {
         playerDidInteract()
+        if vertical != 0 && previousPadVertical == 0 {
+            scene.requestBlueSlip()
+        }
+        previousPadVertical = vertical
         scene.setRetreatHeld(horizontal < 0)
         scene.setAdvanceHeld(horizontal > 0)
         syncFromScene()
     }
 
     func cancelMovement() {
+        previousPadVertical = 0
         holdAdvance = false
         holdRetreat = false
         scene.cancelMovement()
@@ -711,9 +717,9 @@ struct ContentView: View {
             .opacity(enabled ? 1 : 0.55)
     }
 
-    /// Circular pad with eight directional touch sectors. For now horizontal
-    /// motion is unchanged; diagonals retain their horizontal component until
-    /// the earned escape and punch-window rules are wired into the scene.
+    /// Eight directional sectors. Vertical/diagonal entry requests a timed
+    /// slip; horizontal components retain ordinary advance/retreat. Earned
+    /// pivot and duck-and-switch remain future Phase 5B actions.
     private var movementPad: some View {
         ZStack {
             Circle().fill(Color.white.opacity(0.8))
