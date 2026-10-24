@@ -14,6 +14,11 @@ final class IdlePlayback: ObservableObject {
     @Published var orangeCombatState = FighterCombatState.standing
     @Published var blueHealth = 100
     @Published var orangeHealth = 100
+    @Published var matchRound = 1
+    @Published var matchSecondsRemaining = 120.0
+    @Published var bluePoints = 0
+    @Published var orangePoints = 0
+    @Published var matchResult: MatchResult?
     @Published var blueStamina = 100.0
     @Published var orangeStamina = 100.0
     @Published var blueAwareness = 100.0
