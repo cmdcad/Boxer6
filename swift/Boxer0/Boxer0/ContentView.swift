@@ -193,6 +193,7 @@ final class IdlePlayback: ObservableObject {
     }
 
     func setGuardHeld(_ held: Bool) {
+        playerDidInteract()
         scene.setGuardHeld(held)
         syncFromScene()
     }
@@ -286,52 +287,62 @@ final class IdlePlayback: ObservableObject {
     }
 
     func toggleGuard() {
+        playerDidInteract()
         scene.toggleGuard()
         syncFromScene()
     }
 
     func rise() {
+        playerDidInteract()
         if scene.canBlueRise { scene.startBlueRise() }
         else { scene.startRise() }
         syncFromScene()
     }
 
     func resetHealth() {
+        playerDidInteract()
         scene.resetHealth()
         syncFromScene()
     }
 
     func cross() {
+        playerDidInteract()
         scene.startCross()
         syncFromScene()
     }
 
     func jab() {
+        playerDidInteract()
         scene.startJab()
         syncFromScene()
     }
 
     func togglePlayback() {
+        playerDidInteract()
         scene.togglePlayback()
         syncFromScene()
     }
 
     func step() {
+        playerDidInteract()
         scene.stepFrame()
         syncFromScene()
     }
 
     func toggleGuides() {
+        playerDidInteract()
         scene.toggleGuides()
         syncFromScene()
     }
 
     func setAdvance(_ held: Bool) {
+        playerDidInteract()
         scene.setAdvanceHeld(held)
         syncFromScene()
     }
 
     func setRetreat(_ held: Bool) {
+        playerDidInteract()
         scene.setRetreatHeld(held)
         syncFromScene()
     }
