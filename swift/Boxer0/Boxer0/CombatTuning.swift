@@ -157,7 +157,16 @@ struct AttackCooldown {
         max(0.25, tuning.attackCooldown / Double(max(1, level)))
     }
 
-    mutating func begin() { remaining = duration }
+    /// Reduced awareness delays the next attack, but never delays guard or footwork.
+    /// At full awareness the base level cooldown remains unchanged.
+    mutating func begin(reactionDelay: Double? = nil) {
+        let delay = reactionDelay ?? tuning.baseReaction
+        let penalty = delay.isFinite
+            ? min(tuning.maxReaction - tuning.baseReaction,
+                  max(0, delay - tuning.baseReaction))
+            : 0
+        remaining = duration + penalty
+    }
     mutating func advance(_ dt: Double) {
         guard dt.isFinite, dt > 0 else { return }
         remaining = max(0, remaining - dt)
