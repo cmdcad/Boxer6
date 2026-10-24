@@ -58,6 +58,11 @@
 
 **Checkpoint:** Phase 3 source committed on `phase1-v2`; **device build, Xcode tests, 2-minute boundary and eight-round completion checks are pending**. Combat rule tuning and round-transition animation polish remain future tasks. The debug rise/reset workflow still exists for development; do not treat it as a production rematch flow.
 
+### CPU start UX (committed; device verification pending)
+- [x] Start CPU with **haptics only**, counting 5, 4, 3, 2, 1, 0 across five seconds; do not enable CPU until the final confirmation.
+- [x] Keep countdown silent and without on-screen digits; button reads **Cancel Start** while pending. Cancel on tap, app backgrounding, or view disappearance.
+- [ ] Verify haptics and exact CPU activation timing on a physical iPhone; simulator haptics are not a valid verification.
+
 ## Phase 4 — Attack timing and CPU defense (4A DEVICE VERIFIED; 4B REACTION SOURCE COMMITTED)
 
 - [x] Introduce **1000ms attack-start cooldown at level 1**, shorter at higher injected levels (minimum 250ms). Both fighters share the same model; this cooldown is separate from punch animation/recovery and does not lock guard. Model and scene tests added, not yet run in Xcode.
