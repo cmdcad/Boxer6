@@ -347,6 +347,15 @@ final class IdlePlayback: ObservableObject {
         syncFromScene()
     }
 
+    /// Single source of movement-pad input. Vertical/diagonal directions are
+    /// preserved as intent for Phase 5B Evade, but do not grant immunity yet.
+    func setPadDirection(horizontal: Int, vertical: Int) {
+        playerDidInteract()
+        scene.setRetreatHeld(horizontal < 0)
+        scene.setAdvanceHeld(horizontal > 0)
+        syncFromScene()
+    }
+
     func cancelMovement() {
         holdAdvance = false
         holdRetreat = false
@@ -702,34 +711,30 @@ struct ContentView: View {
             .opacity(enabled ? 1 : 0.55)
     }
 
-    /// Phase 5B: first move-pad integration. Left/right remain the existing
-    /// press-and-hold retreat/advance commands, with their cancellation rules.
-    /// Diagonal evade gestures are deliberately deferred until their contact
-    /// and block-chain eligibility rules are implemented.
+    /// Circular pad with eight directional touch sectors. For now horizontal
+    /// motion is unchanged; diagonals retain their horizontal component until
+    /// the earned escape and punch-window rules are wired into the scene.
     private var movementPad: some View {
-        HStack(spacing: 4) {
-            movePadDirection("chevron.left", label: "Retreat",
-                             pressed: playback.holdRetreat, action: playback.setRetreat)
-            movePadDirection("chevron.right", label: "Advance",
-                             pressed: playback.holdAdvance, action: playback.setAdvance)
+        ZStack {
+            Circle().fill(Color.white.opacity(0.8))
+            Circle().stroke(Color(red: 0.25, green: 0.37, blue: 0.49), lineWidth: 2)
+            Image(systemName: "arrow.up")
+                .offset(y: -34)
+            Image(systemName: "arrow.down")
+                .offset(y: 34)
+            Image(systemName: "arrow.left")
+                .offset(x: -35)
+            Image(systemName: "arrow.right")
+                .offset(x: 35)
+            Circle().fill(Color.blue.opacity(0.12)).frame(width: 27, height: 27)
+            CircularPadTouchSurface(inputGeneration: playback.inputGeneration) { horizontal, vertical in
+                playback.setPadDirection(horizontal: horizontal, vertical: vertical)
+            }
         }
-        .padding(5)
-        .background(Color.white.opacity(0.65),
-                    in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Movement pad")
-    }
-
-    private func movePadDirection(_ symbol: String, label: String, pressed: Bool,
-                                  action: @escaping (Bool) -> Void) -> some View {
-        Image(systemName: symbol)
-            .font(.system(size: 22, weight: .bold))
-            .foregroundColor(Color(red: 0.08, green: 0.20, blue: 0.36))
-            .frame(width: 54, height: 52)
-            .background(pressed ? Color.blue.opacity(0.25) : Color.white,
-                        in: RoundedRectangle(cornerRadius: 10))
-            .overlay(HoldTouchSurface(title: label, inputGeneration: playback.inputGeneration,
-                                      action: action))
+        .font(.system(size: 16, weight: .bold))
+        .foregroundColor(Color(red: 0.08, green: 0.20, blue: 0.36))
+        .frame(width: 112, height: 112)
+        .accessibilityLabel("Eight-direction movement pad")
     }
 
     var debugControls: some View {
@@ -861,3 +866,88 @@ private final class HoldTouchView: UIView {
 //            .previewInterfaceOrientation(.landscapeLeft)
 //    }
 //}
+
+/// A single touch owns the pad. Releasing or cancelling always releases motion;
+/// dragging between sectors changes direction without stacking held buttons.
+private struct CircularPadTouchSurface: UIViewRepresentable {
+    let inputGeneration: Int
+    let action: (Int, Int) -> Void
+
+    func makeUIView(context: Context) -> CircularPadTouchView {
+        let view = CircularPadTouchView()
+        view.isMultipleTouchEnabled = false
+        view.isAccessibilityElement = true
+        view.accessibilityLabel = "Directional pad"
+        view.accessibilityHint = "Drag in a direction; release to stop"
+        view.action = action
+        view.inputGeneration = inputGeneration
+        return view
+    }
+
+    func updateUIView(_ view: CircularPadTouchView, context: Context) {
+        view.action = action
+        view.inputGeneration = inputGeneration
+    }
+
+    static func dismantleUIView(_ view: CircularPadTouchView, coordinator: ()) {
+        view.release()
+        view.action = nil
+    }
+}
+
+private final class CircularPadTouchView: UIView {
+    var action: ((Int, Int) -> Void)?
+    var inputGeneration = 0 {
+        didSet { if oldValue != inputGeneration { release() } }
+    }
+    private var trackedTouch: UITouch?
+    private var lastDirection = (0, 0)
+
+    private func update(_ touch: UITouch) {
+        let p = touch.location(in: self)
+        let dx = Double(p.x - bounds.midX)
+        let dy = Double(bounds.midY - p.y)
+        let distance = hypot(dx, dy)
+        let x: Int
+        let y: Int
+        if distance < 17 {
+            x = 0; y = 0
+        } else {
+            let angle = atan2(dy, dx)
+            let sector = Int((angle / (.pi / 4)).rounded())
+            let vectors = [(1,0), (1,1), (0,1), (-1,1),
+                           (-1,0), (-1,-1), (0,-1), (1,-1)]
+            let index = (sector + 8) % 8
+            (x, y) = vectors[index]
+        }
+        if x != lastDirection.0 || y != lastDirection.1 {
+            lastDirection = (x, y)
+            action?(x, y)
+        }
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard trackedTouch == nil, let touch = touches.first else { return }
+        trackedTouch = touch
+        update(touch)
+    }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = trackedTouch, touches.contains(touch) else { return }
+        update(touch)
+    }
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = trackedTouch, touches.contains(touch) { release() }
+    }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        touchesEnded(touches, with: event)
+    }
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window == nil { release() }
+    }
+    func release() {
+        trackedTouch = nil
+        lastDirection = (0, 0)
+        action?(0, 0)
+    }
+}
