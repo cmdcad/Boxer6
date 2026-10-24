@@ -6,13 +6,13 @@ The following roadmap separates implemented features that still need verificatio
 
 Overall roadmap
 
-Phase 2 of 7
+Phase 3 of 7
 
 Estimated project progression, not a measured completion percentage.
 
 ### Phase 2 — Finish Orange animation integration
 
-Current priority
+Implemented in source; final device verification pending
 
 - Install the Orange Reaction V2 image sets.
 - Verify Orange faces Blue during bounce, punches, guarding, and recovery.
@@ -25,16 +25,20 @@ Deliverable: Orange has reliable, visually distinct reactions throughout gamepla
 
 ### Phase 3 — Complete both fighters' animation systems
 
-- Audit Blue's jab, cross, recovery, guard, and movement animations.
+**Current priority — Phase 3E/3F.** Shared Orange Jab V2 with Blue at runtime; Orange bounce texture correction now explicitly rasterizes to match the jab silhouette (source bounce 354px vs jab 295px) with foot baseline aligned. Guard/locomotion handoffs partially refined. Source-level changes are on master; Xcode/device visual verification remains pending.
+
+- Audit Blue's jab, cross, recovery, guard, and movement animations. (In progress: shared Blue jab source implemented; visual review pending.)
 - Audit Orange's corresponding animations.
-- Standardize sprite dimensions, anchor points, and animation transitions.
-- Eliminate visual glitches when actions interrupt one another.
+- Standardize sprite dimensions, anchor points, and animation transitions. (In progress: Orange bounce raster normalization committed; needs on-device confirmation.)
+- Eliminate visual glitches when actions interrupt one another. (In progress: Orange locomotion reversals retain footwork phase.)
 - Verify knockdown and getting-up sequences.
 - Establish a consistent animation registry for both fighters.
 
 Deliverable: Two complete, consistently animated boxers.
 
 ### Phase 4 — Refine combat mechanics
+
+**Punch roadmap:** Jab remains the approved light attack. A new offensive **Heavy Punch** will replace Cross when new frames are supplied. The existing Cross artwork is a candidate for later heavy-hit reuse only after its suitability as a defensive reaction is reviewed. Do not conflate an offensive heavy punch with the existing Orange heavy-hit reaction.
 
 Existing combat logic should be tested and improved rather than rewritten.
 
@@ -90,4 +94,4 @@ Deliverable: A stable, playable Boxer0 prototype.
 
 I recommend keeping the development incremental: one focused task, one GitHub commit, and one verification checkpoint at a time.
 
-We should finish Orange V2 integration first, then perform the full animation audit before introducing additional gameplay features.
+Immediate checkpoint: pull the latest master, rebuild in Xcode, confirm Orange bounce height matches Orange jab, then review Blue's shared jab palette and guarded locomotion. Engineering tasks can be pushed after each session without waiting for approval; new sprite-frame requirements remain an art checkpoint.
