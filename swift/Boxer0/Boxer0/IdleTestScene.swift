@@ -1313,16 +1313,17 @@ final class IdleTestScene: SKScene {
         idleB = (0..<4).map { makeTexture(named: "idle_b_\($0)") }
         advanceA = (0..<6).map { makeTexture(named: "advance_a_\($0)") }
         retreatA = (0..<6).map { makeTexture(named: "retreat_a_\($0)") }
-        // Never substitute another clip or a missing-image placeholder.
-        // Share the approved Orange Jab V2 motion with Blue, but recolor and
-        // face it toward Orange. Keep the original Blue frames as fallback.
-        let sharedBlueJab = loadBlueJabFromOrange()
-        jabA = sharedBlueJab.count == PunchKind.jab.frameCount
-            ? sharedBlueJab : loadPunchTextures(prefix: "jab_a", count: PunchKind.jab.frameCount)
+        // Prefer Blue's own artwork. Recoloring Orange's entire boxer caused
+        // visibly bluish skin and a mismatched build; the Blue asset is also
+        // already oriented for the left-side fighter. Retain the derived art
+        // strictly as a fallback for installations missing original frames.
+        let originalBlueJab = loadPunchTextures(prefix: "jab_a", count: PunchKind.jab.frameCount)
+        jabA = originalBlueJab.count == PunchKind.jab.frameCount
+            ? originalBlueJab : loadBlueJabFromOrange()
         crossA = loadPunchTextures(prefix: "cross_a", count: PunchKind.cross.frameCount)
-        let sharedBlueJabRecovery = loadBlueJabRecoveryFromOrange()
-        jabRecoveryA = sharedBlueJabRecovery.count == 1
-            ? sharedBlueJabRecovery : loadPunchTextures(prefix: "jab_recovery_a", count: 1)
+        let originalBlueRecovery = loadPunchTextures(prefix: "jab_recovery_a", count: 1)
+        jabRecoveryA = originalBlueRecovery.count == 1
+            ? originalBlueRecovery : loadBlueJabRecoveryFromOrange()
         crossRecoveryA = loadPunchTextures(prefix: "cross_recovery_a", count: 1)
         jabRecoveryB = loadPunchTextures(prefix: "jab_recovery_b", count: 1)
         crossRecoveryB = loadPunchTextures(prefix: "cross_recovery_b", count: 1)
