@@ -1066,6 +1066,11 @@ final class IdleTestScene: SKScene {
                 context: event.defenderID == .blue ? contactTracker.context : cpuContactTracker.context) }
         }
         let eligible = health.canExchangePunches || simultaneous
+        // A real incoming head contact (including a successful block) makes
+        // Orange more alert to the next punch. A miss does not count.
+        if eligible && event.defenderID == .orange && event.result != .miss {
+            defensiveAI.recordIncomingContact()
+        }
         if eligible { match.score(event) }
         health.receive(event, simultaneous: simultaneous)
         if eligible && combatMeters.receive(event) {
