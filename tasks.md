@@ -85,7 +85,8 @@
 - [x] Handle CPU retreat at arena edge: while tactical withdrawal is active and both opponent punches are out of range, awareness can recover even when boundary-clamped velocity is zero. Guard, active attacks, and reactions still suppress withdrawal recovery. Scene regression tests committed, execution pending.
 - [x] Resolve same-tick CPU offense race: update withdrawal policy before CPU attack selection; add scene tests for first-tick lockout, guard suppression, and full-reset cancellation. Source committed, Xcode execution pending.
 - [ ] Validate scene-level retreat entry/exit, distance boundaries, guard precedence, and CPU retreat decisions in Xcode; tune only after device testing.
-- [ ] Withdraw counts as defense; loses no points; validate against live match scoring and contact rules.
+- [x] Add scene regression tests: withdrawal earns no passive match points; a Jab outside range remains a miss with zero points. Existing match scoring is unchanged; tests still require Xcode execution.
+- [ ] Confirm on device that withdrawal counts as distance defense without changing the existing block/hit scoring or awarding passive points.
 - [ ] Provisionally halve incoming awareness loss while withdrawing **only after confirming OPEN item 4**.
 - [ ] Test transition into/out of range, counterplay, and CPU defensive decisions.
 
@@ -104,6 +105,7 @@
 - [ ] Cleanly isolate Video2 frames: remove text, targeting graphics, background and overlaps; reconstruct missing limbs; align 512px transparent frames to consistent foot anchors.
 - [ ] Author Blue as a genuinely **lighter-built** boxer, not merely a recolored Orange; check facing, glove colors and pose continuity. Keep Orange heavier-built.
 - [ ] Create distinct **Jab, Body Hook and Uppercut** attack animations and attack-specific receiving reactions for **both** fighters, based on the video; existing Orange reactions may be replaced if mismatched.
+- [ ] Use the newly highlighted Blue-to-Orange footage as a reference for three distinguishable impacts: head punch with head recoil, body hit with torso fold/twist, and the final uppercut with upward chin/head recoil. Review exact frame order and timing with the developer before committing production sprites; do not claim extracted frames are approved.
 - [ ] When verified artwork exists, replace **Cross/Heavy Punch** with Body Hook and Uppercut in controls, `PunchKind`, CPU selection, collision zones, recovery, meters, scoring, diagnostics and tests. Until then jab/cross remain head-only legacy functionality.
 - [ ] Add body zone and body-hit level scaling when body attack art is ready. Uppercut targeting must be defined from actual glove path, not guessed from the old cross geometry.
 - [ ] Defer **sway**, **grab** (stamina <50, held up to 3 seconds), one-two, duck, left/right combinations, heavy hits and level injection until rules/art support them.
