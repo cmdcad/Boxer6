@@ -1460,7 +1460,7 @@ final class IdleTestScene: SKScene {
     }()
 
     private func loadSharedBlueJab(prefix: String, count: Int) -> [SKTexture] {
-        let images = (0..<count).compactMap { UIImage(named: "\\(prefix)_\\($0)") }
+        let images = (0..<count).compactMap { UIImage(named: "\(prefix)_\($0)") }
         guard images.count == count, images.allSatisfy({
             $0.cgImage?.width == 512 && $0.cgImage?.height == 512
         }) else { return [] }
