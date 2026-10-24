@@ -4,7 +4,7 @@
 
 ## Status — 2026-10-24
 
-- **Current priority: Phase 2 — verify meter-driven defeat and finish HUD.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
+- **Current priority: Phase 3 — verify match clock, scoring and results in Xcode.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
 - **Phase 1 — implemented on master, expanded tests on `phase1-v2`:** commit `1d0ffb3` introduced `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift` and their Xcode project references on `master`. The separate `tools/phase1.patch` is a historical delivery artifact, not a missing integration prerequisite. `phase1-v2` was fast-forwarded from master, then expanded with three focused tests. **Xcode compilation and test execution are still pending on a Mac.**
 - **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
 - **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
@@ -48,15 +48,15 @@
 
 **Checkpoint:** Phase 2A and the Phase 2B defeat transition source are committed; legacy defeat tests updated deliberately, and new tests cover awareness KO and the 40-health boundary. **Mac build/tests and memory profiling remain the immediate gate**. Meter HUD source is committed but unverified on-device. Health-damage tuning and final head-hit streak health rules remain pending; do not claim Phase 2 complete.
 
-## Phase 3 — Match state and scoring
+## Phase 3 — Match state and scoring (SOURCE IMPLEMENTED; XCODE CHECKPOINT PENDING)
 
-- [ ] Add standalone `MatchState` value type: **8 rounds × 2 minutes**, round clock, points, KO and end-of-match results.
-- [ ] Points to attacker: head hit **3**, body hit **1** (when body art exists), guarded hit **1**. A tie is a **draw**, not a forced winner.
-- [ ] Apply health regeneration at round start; do **not** assume stamina or awareness reset between rounds.
-- [ ] Add minimal timer, points, round and result UI, without redesigning the full game screen.
-- [ ] Test time boundaries, points, draw, KO, and round transitions.
+- [x] Add standalone `MatchState` value type in `CombatTuning.swift`: **8 rounds × 2 minutes**, round clock, points, KO and end-of-match results.
+- [x] Points to attacker: head hit **3**, guarded hit **1**; body hit **1** remains art-gated. Duplicate contact sequences do not score twice. Equal scores draw; simultaneous double KO provisionally draws pending explicit rule.
+- [x] Heal both fighters by up to **10 HP** on entry to the next round, capped at 100; stamina and awareness persist.
+- [x] Add compact round timer, points, and result strip below the three-meter HUD. Collapse the verbose diagnostics by default behind a **Dev** toggle; CPU toggle and gameplay controls remain available.
+- [x] Add model tests for round boundaries, scoring, deduplication, draw, KO and capped round healing; source committed, **Xcode execution pending**.
 
-**Checkpoint:** complete deterministic match progression and scoring.
+**Checkpoint:** Phase 3 source committed on `phase1-v2`; **device build, Xcode tests, 2-minute boundary and eight-round completion checks are pending**. Combat rule tuning and round-transition animation polish remain future tasks. The debug rise/reset workflow still exists for development; do not treat it as a production rematch flow.
 
 ## Phase 4 — Attack timing and CPU defense
 
