@@ -474,6 +474,28 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertTrue(away.blueEnhancedEscapeReady)
     }
 
+    func testEarnedDuckAvoidsCommittedCPUPunchAndConsumesChain() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        scene.testSetBlueBlockChain(2)
+        XCTAssertTrue(scene.testBeginAttack(.orange, .jab))
+        driver.advance(0.04)
+        let before = scene.blueMeters.awareness
+        XCTAssertTrue(scene.requestBlueEvade(horizontal: -1, vertical: 1))
+        driver.advance(0.11)
+        XCTAssertEqual(scene.blueMeters.awareness, before, accuracy: 1e-8)
+        XCTAssertFalse(scene.blueEnhancedEscapeReady)
+        XCTAssertLessThan(scene.testBluePosition, scene.testOrangePosition)
+    }
+
+    func testDuckWithoutCommittedPunchCannotSpendBlockChain() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        scene.testSetBlueBlockChain(2)
+        XCTAssertFalse(scene.requestBlueEvade(horizontal: -1, vertical: 1))
+        XCTAssertTrue(scene.blueEnhancedEscapeReady)
+    }
+
     func testCPUWithdrawalStaysActiveBelowSeventyFiveAwareness() {
         var policy = CPUWithdrawalPolicy()
         policy.update(awareness: 49)
