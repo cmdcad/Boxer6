@@ -170,6 +170,9 @@ struct FighterHealth {
     mutating func applyDamage(_ amount: Int) {
         current -= min(current, max(0, amount))
     }
+    mutating func heal(_ amount: Int) {
+        current = min(maximum, current + max(0, amount))
+    }
     mutating func reset() { current = maximum }
 }
 
