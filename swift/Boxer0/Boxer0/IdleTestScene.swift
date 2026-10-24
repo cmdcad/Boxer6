@@ -774,8 +774,12 @@ final class IdleTestScene: SKScene {
                 onPlaybackChange?()
             }
         }
+        // Phase 5: recovery is earned by actively retreating beyond the
+        // opponent's jab AND cross reach, not by idle distance or guarding.
         combatMeters.advance(dt, blueGuarding: blueGuard.isSelected,
-                             orangeGuarding: guardPlayback.isSelected)
+                             orangeGuarding: guardPlayback.isSelected,
+                             blueWithdrawing: blueIsWithdrawing,
+                             orangeWithdrawing: orangeIsWithdrawing)
         advancePhysicalRecovery(dt)
         advanceBlueRecovery(dt)
         advanceBlueDefense(dt)
@@ -1016,6 +1020,19 @@ final class IdleTestScene: SKScene {
     private func logAttackStart(_ fighter: FighterID, context: AttackContext?) {
         logCombat("ATTACK_START", fighter: fighter, context: context)
         if context?.isCounterAttempt == true { logCombat("COUNTER_ATTEMPT", fighter: fighter, context: context) }
+    }
+
+    /// Withdraw uses existing retreat art. No new input or sprite is needed.
+    /// CPU retreats toward positive X; the player retreats toward negative X.
+    var blueIsWithdrawing: Bool {
+        motion.velocity < -1e-8 && !blueGuard.isSelected
+            && !predictedContact(.orange, kind: .jab)
+            && !predictedContact(.orange, kind: .cross)
+    }
+    var orangeIsWithdrawing: Bool {
+        cpuEnabled && orangeMotion.velocity > 1e-8 && !guardPlayback.isSelected
+            && !predictedContact(.blue, kind: .jab)
+            && !predictedContact(.blue, kind: .cross)
     }
 
     private func predictedContact(_ attacker: FighterID, kind: PunchKind) -> Bool {
