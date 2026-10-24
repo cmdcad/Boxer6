@@ -15,10 +15,13 @@
 		4E9E6D093085A68700DAD680 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E9E6D083085A68700DAD680 /* Preview Assets.xcassets */; };
 		4E9E6D113085A90000DAD680 /* IdleTestScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D103085A90000DAD680 /* IdleTestScene.swift */; };
 		4E9E6D123085A90000DAD680 /* FootworkMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D133085A90000DAD680 /* FootworkMotion.swift */; };
+		9C00000000000000000000B2 /* FighterMeters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C00000000000000000000A2 /* FighterMeters.swift */; };
+		9C00000000000000000000B1 /* CombatTuning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C00000000000000000000A1 /* CombatTuning.swift */; };
 		4E9E6D143085A90000DAD680 /* JabPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D153085A90000DAD680 /* JabPlayback.swift */; };
 		4E9E6D163085A90000DAD680 /* PunchContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D173085A90000DAD680 /* PunchContact.swift */; };
 		4E9E6D183085A90000DAD680 /* HitReactionPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */; };
 		9C0000000000000000000004 = {isa = PBXBuildFile; fileRef = 9C0000000000000000000003; };
+		9C00000000000000000000B3 = {isa = PBXBuildFile; fileRef = 9C00000000000000000000A3; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,10 +32,13 @@
 		4E9E6D053085A68700DAD680 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4E9E6D083085A68700DAD680 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		4E9E6D133085A90000DAD680 /* FootworkMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FootworkMotion.swift; sourceTree = "<group>"; };
+		9C00000000000000000000A2 /* FighterMeters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FighterMeters.swift; sourceTree = "<group>"; };
+		9C00000000000000000000A1 /* CombatTuning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatTuning.swift; sourceTree = "<group>"; };
 		4E9E6D153085A90000DAD680 /* JabPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JabPlayback.swift; sourceTree = "<group>"; };
 		4E9E6D173085A90000DAD680 /* PunchContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PunchContact.swift; sourceTree = "<group>"; };
 		4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HitReactionPlayback.swift; sourceTree = "<group>"; };
 		9C0000000000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatTests.swift; sourceTree = "<group>"; };
+		9C00000000000000000000A3 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FighterMetersTests.swift; sourceTree = "<group>"; };
 		9C0000000000000000000002 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = Boxer0Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -73,6 +79,8 @@
 				4E9E6D033085A68100DAD680 /* ContentView.swift */,
 				4E9E6D103085A90000DAD680 /* IdleTestScene.swift */,
 				4E9E6D133085A90000DAD680 /* FootworkMotion.swift */,
+				9C00000000000000000000A2 /* FighterMeters.swift */,
+				9C00000000000000000000A1 /* CombatTuning.swift */,
 				4E9E6D153085A90000DAD680 /* JabPlayback.swift */,
 				4E9E6D173085A90000DAD680 /* PunchContact.swift */,
 				4E9E6D193085A90000DAD680 /* HitReactionPlayback.swift */,
@@ -90,7 +98,7 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		9C000000000000000000000D = {isa = PBXGroup; children = (9C0000000000000000000003,); path = Boxer0Tests; sourceTree = "<group>"; };
+		9C000000000000000000000D = {isa = PBXGroup; children = (9C0000000000000000000003, 9C00000000000000000000A3,); path = Boxer0Tests; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -167,6 +175,8 @@
 				4E9E6D043085A68100DAD680 /* ContentView.swift in Sources */,
 				4E9E6D113085A90000DAD680 /* IdleTestScene.swift in Sources */,
 				4E9E6D123085A90000DAD680 /* FootworkMotion.swift in Sources */,
+				9C00000000000000000000B2 /* FighterMeters.swift in Sources */,
+				9C00000000000000000000B1 /* CombatTuning.swift in Sources */,
 				4E9E6D143085A90000DAD680 /* JabPlayback.swift in Sources */,
 				4E9E6D163085A90000DAD680 /* PunchContact.swift in Sources */,
 				4E9E6D183085A90000DAD680 /* HitReactionPlayback.swift in Sources */,
@@ -174,7 +184,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9C0000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (9C0000000000000000000004,); runOnlyForDeploymentPostprocessing = 0; };
+		9C0000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (9C0000000000000000000004, 9C00000000000000000000B3,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
