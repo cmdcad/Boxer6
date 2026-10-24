@@ -177,4 +177,62 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertFalse(status.receiveHealth(health))
     }
 
+    func testMatchRoundBoundariesAndDraw() {
+        var match = MatchState()
+        XCTAssertEqual(match.round, 1)
+        XCTAssertEqual(match.advance(119.75), 0)
+        XCTAssertEqual(match.remaining, 0.25, accuracy: 1e-8)
+        XCTAssertEqual(match.advance(0.25), 1)
+        XCTAssertEqual(match.round, 2)
+        XCTAssertEqual(match.remaining, 120, accuracy: 1e-8)
+        XCTAssertEqual(match.advance(6 * 120), 6)
+        XCTAssertEqual(match.round, 8)
+        XCTAssertEqual(match.advance(120), 0)
+        XCTAssertEqual(match.result, .draw)
+        XCTAssertTrue(match.isFinished)
+        XCTAssertEqual(match.advance(20), 0)
+    }
+
+    func testMatchScoringDedupAndKnockout() {
+        let transform = SpriteCanvasTransform(rootPosition: .zero, scaleX: 1, scaleY: 1)
+        func contact(_ id: Int, _ result: PunchContactResult, _ attacker: FighterID) -> PunchContactEvent {
+            var event = PunchContactEvent(sequence: id, kind: .jab, result: result,
+                center: .zero, radius: 20, target: .zero,
+                attacker: transform, defender: transform)
+            event.attackerID = attacker
+            return event
+        }
+        var match = MatchState()
+        XCTAssertTrue(match.score(contact(1, .hit, .blue)))
+        XCTAssertFalse(match.score(contact(1, .hit, .blue)))
+        XCTAssertTrue(match.score(contact(2, .block, .blue)))
+        XCTAssertFalse(match.score(contact(3, .miss, .blue)))
+        XCTAssertTrue(match.score(contact(4, .hit, .orange)))
+        XCTAssertEqual(match.bluePoints, 4)
+        XCTAssertEqual(match.orangePoints, 3)
+        match.knockout(winner: .orange)
+        XCTAssertEqual(match.result, .orangeKO)
+        XCTAssertFalse(match.score(contact(5, .hit, .blue)))
+        match.reset()
+        XCTAssertEqual(match.bluePoints, 0)
+        XCTAssertNil(match.result)
+    }
+
+    func testRoundHealingCapsAndPreservesAwareness() {
+        var health = FighterHealthState()
+        var meters = CombatMetersState()
+        let transform = SpriteCanvasTransform(rootPosition: .zero, scaleX: 1, scaleY: 1)
+        var event = PunchContactEvent(sequence: 1, kind: .jab, result: .hit,
+            center: .zero, radius: 20, target: .zero,
+            attacker: transform, defender: transform)
+        event.attackerID = .blue
+        XCTAssertTrue(health.receive(event))
+        XCTAssertTrue(meters.receive(event))
+        XCTAssertEqual(health.orange.current, 95)
+        let awareness = meters.orange.awareness
+        health.beginNextRound(heal: 10)
+        XCTAssertEqual(health.orange.current, 100)
+        XCTAssertEqual(meters.orange.awareness, awareness, accuracy: 1e-8)
+    }
+
 }
