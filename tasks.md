@@ -103,12 +103,15 @@
 ### Phase 5B Evade design — partial implementation, Xcode verification pending
 
 - [x] Temporary SpriteKit cue now distinguishes `SLIP · ATTEMPT`, `SLIP · TIMED`, and actual contact avoidance `EVADED!`, with a ring effect; **timed** is only eligibility, not a confirmed evade.
-- [ ] Reproduce reported Orange retreat when Blue holds forward at close range, especially while Orange guards. Existing `advanceCPUFootwork` uses distance intent and `orangeMovementLimits()` derives its lower bound from Blue's position, so this may be automatic spacing rather than collision pushback. Do not change movement until device reproduction and desired behavior are agreed.
+- [x] Orange retreat when Blue advances at close range: **closed without further investigation at user's request**. No movement change.
 
 
 - [x] Circular eight-sector D-pad with drag/release/cancel handling; left/right and diagonal horizontal components retain existing movement.
 - [x] Vertical/diagonal entry requests a brief SLIP cue. A request during the final 180 ms of an approaching CPU punch can avoid that one contact; a mistimed request does not cancel damage. This is an initial tuning rule, not the complete defensive system.
 - [x] Track consecutive successful Blue blocks; two blocks show ESCAPE READY, and a clean hit clears the chain. Enhanced pivot/switch is **not yet wired**.
+- [x] Initial enhanced rope pivot: after two Blue blocks, diagonal forward/up or forward/down near the left rope shifts Blue toward the ring center if space permits; consumes the block chain, shows PIVOT!, and suppresses concurrent forward movement until pad release. If spacing prevents pivot, shows PIVOT BLOCKED without spending the chain.
+- [x] Added scene regression tests for pivot movement, earned-chain consumption and rope proximity (not yet run).
+- [ ] Full duck-and-switch with attack commitment, bilateral facing, safe destination, mirrored collision geometry and tests remains deferred.
 - [ ] Verify SpriteKit timed slip, pad input cancellation, CPU contact timing and multi-touch on Mac/device; current Linux environment cannot run SpriteKit tests.
 
 
