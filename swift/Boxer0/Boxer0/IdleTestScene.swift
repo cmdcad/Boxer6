@@ -580,7 +580,7 @@ final class IdleTestScene: SKScene {
         health.canExchangePunches && jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && blueAttackCooldown.canAttack && !blueBlockFeedback.isActive && !guardHeld
     }
     var canStartCross: Bool {
-        health.canExchangePunches && crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && !blueBlockFeedback.isActive && !guardHeld
+        health.canExchangePunches && crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && blueAttackCooldown.canAttack && !blueBlockFeedback.isActive && !guardHeld
     }
     var showsJabContact: Bool {
         punch.isActive && punch.kind == .jab && punch.frameIndex == punch.kind.contactFrame
@@ -981,7 +981,7 @@ final class IdleTestScene: SKScene {
         if attacker == .orange {
             guard cpuEnabled, canCPUAttack, orangePunch.start(kind) else { return false }
             orangeRecovery.begin(kind)
-            orangeAttackCooldown.begin()
+            orangeAttackCooldown.begin(reactionDelay: combatMeters.orange.reactionDelay)
             attackSequence += 1
             cpuContactTracker.begin(kind, attackerID: .orange, attackID: attackSequence, startTime: simulationTime,
                                     counterAttempt: isAttackVulnerable(.blue))
@@ -995,7 +995,7 @@ final class IdleTestScene: SKScene {
         let available = kind == .jab ? canStartJab : canStartCross
         guard available, punch.start(kind) else { return false }
         blueRecovery.begin(kind)
-        blueAttackCooldown.begin()
+        blueAttackCooldown.begin(reactionDelay: combatMeters.blue.reactionDelay)
         motion.stop()
         attackSequence += 1
         contactTracker.begin(kind, attackerID: .blue, attackID: attackSequence, startTime: simulationTime,
