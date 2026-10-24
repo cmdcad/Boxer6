@@ -579,7 +579,10 @@ struct ContentView: View {
                     .frame(minWidth: 44, minHeight: 44)
                     .buttonStyle(.plain)
                     .disabled(!playback.canRise)
-                Button("Reset Health", action: playback.resetHealth)
+                Button("Reset Health") {
+                    playback.resetHealth()
+                    showsDevelopmentDiagnostics = false
+                }
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 84, minHeight: 44)
                     .buttonStyle(.plain)
