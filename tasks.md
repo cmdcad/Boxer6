@@ -95,7 +95,7 @@
 
 ## Phase 5B — Gameplay controls redesign (AFTER Phase 5)
 
-- [ ] Keep current controls throughout Phase 5. Then build the move pad and revised Jab/Cross/Guard layout, separating gameplay and developer controls; preserve existing movement and attack commands.
+- [x] First Phase 5B control-layout integration: replace the two wide hold-movement buttons with a compact left/right hold movement pad; keep Jab/Cross/Guard functional and place Dev on a separate row. Mac/Xcode verification pending. Full directional Evade gesture handling is not implemented yet.
 - [ ] Test touch ergonomics, hold/release cancellation, and landscape sizing before Phase 6 adds new moves.
 
 ### Phase 5B Evade design — approved behavioral requirements (implementation pending)
@@ -109,6 +109,8 @@
 - [ ] Preserve attack-window timing and spatial constraints; a failed or mistimed evade never grants automatic invulnerability.
 - [ ] Until finished sprite frames exist, show the activated action graphically in SpriteKit: brief SLIP/PIVOT/SWITCH cue, motion trail/arc and destination marker or position transition. Missed timing gets distinct feedback. These are temporary visuals, not new fighter sprites.
 - [ ] Test D-pad gesture recognition, accidental activations, rope boundaries, contact vulnerability, earned-block reset/consumption, mirrored sides, cooldown and animation cancellation.
+
+- [x] Add non-destructive draft-frame preflight script (`python3 tools/check_sprite_frames.py generated_video2`) checking frame numbering, 512×512 RGBA, transparency and footline variance. Script committed; no production sprite art created and no Xcode validation yet.
 
 ## Phase 6 — Art-gated mechanics and fighter animation completion
 
