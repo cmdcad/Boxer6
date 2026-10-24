@@ -77,3 +77,47 @@ struct FighterMeters {
                    tuning.baseReaction * tuning.maxAwareness / awareness)
     }
 }
+
+ 
+/// Phase 2A bridge: receives accepted contact events exactly once per attacker.
+/// Health/knockdown integration is a separate Phase 2 checkpoint.
+struct CombatMetersState {
+    private(set) var blue = FighterMeters()
+    private(set) var orange = FighterMeters()
+    private var blueSequence = 0
+    private var orangeSequence = 0
+
+    @discardableResult
+    mutating func receive(_ event: PunchContactEvent) -> Bool {
+        guard event.result != .miss else { return false }
+        if event.attackerID == .blue {
+            guard event.sequence > blueSequence else { return false }
+            blueSequence = event.sequence
+        } else {
+            guard event.sequence > orangeSequence else { return false }
+            orangeSequence = event.sequence
+        }
+        if event.defenderID == .blue {
+            blue.receiveHit(zone: .head, guarded: event.result == .block)
+            if event.result == .block { blue.endHeadHitStreak() }
+        } else {
+            orange.receiveHit(zone: .head, guarded: event.result == .block)
+            if event.result == .block { orange.endHeadHitStreak() }
+        }
+        return true
+    }
+
+    mutating func advance(_ dt: Double, blueGuarding: Bool, orangeGuarding: Bool) {
+        blue.advance(dt, mode: blueGuarding ? .guarding : .idle)
+        orange.advance(dt, mode: orangeGuarding ? .guarding : .idle)
+    }
+
+    /// Preserve accepted sequence watermarks when resetting for debug recovery.
+    mutating func reset() {
+        blue = FighterMeters()
+        orange = FighterMeters()
+    }
+
+    mutating func recoverBlue() { blue = FighterMeters() }
+    mutating func recoverOrange() { orange = FighterMeters() }
+}
