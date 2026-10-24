@@ -357,7 +357,7 @@ final class PauseResetRiseTests: XCTestCase {
             for _ in 0..<3 {
                 d.scene.testSetSeparation(170)
                 XCTAssertTrue(d.scene.testBeginAttack(defender.opponent, .cross))
-                d.advance(0.70)
+                d.advance(1.0) // Allow level-one attack cooldown before next cross.
             }
             d.advance(1)
             XCTAssertEqual(defender == .blue ? d.scene.blueCombatState : d.scene.orangeCombatState,.defeated)
