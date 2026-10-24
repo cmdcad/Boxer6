@@ -100,6 +100,11 @@ final class IdlePlayback: ObservableObject {
     }
 
     func syncFromScene() {
+        matchRound = scene.match.round
+        matchSecondsRemaining = scene.match.remaining
+        bluePoints = scene.match.bluePoints
+        orangePoints = scene.match.orangePoints
+        matchResult = scene.match.result
         blueCombatState = scene.blueCombatState
         orangeCombatState = scene.orangeCombatState
         blueHealth = scene.blueHealth.current
@@ -254,11 +259,12 @@ final class IdlePlayback: ObservableObject {
 struct ContentView: View {
     @StateObject internal var playback = IdlePlayback()
     // Development presentation only; hiding it does not change locomotion.
-    var showsDevelopmentDiagnostics = true
+    @State private var showsDevelopmentDiagnostics = false
 
     var body: some View {
         VStack(spacing: 0) {
             healthHUD
+            matchHUD
             SpriteView(scene: playback.scene)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .layoutPriority(0)
@@ -282,7 +288,7 @@ struct ContentView: View {
                     punchButton("Jab", enabled: playback.canJab, action: playback.jab)
                     punchButton("Cross", enabled: playback.canCross, action: playback.cross)
                     playerGuardControl
-                    if showsDevelopmentDiagnostics { debugControls }
+                    debugControls
                 }
                 .frame(height: 54)
             }
@@ -295,7 +301,13 @@ struct ContentView: View {
         }
         .background(Color(red: 0.91, green: 0.933, blue: 0.957).ignoresSafeArea())
         .preferredColorScheme(ColorScheme.light)
-        .onAppear { playback.scene.debugOverlaysEnabled = showsDevelopmentDiagnostics }
+        .onAppear {
+            playback.scene.debugOverlaysEnabled = showsDevelopmentDiagnostics
+            playback.syncFromScene()
+        }
+        .onChange(of: showsDevelopmentDiagnostics) { enabled in
+            playback.scene.debugOverlaysEnabled = enabled
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             playback.cancelMovement()
         }
@@ -400,6 +412,42 @@ struct ContentView: View {
         }
     }
 
+    private var matchHUD: some View {
+        HStack(spacing: 12) {
+            Text("BLUE \(playback.bluePoints)")
+                .foregroundColor(.blue)
+            Spacer(minLength: 0)
+            Text("ROUND \(playback.matchRound)/8")
+            Text(String(format: "%02d:%02d",
+                        Int(max(0, playback.matchSecondsRemaining).rounded(.up)) / 60,
+                        Int(max(0, playback.matchSecondsRemaining).rounded(.up)) % 60))
+                .monospacedDigit()
+            if let result = playback.matchResult {
+                Text(matchResultLabel(result))
+                    .foregroundColor(.red)
+            }
+            Spacer(minLength: 0)
+            Text("\(playback.orangePoints) ORANGE")
+                .foregroundColor(.orange)
+        }
+        .font(.system(size: 12, weight: .bold, design: .monospaced))
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 3)
+        .background(Color.white.opacity(0.85))
+    }
+
+    private func matchResultLabel(_ result: MatchResult) -> String {
+        switch result {
+        case .bluePoints: return "BLUE WINS"
+        case .orangePoints: return "ORANGE WINS"
+        case .draw: return "DRAW"
+        case .blueKO: return "BLUE KO"
+        case .orangeKO: return "ORANGE KO"
+        }
+    }
+
     // Reserved top strip keeps health separate from fighter art and Guides.
     var healthHUD: some View {
         HStack(spacing: 12) {
@@ -407,11 +455,11 @@ struct ContentView: View {
                             health: playback.blueHealth, maximum: playback.blueMaximumHealth,
                             stamina: playback.blueStamina, awareness: playback.blueAwareness,
                             color: .blue)
-            if showsDevelopmentDiagnostics {
-                Button(playback.cpuEnabled ? "CPU: ON" : "CPU: OFF", action: playback.toggleCPU)
+            Button(playback.cpuEnabled ? "CPU: ON" : "CPU: OFF", action: playback.toggleCPU)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 60, minHeight: 44)
                     .buttonStyle(.plain)
+            if showsDevelopmentDiagnostics {
                 Button(playback.guardSelected ? "Guard on" : "Guard", action: playback.toggleGuard)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 54, minHeight: 44)
@@ -536,13 +584,22 @@ struct ContentView: View {
 
     var debugControls: some View {
         HStack(spacing: 8) {
-            controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
-            controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
-            controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
+            Button(showsDevelopmentDiagnostics ? "Hide Dev" : "Dev") {
+                showsDevelopmentDiagnostics.toggle()
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .buttonStyle(.bordered)
+            if showsDevelopmentDiagnostics {
+                controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
+                controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
+                controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
+            }
 #if DEBUG
+            if showsDevelopmentDiagnostics {
             Menu("Log") {
                 Button(playback.combatLogEnabled ? "Disable log" : "Enable log", action: playback.toggleCombatLog)
                 Button("Copy recent events", action: playback.copyCombatLog)
+            }
             }
 #endif
         }
