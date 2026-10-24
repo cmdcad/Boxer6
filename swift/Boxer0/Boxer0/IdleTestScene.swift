@@ -392,6 +392,8 @@ final class IdleTestScene: SKScene {
         return accepted
     }
     func testSetSeparation(_ value: CGFloat) { rootB.position.x = rootA.position.x + value }
+    func testSetBluePosition(_ x: CGFloat) { rootA.position.x = x; blueXFraction = x / max(1, size.width) }
+    func testSetBlueBlockChain(_ count: Int) { consecutiveBlueBlocks = min(2, max(0, count)) }
     func testSetOrangeGuard(_ selected: Bool) { requestGuard(selected) }
     func testConfigureCPU(attackDraw: Double, defenseDraw: Double) {
         cpuOffense.randomDraw = { attackDraw }
