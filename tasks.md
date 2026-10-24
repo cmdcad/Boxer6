@@ -38,7 +38,7 @@ Deliverable: Two complete, consistently animated boxers.
 
 ### Phase 4 — Refine combat mechanics
 
-**Punch roadmap:** Jab remains the approved light attack. A new offensive **Heavy Punch** will replace Cross when new frames are supplied. The existing Cross artwork is a candidate for later heavy-hit reuse only after its suitability as a defensive reaction is reviewed. Do not conflate an offensive heavy punch with the existing Orange heavy-hit reaction.
+**Updated punch roadmap (2026-10-23):** Replace Cross/Heavy Punch with **Body Hook** and **Uppercut**, alongside Jab. Create attack-specific reactions for both fighters, grounded in the supplied gameplay video. Blue must retain its lighter build, and new sprite art must not contain baked-in text. Existing Cross remains in the code until its replacements are playable; this is a pending milestone, not a completed feature. See `swift/Boxer0/Tasks/phase3f_blue_jab_and_new_attack_art.md`.
 
 Existing combat logic should be tested and improved rather than rewritten.
 
@@ -94,4 +94,4 @@ Deliverable: A stable, playable Boxer0 prototype.
 
 I recommend keeping the development incremental: one focused task, one GitHub commit, and one verification checkpoint at a time.
 
-Immediate checkpoint: pull the latest master, rebuild in Xcode, confirm Orange bounce height matches Orange jab, then review Blue's shared jab palette and guarded locomotion. Engineering tasks can be pushed after each session without waiting for approval; new sprite-frame requirements remain an art checkpoint.
+Immediate checkpoint: pull latest master, clean-build in Xcode, review Orange bounce and Blue jab facing, kit color and lighter silhouette. Blue jab correction is source-committed but not device verified. Next: source new Body Hook/Uppercut art and bilateral hit reactions, then replace Cross throughout gameplay. Engineering tasks can be pushed after each session without waiting for approval; new sprite-frame requirements remain an art checkpoint.
