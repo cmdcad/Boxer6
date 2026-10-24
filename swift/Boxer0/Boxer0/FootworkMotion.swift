@@ -87,3 +87,20 @@ struct CPUDistanceController {
         else { intent = .hold }
     }
 }
+
+ 
+/// Phase 5 CPU distance-defense decision. Hysteresis avoids oscillating
+/// between retreat and attack around one awareness threshold.
+struct CPUWithdrawalPolicy {
+    var enterBelow = 50.0
+    var exitAt = 75.0
+    private(set) var active = false
+
+    mutating func update(awareness: Double) {
+        guard awareness.isFinite else { return }
+        if awareness < enterBelow { active = true }
+        if awareness >= exitAt { active = false }
+    }
+
+    mutating func reset() { active = false }
+}
