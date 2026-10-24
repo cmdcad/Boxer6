@@ -14,6 +14,15 @@ final class IdlePlayback: ObservableObject {
     @Published var orangeCombatState = FighterCombatState.standing
     @Published var blueHealth = 100
     @Published var orangeHealth = 100
+    @Published var matchRound = 1
+    @Published var matchSecondsRemaining = 120.0
+    @Published var bluePoints = 0
+    @Published var orangePoints = 0
+    @Published var matchResult: MatchResult?
+    @Published var blueStamina = 100.0
+    @Published var orangeStamina = 100.0
+    @Published var blueAwareness = 100.0
+    @Published var orangeAwareness = 100.0
     @Published var blueMaximumHealth = 100
     @Published var orangeMaximumHealth = 100
     @Published var isPlaying = true
@@ -96,10 +105,19 @@ final class IdlePlayback: ObservableObject {
     }
 
     func syncFromScene() {
+        matchRound = scene.match.round
+        matchSecondsRemaining = scene.match.remaining
+        bluePoints = scene.match.bluePoints
+        orangePoints = scene.match.orangePoints
+        matchResult = scene.match.result
         blueCombatState = scene.blueCombatState
         orangeCombatState = scene.orangeCombatState
         blueHealth = scene.blueHealth.current
         orangeHealth = scene.orangeHealth.current
+        blueStamina = scene.blueMeters.stamina
+        orangeStamina = scene.orangeMeters.stamina
+        blueAwareness = scene.blueMeters.awareness
+        orangeAwareness = scene.orangeMeters.awareness
         blueMaximumHealth = scene.blueHealth.maximum
         orangeMaximumHealth = scene.orangeHealth.maximum
         isPlaying = scene.isPlaying
@@ -175,67 +193,176 @@ final class IdlePlayback: ObservableObject {
     }
 
     func setGuardHeld(_ held: Bool) {
+        playerDidInteract()
         scene.setGuardHeld(held)
         syncFromScene()
     }
 
+    // Future Settings switch. The current default starts a countdown only if
+    // the player has not interacted during the first five seconds.
+    var autoStartCountdownEnabled = true
+    @Published private(set) var cpuStarting = false
+    private var cpuStartGeneration = 0
+    private var idleStartGeneration = 0
+    private var sessionActive = false
+    private var playerResponded = false
+    private var didPlayLaunchHaptic = false
+
+    func beginSession() {
+        guard !sessionActive else { return }
+        sessionActive = true
+        playerResponded = false
+        if !didPlayLaunchHaptic {
+            didPlayLaunchHaptic = true
+            let feedback = UIImpactFeedbackGenerator(style: .medium)
+            feedback.prepare()
+            feedback.impactOccurred()
+        }
+        guard autoStartCountdownEnabled, !scene.cpuEnabled else { return }
+        idleStartGeneration += 1
+        let generation = idleStartGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            guard let self = self, self.sessionActive, !self.playerResponded,
+                  self.idleStartGeneration == generation,
+                  !self.cpuStarting, !self.scene.cpuEnabled else { return }
+            self.startCPUCountdown()
+        }
+    }
+
+    /// Any deliberate player input prevents unattended auto-start this session.
+    func playerDidInteract() {
+        guard sessionActive else { return }
+        playerResponded = true
+        idleStartGeneration += 1
+    }
+
     func toggleCPU() {
-        scene.toggleCPU()
-        syncFromScene()
+        playerDidInteract()
+        if cpuStarting {
+            cancelCPUStart()
+            return
+        }
+        if scene.cpuEnabled {
+            scene.toggleCPU()
+            syncFromScene()
+            return
+        }
+        startCPUCountdown()
+    }
+
+    private func startCPUCountdown() {
+        guard sessionActive, !cpuStarting, !scene.cpuEnabled else { return }
+        cpuStarting = true
+        cpuStartGeneration += 1
+        let generation = cpuStartGeneration
+        for second in 0...5 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(second)) { [weak self] in
+                guard let self = self, self.sessionActive, self.cpuStarting,
+                      self.cpuStartGeneration == generation else { return }
+                if second < 5 {
+                    let feedback = UIImpactFeedbackGenerator(style: .medium)
+                    feedback.prepare()
+                    feedback.impactOccurred()
+                } else {
+                    let feedback = UINotificationFeedbackGenerator()
+                    feedback.prepare()
+                    feedback.notificationOccurred(.success)
+                    self.cpuStarting = false
+                    if !self.scene.cpuEnabled { self.scene.toggleCPU() }
+                    self.syncFromScene()
+                }
+            }
+        }
+    }
+
+    func cancelCPUStart() {
+        cpuStartGeneration += 1
+        cpuStarting = false
+    }
+
+    func endSession() {
+        sessionActive = false
+        idleStartGeneration += 1
+        cancelCPUStart()
     }
 
     func toggleGuard() {
+        playerDidInteract()
         scene.toggleGuard()
         syncFromScene()
     }
 
     func rise() {
+        playerDidInteract()
         if scene.canBlueRise { scene.startBlueRise() }
         else { scene.startRise() }
         syncFromScene()
     }
 
     func resetHealth() {
+        playerDidInteract()
         scene.resetHealth()
         syncFromScene()
     }
 
     func cross() {
+        playerDidInteract()
         scene.startCross()
         syncFromScene()
     }
 
     func jab() {
+        playerDidInteract()
         scene.startJab()
         syncFromScene()
     }
 
     func togglePlayback() {
+        playerDidInteract()
         scene.togglePlayback()
         syncFromScene()
     }
 
     func step() {
+        playerDidInteract()
         scene.stepFrame()
         syncFromScene()
     }
 
     func toggleGuides() {
+        playerDidInteract()
         scene.toggleGuides()
         syncFromScene()
     }
 
     func setAdvance(_ held: Bool) {
+        playerDidInteract()
         scene.setAdvanceHeld(held)
         syncFromScene()
     }
 
     func setRetreat(_ held: Bool) {
+        playerDidInteract()
         scene.setRetreatHeld(held)
         syncFromScene()
     }
 
+    /// Single source of movement-pad input; vertical entry requests a slip.
+    /// Only a correctly timed incoming CPU punch can be avoided.
+    private var previousPadVertical = 0
+    func setPadDirection(horizontal: Int, vertical: Int) {
+        playerDidInteract()
+        if vertical != 0 && previousPadVertical == 0 {
+            scene.requestBlueSlip()
+        }
+        previousPadVertical = vertical
+        scene.setRetreatHeld(horizontal < 0)
+        scene.setAdvanceHeld(horizontal > 0)
+        syncFromScene()
+    }
+
     func cancelMovement() {
+        previousPadVertical = 0
         holdAdvance = false
         holdRetreat = false
         scene.cancelMovement()
@@ -246,11 +373,12 @@ final class IdlePlayback: ObservableObject {
 struct ContentView: View {
     @StateObject internal var playback = IdlePlayback()
     // Development presentation only; hiding it does not change locomotion.
-    var showsDevelopmentDiagnostics = true
+    @State private var showsDevelopmentDiagnostics = false
 
     var body: some View {
         VStack(spacing: 0) {
             healthHUD
+            matchHUD
             SpriteView(scene: playback.scene)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .layoutPriority(0)
@@ -261,38 +389,61 @@ struct ContentView: View {
                     
                 }
 
-            VStack(spacing: 8) {
-                HStack(alignment: .bottom, spacing: 12) {
-                    PressHoldButton(title: "Hold Retreat", pressed: playback.holdRetreat, inputGeneration: playback.inputGeneration, action: playback.setRetreat)
-                    Spacer()
-                    if showsDevelopmentDiagnostics { statusLabel }
-                    Spacer()
-                    PressHoldButton(title: "Hold Advance", pressed: playback.holdAdvance, inputGeneration: playback.inputGeneration, action: playback.setAdvance)
+            VStack(spacing: 4) {
+                HStack(alignment: .center, spacing: 12) {
+                    movementPad
+                    Button(showsDevelopmentDiagnostics ? "Hide Dev" : "Dev") {
+                        showsDevelopmentDiagnostics.toggle()
+                    }
+                    .font(.system(size: 12, weight: .semibold))
+                    .buttonStyle(.bordered)
+                    .fixedSize(horizontal: true, vertical: false)
+                    Spacer(minLength: 4)
+                    HStack(spacing: 8) {
+                        punchButton("Jab", enabled: playback.canJab, action: playback.jab)
+                        punchButton("Cross", enabled: playback.canCross, action: playback.cross)
+                        playerGuardControl
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
-                .frame(minHeight: 52)
-                HStack(spacing: 8) {
-                    punchButton("Jab", enabled: playback.canJab, action: playback.jab)
-                    punchButton("Cross", enabled: playback.canCross, action: playback.cross)
-                    playerGuardControl
-                    if showsDevelopmentDiagnostics { debugControls }
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                if showsDevelopmentDiagnostics {
+                    HStack(spacing: 8) {
+                        statusLabel
+                        Spacer(minLength: 0)
+                        debugControls
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 6)
                 }
-                .frame(height: 54)
+
             }
             .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 12)
-            .padding(.bottom, 8)
             .frame(maxWidth: .infinity)
             .background(Color(red: 0.85, green: 0.89, blue: 0.93))
             .layoutPriority(1)
         }
         .background(Color(red: 0.91, green: 0.933, blue: 0.957).ignoresSafeArea())
         .preferredColorScheme(ColorScheme.light)
-        .onAppear { playback.scene.debugOverlaysEnabled = showsDevelopmentDiagnostics }
+        .onAppear {
+            playback.scene.debugOverlaysEnabled = showsDevelopmentDiagnostics
+            playback.syncFromScene()
+            playback.beginSession()
+        }
+        .simultaneousGesture(TapGesture().onEnded {
+            playback.playerDidInteract()
+        })
+        .onChange(of: showsDevelopmentDiagnostics) { enabled in
+            playback.scene.debugOverlaysEnabled = enabled
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             playback.cancelMovement()
+            playback.endSession()
         }
         .onDisappear {
             playback.cancelMovement()
+            playback.endSession()
         }
     }
 
@@ -392,16 +543,55 @@ struct ContentView: View {
         }
     }
 
+    private var matchHUD: some View {
+        HStack(spacing: 12) {
+            Text("BLUE \(playback.bluePoints)")
+                .foregroundColor(.blue)
+            Spacer(minLength: 0)
+            Text("ROUND \(playback.matchRound)/8")
+            Text(String(format: "%02d:%02d",
+                        Int(max(0, playback.matchSecondsRemaining).rounded(.up)) / 60,
+                        Int(max(0, playback.matchSecondsRemaining).rounded(.up)) % 60))
+                .monospacedDigit()
+            if let result = playback.matchResult {
+                Text(matchResultLabel(result))
+                    .foregroundColor(.red)
+            }
+            Spacer(minLength: 0)
+            Text("\(playback.orangePoints) ORANGE")
+                .foregroundColor(.orange)
+        }
+        .font(.system(size: 12, weight: .bold, design: .monospaced))
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 3)
+        .background(Color.white.opacity(0.85))
+    }
+
+    private func matchResultLabel(_ result: MatchResult) -> String {
+        switch result {
+        case .bluePoints: return "BLUE WINS"
+        case .orangePoints: return "ORANGE WINS"
+        case .draw: return "DRAW"
+        case .blueKO: return "BLUE KO"
+        case .orangeKO: return "ORANGE KO"
+        }
+    }
+
     // Reserved top strip keeps health separate from fighter art and Guides.
     var healthHUD: some View {
         HStack(spacing: 12) {
-            healthIndicator("BLUE", state: playback.blueCombatState, value: playback.blueHealth,
-                            maximum: playback.blueMaximumHealth, color: .blue)
-            if showsDevelopmentDiagnostics {
-                Button(playback.cpuEnabled ? "CPU: ON" : "CPU: OFF", action: playback.toggleCPU)
+            fighterMeterHUD("BLUE", state: playback.blueCombatState,
+                            health: playback.blueHealth, maximum: playback.blueMaximumHealth,
+                            stamina: playback.blueStamina, awareness: playback.blueAwareness,
+                            color: .blue)
+            Button(playback.cpuStarting ? "Cancel Start" :
+                   (playback.cpuEnabled ? "CPU: ON" : "Start CPU"), action: playback.toggleCPU)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 60, minHeight: 44)
                     .buttonStyle(.plain)
+            if showsDevelopmentDiagnostics {
                 Button(playback.guardSelected ? "Guard on" : "Guard", action: playback.toggleGuard)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 54, minHeight: 44)
@@ -415,36 +605,62 @@ struct ContentView: View {
                     .frame(minWidth: 44, minHeight: 44)
                     .buttonStyle(.plain)
                     .disabled(!playback.canRise)
-                Button("Reset Health", action: playback.resetHealth)
+                Button("Reset Health") {
+                    playback.resetHealth()
+                    showsDevelopmentDiagnostics = false
+                }
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 84, minHeight: 44)
                     .buttonStyle(.plain)
             }
-            healthIndicator("ORANGE", state: playback.orangeCombatState, value: playback.orangeHealth,
-                            maximum: playback.orangeMaximumHealth, color: .orange)
+            fighterMeterHUD("ORANGE", state: playback.orangeCombatState,
+                            health: playback.orangeHealth, maximum: playback.orangeMaximumHealth,
+                            stamina: playback.orangeStamina, awareness: playback.orangeAwareness,
+                            color: .orange)
         }
         .padding(.horizontal, 12)
+        .padding(.vertical, 5)
         .background(Color(red: 0.91, green: 0.933, blue: 0.957))
     }
 
-    func healthIndicator(_ name: String, state: FighterCombatState, value: Int, maximum: Int,
-                                 color: Color) -> some View {
-        VStack(spacing: 2) {
-            HStack {
-                Text(state == .defeated ? "\(name) - DEFEATED" : name)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                Spacer(minLength: 4)
-                Text("\(value)/\(maximum)")
+    /// Read-only Phase 2 HUD. Three independently scaled values per fighter.
+    /// Keep the numeric values visible while tuning combat on a device.
+    private func fighterMeterHUD(_ name: String, state: FighterCombatState,
+                                 health: Int, maximum: Int, stamina: Double,
+                                 awareness: Double, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 4) {
+                Text(name).foregroundColor(color)
+                if state == .defeated {
+                    Text("DEFEATED").foregroundColor(.red)
+                }
+                Spacer(minLength: 0)
             }
-            .font(.system(size: 12, weight: .bold, design: .monospaced))
-            ProgressView(value: Double(value), total: Double(maximum))
-                .tint(color)
-                .accessibilityLabel("\(name) health")
-                .accessibilityValue("\(value) of \(maximum)")
+            .font(.system(size: 11, weight: .bold, design: .monospaced))
+            .lineLimit(1)
+            meterRow("HP", value: Double(health), maximum: Double(maximum), tint: color)
+            meterRow("STA", value: stamina, maximum: 100, tint: .green)
+            meterRow("AWA", value: awareness, maximum: 100, tint: .purple)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+    }
+
+    private func meterRow(_ title: String, value: Double, maximum: Double,
+                          tint: Color) -> some View {
+        let safeValue = value.isFinite ? min(max(value, 0), maximum) : 0
+        return HStack(spacing: 5) {
+            Text(title)
+                .frame(width: 27, alignment: .leading)
+            ProgressView(value: safeValue, total: maximum)
+                .tint(tint)
+            Text("\(Int(safeValue.rounded()))")
+                .frame(width: 26, alignment: .trailing)
+                .monospacedDigit()
+        }
+        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title) \(Int(safeValue.rounded())) of \(Int(maximum))")
     }
 
     var statusLabel: some View {
@@ -501,17 +717,36 @@ struct ContentView: View {
             .opacity(enabled ? 1 : 0.55)
     }
 
+    /// Eight directional sectors. Vertical/diagonal entry requests a timed
+    /// slip; horizontal components retain ordinary advance/retreat. Earned
+    /// pivot and duck-and-switch remain future Phase 5B actions.
+    private var movementPad: some View {
+        ZStack {
+            Circle().fill(Color.white.opacity(0.8))
+            Circle().stroke(Color(red: 0.25, green: 0.37, blue: 0.49), lineWidth: 2)
+            Image(systemName: "arrow.up")
+                .offset(y: -34)
+            Image(systemName: "arrow.down")
+                .offset(y: 34)
+            Image(systemName: "arrow.left")
+                .offset(x: -35)
+            Image(systemName: "arrow.right")
+                .offset(x: 35)
+            Circle().fill(Color.blue.opacity(0.12)).frame(width: 27, height: 27)
+            CircularPadTouchSurface(inputGeneration: playback.inputGeneration) { horizontal, vertical in
+                playback.setPadDirection(horizontal: horizontal, vertical: vertical)
+            }
+        }
+        .font(.system(size: 16, weight: .bold))
+        .foregroundColor(Color(red: 0.08, green: 0.20, blue: 0.36))
+        .frame(width: 112, height: 112)
+        .accessibilityLabel("Eight-direction movement pad")
+    }
+
     var debugControls: some View {
         HStack(spacing: 8) {
             controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
             controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
-            controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
-#if DEBUG
-            Menu("Log") {
-                Button(playback.combatLogEnabled ? "Disable log" : "Enable log", action: playback.toggleCombatLog)
-                Button("Copy recent events", action: playback.copyCombatLog)
-            }
-#endif
         }
         .padding(.horizontal, 8)
         .frame(height: 54)
@@ -637,3 +872,88 @@ private final class HoldTouchView: UIView {
 //            .previewInterfaceOrientation(.landscapeLeft)
 //    }
 //}
+
+/// A single touch owns the pad. Releasing or cancelling always releases motion;
+/// dragging between sectors changes direction without stacking held buttons.
+private struct CircularPadTouchSurface: UIViewRepresentable {
+    let inputGeneration: Int
+    let action: (Int, Int) -> Void
+
+    func makeUIView(context: Context) -> CircularPadTouchView {
+        let view = CircularPadTouchView()
+        view.isMultipleTouchEnabled = false
+        view.isAccessibilityElement = true
+        view.accessibilityLabel = "Directional pad"
+        view.accessibilityHint = "Drag in a direction; release to stop"
+        view.action = action
+        view.inputGeneration = inputGeneration
+        return view
+    }
+
+    func updateUIView(_ view: CircularPadTouchView, context: Context) {
+        view.action = action
+        view.inputGeneration = inputGeneration
+    }
+
+    static func dismantleUIView(_ view: CircularPadTouchView, coordinator: ()) {
+        view.release()
+        view.action = nil
+    }
+}
+
+private final class CircularPadTouchView: UIView {
+    var action: ((Int, Int) -> Void)?
+    var inputGeneration = 0 {
+        didSet { if oldValue != inputGeneration { release() } }
+    }
+    private var trackedTouch: UITouch?
+    private var lastDirection = (0, 0)
+
+    private func update(_ touch: UITouch) {
+        let p = touch.location(in: self)
+        let dx = Double(p.x - bounds.midX)
+        let dy = Double(bounds.midY - p.y)
+        let distance = hypot(dx, dy)
+        let x: Int
+        let y: Int
+        if distance < 17 {
+            x = 0; y = 0
+        } else {
+            let angle = atan2(dy, dx)
+            let sector = Int((angle / (.pi / 4)).rounded())
+            let vectors = [(1,0), (1,1), (0,1), (-1,1),
+                           (-1,0), (-1,-1), (0,-1), (1,-1)]
+            let index = (sector + 8) % 8
+            (x, y) = vectors[index]
+        }
+        if x != lastDirection.0 || y != lastDirection.1 {
+            lastDirection = (x, y)
+            action?(x, y)
+        }
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard trackedTouch == nil, let touch = touches.first else { return }
+        trackedTouch = touch
+        update(touch)
+    }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = trackedTouch, touches.contains(touch) else { return }
+        update(touch)
+    }
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = trackedTouch, touches.contains(touch) { release() }
+    }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        touchesEnded(touches, with: event)
+    }
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window == nil { release() }
+    }
+    func release() {
+        trackedTouch = nil
+        lastDirection = (0, 0)
+        action?(0, 0)
+    }
+}

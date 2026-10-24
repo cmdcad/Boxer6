@@ -57,3 +57,119 @@ struct CombatTuning {
 struct FighterStats {
     var level = 1
 }
+
+
+/// Phase 3 match rules, independent of SpriteKit and the presentation layer.
+/// A round ends on its time boundary; any leftover dt belongs to the next round.
+enum MatchResult: Equatable {
+    case bluePoints, orangePoints, draw, blueKO, orangeKO
+}
+
+struct MatchState {
+    let tuning: CombatTuning
+    private(set) var round = 1
+    private(set) var remaining: Double
+    private(set) var bluePoints = 0
+    private(set) var orangePoints = 0
+    private(set) var result: MatchResult?
+    private var blueSequence = 0
+    private var orangeSequence = 0
+
+    init(tuning: CombatTuning = CombatTuning()) {
+        self.tuning = tuning
+        remaining = tuning.roundSeconds
+    }
+
+    var isFinished: Bool { result != nil }
+
+    /// Returns the number of newly entered rounds (for round-start health regen).
+    @discardableResult
+    mutating func advance(_ dt: Double) -> Int {
+        guard !isFinished, dt.isFinite, dt > 0 else { return 0 }
+        var time = dt
+        var started = 0
+        while time > 0 && !isFinished {
+            if time < remaining {
+                remaining -= time
+                break
+            }
+            time -= remaining
+            if round >= tuning.rounds {
+                remaining = 0
+                if bluePoints == orangePoints { result = .draw }
+                else { result = bluePoints > orangePoints ? .bluePoints : .orangePoints }
+            } else {
+                round += 1
+                remaining = tuning.roundSeconds
+                started += 1
+            }
+        }
+        return started
+    }
+
+    /// Contact sequences are monotonic per attacker, even across round boundaries.
+    @discardableResult
+    mutating func score(_ event: PunchContactEvent) -> Bool {
+        guard !isFinished else { return false }
+        if event.attackerID == .blue {
+            guard event.sequence > blueSequence else { return false }
+            blueSequence = event.sequence
+        } else {
+            guard event.sequence > orangeSequence else { return false }
+            orangeSequence = event.sequence
+        }
+        let points: Int
+        switch event.result {
+        case .miss: return false
+        case .block: points = tuning.guardedPoints
+        case .hit: points = tuning.headPoints // Jab and Cross remain head-only.
+        }
+        if event.attackerID == .blue { bluePoints += points }
+        else { orangePoints += points }
+        return true
+    }
+
+    mutating func knockout(winner: FighterID) {
+        guard !isFinished else { return }
+        result = winner == .blue ? .blueKO : .orangeKO
+    }
+
+    /// Provisional double-KO policy: draw.
+    mutating func simultaneousKnockout() {
+        guard !isFinished else { return }
+        result = .draw
+    }
+
+    mutating func reset() { self = MatchState(tuning: tuning) }
+}
+
+
+/// Phase 4A: independent attack-start cooldown. Does not restrict guarding,
+/// footwork, hit reactions or the existing animation/recovery locks.
+struct AttackCooldown {
+    var tuning = CombatTuning()
+    var level = 1
+    private(set) var remaining = 0.0
+
+    var canAttack: Bool { remaining <= 1e-10 }
+    var duration: Double {
+        // Level 1 = 1s. Later levels shorten the delay, never below 0.25s.
+        max(0.25, tuning.attackCooldown / Double(max(1, level)))
+    }
+
+    /// Reduced awareness delays the next attack, but never delays guard or footwork.
+    /// At full awareness the base level cooldown remains unchanged.
+    mutating func begin(reactionDelay: Double? = nil) {
+        let delay = reactionDelay ?? tuning.baseReaction
+        let penalty = delay.isFinite
+            ? min(tuning.maxReaction - tuning.baseReaction,
+                  max(0, delay - tuning.baseReaction))
+            : 0
+        remaining = duration + penalty
+    }
+    mutating func advance(_ dt: Double) {
+        guard dt.isFinite, dt > 0 else { return }
+        remaining = max(0, remaining - dt)
+    }
+    mutating func reset() { remaining = 0 }
+}

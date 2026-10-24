@@ -4,7 +4,7 @@
 
 ## Status — 2026-10-24
 
-- **Current priority: Phase 2 — verify meter-driven defeat and finish HUD.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
+- **Current priority: Verify Phase 4B on iPhone and Phase 5 out-of-reach retreat awareness recovery in Xcode; keep current controls until Phase 5 completes, then redesign move pad and controls in Phase 5B.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
 - **Phase 1 — implemented on master, expanded tests on `phase1-v2`:** commit `1d0ffb3` introduced `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift` and their Xcode project references on `master`. The separate `tools/phase1.patch` is a historical delivery artifact, not a missing integration prerequisite. `phase1-v2` was fast-forwarded from master, then expanded with three focused tests. **Xcode compilation and test execution are still pending on a Mac.**
 - **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
 - **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
@@ -44,47 +44,98 @@
 - [ ] Regenerate stamina by state: no guard fastest, grab second-fastest, withdraw fast. Art-gated grab/withdraw behavior must not be falsely shown as available.
 - [ ] Regenerate health only at round start, approximately +10, capped at 100; implement the round boundary in Phase 3 rather than on arbitrary timers.
 - [x] Feed awareness KO (zero) and strict health-below-40 loss into existing defeat/knockdown handling; both fighters supported. Existing jab/cross health damage remains provisional pending OPEN item 3.
-- [ ] Display meters read-only in the development HUD; add focused hit/block/streak/KO/threshold tests and deliberately update affected old tests.
+- [x] Display read-only Health, Stamina and Awareness bars for both fighters in the existing top HUD; publish whole-percentage changes to avoid unnecessary UI updates. Scene hit/block/KO/threshold tests added; Xcode visual and regression verification pending.
 
-**Checkpoint:** Phase 2A and the Phase 2B defeat transition source are committed; legacy defeat tests updated deliberately, and new tests cover awareness KO and the 40-health boundary. **Mac build/tests and memory profiling remain the immediate gate**. Meter HUD, health-damage tuning, and final head-hit streak health rules are still pending; do not claim Phase 2 complete.
+**Checkpoint:** Phase 2A and the Phase 2B defeat transition source are committed; legacy defeat tests updated deliberately, and new tests cover awareness KO and the 40-health boundary. **Mac build/tests and memory profiling remain the immediate gate**. Meter HUD source is committed but unverified on-device. Health-damage tuning and final head-hit streak health rules remain pending; do not claim Phase 2 complete.
 
-## Phase 3 — Match state and scoring
+## Phase 3 — Match state and scoring (SOURCE IMPLEMENTED; XCODE CHECKPOINT PENDING)
 
-- [ ] Add standalone `MatchState` value type: **8 rounds × 2 minutes**, round clock, points, KO and end-of-match results.
-- [ ] Points to attacker: head hit **3**, body hit **1** (when body art exists), guarded hit **1**. A tie is a **draw**, not a forced winner.
-- [ ] Apply health regeneration at round start; do **not** assume stamina or awareness reset between rounds.
-- [ ] Add minimal timer, points, round and result UI, without redesigning the full game screen.
-- [ ] Test time boundaries, points, draw, KO, and round transitions.
+- [x] Add standalone `MatchState` value type in `CombatTuning.swift`: **8 rounds × 2 minutes**, round clock, points, KO and end-of-match results.
+- [x] Points to attacker: head hit **3**, guarded hit **1**; body hit **1** remains art-gated. Duplicate contact sequences do not score twice. Equal scores draw; simultaneous double KO provisionally draws pending explicit rule.
+- [x] Heal both fighters by up to **10 HP** on entry to the next round, capped at 100; stamina and awareness persist.
+- [x] Add compact round timer, points, and result strip below the three-meter HUD. Collapse the verbose diagnostics by default behind a **Dev** toggle; CPU toggle and gameplay controls remain available.
+- [x] Add model tests for round boundaries, scoring, deduplication, draw, KO and capped round healing; source committed, **Xcode execution pending**.
 
-**Checkpoint:** complete deterministic match progression and scoring.
+**Checkpoint:** Phase 3 source committed on `phase1-v2`; **device build, Xcode tests, 2-minute boundary and eight-round completion checks are pending**. Combat rule tuning and round-transition animation polish remain future tasks. The debug rise/reset workflow still exists for development; do not treat it as a production rematch flow.
 
-## Phase 4 — Attack timing and CPU defense
+### CPU start UX (committed; device verification pending)
+- [x] Emit **one haptic when the game view first appears**. If the player provides no tap response for **5 seconds**, automatically start the silent 5-to-0 haptic countdown; CPU enables only on the final confirmation.
+- [x] A player tap during the initial idle window suppresses automatic countdown for that session; Start CPU still manually begins the countdown. Keep a `autoStartCountdownEnabled` flag for a future Settings switch (default true).
+- [x] Countdown stays silent and without on-screen digits; button reads **Cancel Start** while pending. Cancel on tap of that button, app backgrounding, or view disappearance.
+- [ ] Verify launch haptic, 5-second idle delay, 5-second countdown, manual override, cancellation, and CPU activation timing on a physical iPhone; simulator haptics are not a valid verification.
 
-- [ ] Introduce **1000ms attack cooldown at level 1**, faster with higher injected levels.
-- [ ] Awareness-dependent attack lockout; do not impose a new delay before guard after a punch.
+## Phase 4 — Attack timing and CPU defense (4A DEVICE VERIFIED; 4B REACTION SOURCE COMMITTED)
+
+- [x] Introduce **1000ms attack-start cooldown at level 1**, shorter at higher injected levels (minimum 250ms). Both fighters share the same model; this cooldown is separate from punch animation/recovery and does not lock guard. Model and scene tests added, not yet run in Xcode.
+- [x] Awareness-dependent attack lockout for both fighters: base attack cooldown plus the awareness-derived reaction penalty (up to 550ms); guarding and footwork remain independent. Enforced cooldown for Cross as well as Jab. Source and deterministic tests committed; Xcode verification pending.
 - [ ] Preserve full simultaneous-hit and mid-attack vulnerability semantics.
-- [ ] CPU defense chance **above 50%** during the player's attack window; **above 90%** immediately after being attacked once; increase with level.
+- [x] CPU defense chance **60% jab / 75% cross** initially; **95% after a confirmed incoming hit or block** (misses excluded); +1 percentage point per injected fighter level above 1, capped at 100%. The post-contact flag clears on full reset. Deterministic model tests committed; Xcode verification pending.
 - [ ] Awareness-dependent CPU reaction delay, starting at **50ms** with full awareness; guard last-attacked zone (head only for now).
-- [ ] After **3 seconds without attack**, CPU drops guard with **50% chance**; allow defensive stamina-preservation choices.
+- [x] After **3 seconds without attack**, CPU drops guard with **50% chance**; otherwise reevaluates after another 3 seconds, with a 9-second safety cap. New attacks reset the idle decision clock; guard entry animation remains unchanged. Deterministic tests committed; Xcode verification pending.
 - [ ] Keep current **120ms guard entry** until OPEN guard-activation rule is resolved; do not silently wire `defenseActivation = 0.5`.
 - [ ] Update CPU and guard tests with seeded/injected randomness.
 
-**Checkpoint:** cooldown, reaction, and defensive choices pass deterministic tests.
+**Checkpoint:** Phase 4A cooldown source and tests committed; verify in Xcode before extending the CPU defense model. Awareness-dependent attack lockout and idle guard-drop source are committed; both require Xcode/device verification. Existing CPU guard auto-releases after a short hold; a 3-second idle guard-drop policy requires reconciling that behavior before implementation. No new sprite art required for Phase 4A/4B because existing jab, cross and guard poses suffice. Removed Log and Guides buttons from the Dev bar while preserving their underlying APIs for future use.
 
-## Phase 5 — Withdraw and distance defense
+## Phase 5 — Withdraw and distance defense (FIRST INTEGRATION COMMITTED)
 
-- [ ] Reuse retreat animation and distance controller to represent an **out-of-reach withdraw state**.
-- [ ] Withdraw counts as defense; loses no points; regenerates stamina and awareness quickly.
+- [x] Reuse existing retreat motion and artwork to detect **out-of-reach withdrawal** for Blue and Orange: retreating velocity, neither opponent jab nor cross in reach, and guard not selected. No new control or art.
+- [x] Feed qualifying withdrawal into the existing 12 points/second stamina **and awareness** regeneration mode; idle and Grab do not restore awareness, and Guard takes precedence. Model tests committed; Mac/Xcode verification pending.
+- [x] Add provisional CPU tactical withdrawal at awareness <50, staying withdrawn until >=75 (hysteresis); prioritize active guard/attack, disable new CPU attacks during withdrawal, use existing retreat motion. Isolated policy tests committed; Mac/Xcode verification pending.
+- [x] Handle CPU retreat at arena edge: while tactical withdrawal is active and both opponent punches are out of range, awareness can recover even when boundary-clamped velocity is zero. Guard, active attacks, and reactions still suppress withdrawal recovery. Scene regression tests committed, execution pending.
+- [x] Resolve same-tick CPU offense race: update withdrawal policy before CPU attack selection; add scene tests for first-tick lockout, guard suppression, and full-reset cancellation. Source committed, Xcode execution pending.
+- [ ] Validate scene-level retreat entry/exit, distance boundaries, guard precedence, and CPU retreat decisions in Xcode; tune only after device testing.
+- [x] Add scene regression tests: withdrawal earns no passive match points; a Jab outside range remains a miss with zero points. Existing match scoring is unchanged; tests still require Xcode execution.
+- [ ] Confirm on device that withdrawal counts as distance defense without changing the existing block/hit scoring or awarding passive points.
 - [ ] Provisionally halve incoming awareness loss while withdrawing **only after confirming OPEN item 4**.
+- [x] Add automated regression coverage for Blue retreat entering/leaving punching range and CPU recovery hysteresis. Tests committed; Xcode execution pending.
 - [ ] Test transition into/out of range, counterplay, and CPU defensive decisions.
 
 **Checkpoint:** withdraw state is playable with existing art and consistent contact rules.
 
+## Phase 5B — Gameplay controls redesign (AFTER Phase 5)
+
+- [x] First Phase 5B control-layout integration: replace the two wide hold-movement buttons with a compact left/right hold movement pad; keep Jab/Cross/Guard functional and place Dev on a separate row. Mac/Xcode verification pending. Full directional Evade gesture handling is not implemented yet.
+- [ ] Test touch ergonomics, hold/release cancellation, and landscape sizing before Phase 6 adds new moves.
+- [x] Place persistent Dev/Hide Dev toggle between the current movement buttons and Jab; keep expanded Pause/Step tools on a conditional row so gameplay space is reclaimed when Dev is hidden. Xcode layout verification pending.
+- [ ] Design the final D-pad as a circular, multi-direction input surface (including diagonals and future contextual melee/defense gestures); the current two-direction hold pad is an interim control only. Preserve distinct gestures, touch cancellation, and movement/evade eligibility; do not invent unapproved melee behavior.
+
+### Phase 5B Evade design — partial implementation, Xcode verification pending
+
+- [x] Temporary SpriteKit cue now distinguishes `SLIP · ATTEMPT`, `SLIP · TIMED`, and actual contact avoidance `EVADED!`, with a ring effect; **timed** is only eligibility, not a confirmed evade.
+- [ ] Reproduce reported Orange retreat when Blue holds forward at close range, especially while Orange guards. Existing `advanceCPUFootwork` uses distance intent and `orangeMovementLimits()` derives its lower bound from Blue's position, so this may be automatic spacing rather than collision pushback. Do not change movement until device reproduction and desired behavior are agreed.
+
+
+- [x] Circular eight-sector D-pad with drag/release/cancel handling; left/right and diagonal horizontal components retain existing movement.
+- [x] Vertical/diagonal entry requests a brief SLIP cue. A request during the final 180 ms of an approaching CPU punch can avoid that one contact; a mistimed request does not cancel damage. This is an initial tuning rule, not the complete defensive system.
+- [x] Track consecutive successful Blue blocks; two blocks show ESCAPE READY, and a clean hit clears the chain. Enhanced pivot/switch is **not yet wired**.
+- [ ] Verify SpriteKit timed slip, pad input cancellation, CPU contact timing and multi-touch on Mac/device; current Linux environment cannot run SpriteKit tests.
+
+
+
+- [x] Evade begins through directional D-pad input, not a separate Evade button. Enhanced escape remains unavailable until geometry is implemented.
+- [x] CPU not attacking: a short SLIP visual cue, with no side switch or contact immunity.
+- [x] CPU punch approaching: initial 180 ms timed-slip contact avoidance; mistiming remains vulnerable. Device verification pending.
+- [ ] Player near ropes: pivot away to create space. Use the outer quarter of each arena side as an initial rope-pressure trigger, subject to playtesting.
+- [ ] CPU committed to a suitable punch AND a clear exit exists: duck-and-switch to the opposite side; update fighter facing and positions safely without passing through contact geometry.
+- [ ] Successive successful blocks earn the enhanced pivot/side-switch opportunity. Provisional starting threshold: two consecutive blocks; a clean hit breaks the chain. Basic slip must remain available without earning the opportunity.
+- [ ] Preserve attack-window timing and spatial constraints; a failed or mistimed evade never grants automatic invulnerability.
+- [ ] Until finished sprite frames exist, show the activated action graphically in SpriteKit: brief SLIP/PIVOT/SWITCH cue, motion trail/arc and destination marker or position transition. Missed timing gets distinct feedback. These are temporary visuals, not new fighter sprites.
+- [ ] Test D-pad gesture recognition, accidental activations, rope boundaries, contact vulnerability, earned-block reset/consumption, mirrored sides, cooldown and animation cancellation.
+
+- [x] Add non-destructive draft-frame preflight script (`python3 tools/check_sprite_frames.py generated_video2`) checking frame numbering, 512×512 RGBA, transparency and footline variance. Script committed; no production sprite art created and no Xcode validation yet.
+
 ## Phase 6 — Art-gated mechanics and fighter animation completion
+
+- [ ] Before producing Phase 6 art, review existing idle/unguarded versus raised-guard poses for both fighters; preserve a visibly exposed face in unguarded stance and verify frame-to-frame anchor consistency.
+
 
 - [ ] Cleanly isolate Video2 frames: remove text, targeting graphics, background and overlaps; reconstruct missing limbs; align 512px transparent frames to consistent foot anchors.
 - [ ] Author Blue as a genuinely **lighter-built** boxer, not merely a recolored Orange; check facing, glove colors and pose continuity. Keep Orange heavier-built.
+- [ ] Uppercut action contract: a clean, sufficiently powerful uppercut has a **chance**, not a guarantee, to knock the defender down; blocked or missed uppercuts must not trigger knockdown. Specify probability/eligibility and test both Blue and Orange before implementation. Reuse existing knockdown/rise system and match scoring rules.
+- [ ] Define action phases, impact frames, target zones, guard responses and recovery before producing production sprite frames; approve frame timing and glove trajectories before hooking up hit detection.
 - [ ] Create distinct **Jab, Body Hook and Uppercut** attack animations and attack-specific receiving reactions for **both** fighters, based on the video; existing Orange reactions may be replaced if mismatched.
+- [ ] Use the newly highlighted Blue-to-Orange footage as a reference for three distinguishable impacts: head punch with head recoil, body hit with torso fold/twist, and the final uppercut with upward chin/head recoil. Review exact frame order and timing with the developer before committing production sprites; do not claim extracted frames are approved.
 - [ ] When verified artwork exists, replace **Cross/Heavy Punch** with Body Hook and Uppercut in controls, `PunchKind`, CPU selection, collision zones, recovery, meters, scoring, diagnostics and tests. Until then jab/cross remain head-only legacy functionality.
 - [ ] Add body zone and body-hit level scaling when body attack art is ready. Uppercut targeting must be defined from actual glove path, not guessed from the old cross geometry.
 - [ ] Defer **sway**, **grab** (stamina <50, held up to 3 seconds), one-two, duck, left/right combinations, heavy hits and level injection until rules/art support them.
@@ -150,7 +201,7 @@ These items come from `new_direction.md`. They are **not** settled by this task 
 ## Immediate next three agent tasks
 
 1. **Mac regression checkpoint:** clean-build `phase1-v2`, run `FighterMetersTests` and `CombatTests`, and use Xcode Memory Graph/Instruments to retest the prior `IdleTestScene.swift:1407` crash. Capture the exact diagnostic if it recurs.
-2. **Phase 2 remaining work:** add debug HUD meter readout and finish head-hit streak health damage after resolving OPEN damage/precedence rules; inspect any new Xcode test failures before further gameplay changes.
+2. **Phase 2 remaining work:** visually verify the three-meter HUD on both fighters, then finish head-hit streak health damage after resolving OPEN damage/precedence rules; inspect any new Xcode test failures before further gameplay changes.
 3. **Phase 3 match-state skeleton:** timer, eight rounds, points, draw/KO, and round-start health regen; defer body scoring in live gameplay until body art exists.
 
 **Review discipline:** each task ends with a commit, focused verification results, and an explicit list of Xcode/device checks that remain unverified. This file tracks planned and completed work; it is not evidence that a feature has passed device testing.

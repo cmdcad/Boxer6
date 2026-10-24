@@ -177,4 +177,371 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertFalse(status.receiveHealth(health))
     }
 
+    func testMatchRoundBoundariesAndDraw() {
+        var match = MatchState()
+        XCTAssertEqual(match.round, 1)
+        XCTAssertEqual(match.advance(119.75), 0)
+        XCTAssertEqual(match.remaining, 0.25, accuracy: 1e-8)
+        XCTAssertEqual(match.advance(0.25), 1)
+        XCTAssertEqual(match.round, 2)
+        XCTAssertEqual(match.remaining, 120, accuracy: 1e-8)
+        XCTAssertEqual(match.advance(6 * 120), 6)
+        XCTAssertEqual(match.round, 8)
+        XCTAssertEqual(match.advance(120), 0)
+        XCTAssertEqual(match.result, .draw)
+        XCTAssertTrue(match.isFinished)
+        XCTAssertEqual(match.advance(20), 0)
+    }
+
+    func testMatchScoringDedupAndKnockout() {
+        let transform = SpriteCanvasTransform(rootPosition: .zero, scaleX: 1, scaleY: 1)
+        func contact(_ id: Int, _ result: PunchContactResult, _ attacker: FighterID) -> PunchContactEvent {
+            var event = PunchContactEvent(sequence: id, kind: .jab, result: result,
+                center: .zero, radius: 20, target: .zero,
+                attacker: transform, defender: transform)
+            event.attackerID = attacker
+            return event
+        }
+        var match = MatchState()
+        XCTAssertTrue(match.score(contact(1, .hit, .blue)))
+        XCTAssertFalse(match.score(contact(1, .hit, .blue)))
+        XCTAssertTrue(match.score(contact(2, .block, .blue)))
+        XCTAssertFalse(match.score(contact(3, .miss, .blue)))
+        XCTAssertTrue(match.score(contact(4, .hit, .orange)))
+        XCTAssertEqual(match.bluePoints, 4)
+        XCTAssertEqual(match.orangePoints, 3)
+        match.knockout(winner: .orange)
+        XCTAssertEqual(match.result, .orangeKO)
+        XCTAssertFalse(match.score(contact(5, .hit, .blue)))
+        match.reset()
+        XCTAssertEqual(match.bluePoints, 0)
+        XCTAssertNil(match.result)
+    }
+
+    func testRoundHealingCapsAndPreservesAwareness() {
+        var health = FighterHealthState()
+        var meters = CombatMetersState()
+        let transform = SpriteCanvasTransform(rootPosition: .zero, scaleX: 1, scaleY: 1)
+        var event = PunchContactEvent(sequence: 1, kind: .jab, result: .hit,
+            center: .zero, radius: 20, target: .zero,
+            attacker: transform, defender: transform)
+        event.attackerID = .blue
+        XCTAssertTrue(health.receive(event))
+        XCTAssertTrue(meters.receive(event))
+        XCTAssertEqual(health.orange.current, 95)
+        let awareness = meters.orange.awareness
+        health.beginNextRound(heal: 10)
+        XCTAssertEqual(health.orange.current, 100)
+        XCTAssertEqual(meters.orange.awareness, awareness, accuracy: 1e-8)
+    }
+
+    func testLevelOneAttackCooldownAndReset() {
+        var cooldown = AttackCooldown()
+        XCTAssertTrue(cooldown.canAttack)
+        XCTAssertEqual(cooldown.duration, 1, accuracy: 1e-10)
+        cooldown.begin()
+        XCTAssertFalse(cooldown.canAttack)
+        cooldown.advance(0.999)
+        XCTAssertFalse(cooldown.canAttack)
+        cooldown.advance(0.001)
+        XCTAssertTrue(cooldown.canAttack)
+        cooldown.begin()
+        cooldown.reset()
+        XCTAssertTrue(cooldown.canAttack)
+    }
+
+    func testHigherLevelCooldownAndInvalidDelta() {
+        var cooldown = AttackCooldown()
+        cooldown.level = 2
+        XCTAssertEqual(cooldown.duration, 0.5, accuracy: 1e-10)
+        cooldown.begin()
+        cooldown.advance(-10)
+        XCTAssertEqual(cooldown.remaining, 0.5, accuracy: 1e-10)
+        cooldown.advance(.nan)
+        XCTAssertEqual(cooldown.remaining, 0.5, accuracy: 1e-10)
+        cooldown.advance(0.5)
+        XCTAssertTrue(cooldown.canAttack)
+        cooldown.level = 99
+        XCTAssertEqual(cooldown.duration, 0.25, accuracy: 1e-10)
+    }
+
+    func testSceneAttackCooldownDoesNotBlockGuardInput() {
+        let driver = CombatDriver(distance: 400)
+        let scene = driver.scene
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+        XCTAssertEqual(scene.testBlueCooldown, 1, accuracy: 1e-8)
+        driver.advance(0.42)
+        XCTAssertFalse(scene.testBeginAttack(.blue, .jab))
+        XCTAssertGreaterThan(scene.testBlueCooldown, 0.5)
+        // Guard input remains independent of the attack cooldown.
+        scene.setGuardHeld(true)
+        XCTAssertTrue(scene.guardHeld)
+        scene.setGuardHeld(false)
+        driver.advance(0.58)
+        XCTAssertEqual(scene.testBlueCooldown, 0, accuracy: 1e-8)
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+    }
+
+    func testCPUDefenseSlowsWhenAwarenessDrops() {
+        var full = DefensiveAI()
+        full.randomDraw = { 0 }
+        full.setEnabled(true)
+        full.observe(sequence: 1, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(full.timeToTransition, 0.10, accuracy: 1e-8)
+
+        var tired = DefensiveAI()
+        tired.randomDraw = { 0 }
+        tired.setEnabled(true)
+        tired.observe(sequence: 1, kind: .cross, inRange: true, eligible: true,
+                      awarenessPenalty: 0.15)
+        XCTAssertEqual(tired.timeToTransition, 0.25, accuracy: 1e-8)
+        XCTAssertNil(tired.advance(0.10))
+        XCTAssertNil(tired.advance(0.149))
+        XCTAssertNotNil(tired.advance(0.001))
+    }
+
+    func testDefensiveReactionPenaltyIsBounded() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0 }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .jab, inRange: true, eligible: true,
+                   awarenessPenalty: 100)
+        XCTAssertEqual(ai.timeToTransition, 0.57, accuracy: 1e-8)
+    }
+
+    func testCPUDefenseChanceBoostsOnlyAfterConfirmedContact() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0.90 }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .idle) // Base jab chance = 60%.
+        ai.recordIncomingContact()
+        XCTAssertTrue(ai.wasAttacked)
+        ai.observe(sequence: 2, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .reacting) // Boosted chance = 95%.
+        ai.cancel(reseed: true)
+        XCTAssertFalse(ai.wasAttacked)
+        ai.observe(sequence: 3, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .idle)
+    }
+
+    func testCPUDefenseBoostIsBoundedAndLevelAware() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0.995 }
+        ai.setEnabled(true)
+        ai.recordIncomingContact()
+        ai.observe(sequence: 1, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .idle) // 99.5% draw exceeds 95% threshold.
+        ai.fighterLevel = 6
+        ai.observe(sequence: 2, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .reacting) // Level bonus capped at 100%.
+    }
+
+    func testCPUWithdrawalRecoversWhileOutOfRangeAtEdge() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        let damaged = scene.orangeMeters.awareness
+        XCTAssertLessThan(damaged, 50)
+        driver.advance(0.05) // decision enters withdrawal
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertFalse(scene.testCanCPUAttack)
+        driver.advance(0.25)
+        XCTAssertGreaterThan(scene.orangeMeters.awareness, damaged)
+    }
+
+    func testCPUWithdrawalDoesNotRecoverInPunchRange() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        let damaged = scene.orangeMeters.awareness
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertEqual(scene.orangeMeters.awareness, damaged, accuracy: 1e-8)
+    }
+
+    func testCPUWithdrawalBlocksOffenseOnFirstDecisionTick() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.01)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertFalse(scene.testCanCPUAttack)
+        XCTAssertEqual(scene.orangeMeters.awareness, 100 - 100.0 / 3 - 40, accuracy: 1e-8)
+    }
+
+    func testGuardPreventsWithdrawalAwarenessRecovery() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        scene.testSetOrangeGuard(true)
+        let before = scene.orangeMeters.awareness
+        driver.advance(0.20)
+        XCTAssertEqual(scene.orangeMeters.awareness, before, accuracy: 1e-8)
+        XCTAssertFalse(scene.orangeIsWithdrawing)
+    }
+
+    func testResetCancelsTacticalWithdrawal() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        scene.resetHealth()
+        XCTAssertFalse(scene.testCPUWithdrawalActive)
+        XCTAssertEqual(scene.orangeMeters.awareness, 100, accuracy: 1e-8)
+    }
+
+    func testWithdrawalAwardsNoPassiveMatchPoints() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        let beforeBlue = scene.match.bluePoints
+        let beforeOrange = scene.match.orangePoints
+        driver.advance(0.25)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertEqual(scene.match.bluePoints, beforeBlue)
+        XCTAssertEqual(scene.match.orangePoints, beforeOrange)
+    }
+
+    func testOutOfRangeAttackDuringWithdrawalIsStillAMiss() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        let orangeAwareness = scene.orangeMeters.awareness
+        let bluePoints = scene.match.bluePoints
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+        driver.advance(0.15)
+        XCTAssertEqual(scene.testBlueTracker.latest?.result, .miss)
+        XCTAssertEqual(scene.match.bluePoints, bluePoints)
+        XCTAssertGreaterThanOrEqual(scene.orangeMeters.awareness, orangeAwareness)
+    }
+
+    func testPlayerRetreatOnlyRecoversWhenOutOfRange() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.setRetreatHeld(true)
+        driver.advance(0.10)
+        XCTAssertTrue(scene.blueIsWithdrawing)
+        scene.testSetSeparation(170)
+        XCTAssertFalse(scene.blueIsWithdrawing)
+        scene.setRetreatHeld(false)
+        driver.advance(0.20)
+        XCTAssertFalse(scene.blueIsWithdrawing)
+    }
+
+    func testCPUWithdrawalStaysActiveBelowSeventyFiveAwareness() {
+        var policy = CPUWithdrawalPolicy()
+        policy.update(awareness: 49)
+        XCTAssertTrue(policy.active)
+        var meters = FighterMeters()
+        meters.receiveHit(zone: .head, guarded: false)
+        meters.advance(0.5, mode: .withdraw)
+        policy.update(awareness: meters.awareness)
+        XCTAssertTrue(policy.active)
+        meters.advance(0.25, mode: .withdraw)
+        policy.update(awareness: meters.awareness)
+        XCTAssertFalse(policy.active)
+    }
+
+    func testCPUWithdrawalPolicyHysteresisAndReset() {
+        var policy = CPUWithdrawalPolicy()
+        XCTAssertFalse(policy.active)
+        policy.update(awareness: 49.9)
+        XCTAssertTrue(policy.active)
+        policy.update(awareness: 50)
+        XCTAssertTrue(policy.active)
+        policy.update(awareness: 74.9)
+        XCTAssertTrue(policy.active)
+        policy.update(awareness: 75)
+        XCTAssertFalse(policy.active)
+        policy.update(awareness: 60)
+        XCTAssertFalse(policy.active)
+        policy.update(awareness: .nan)
+        XCTAssertFalse(policy.active)
+        policy.reset()
+        XCTAssertFalse(policy.active)
+    }
+
+    func testWithdrawalRestoresAwarenessButGrabAndIdleDoNot() {
+        var fighter = FighterMeters()
+        fighter.receiveHit(zone: .head, guarded: false)
+        let reduced = fighter.awareness
+        fighter.advance(1, mode: .idle)
+        fighter.advance(1, mode: .grab)
+        fighter.advance(1, mode: .guarding)
+        XCTAssertEqual(fighter.awareness, reduced, accuracy: 1e-9)
+        fighter.advance(1, mode: .withdraw)
+        XCTAssertEqual(fighter.awareness, reduced + 12, accuracy: 1e-9)
+        fighter.advance(100, mode: .withdraw)
+        XCTAssertEqual(fighter.awareness, 100, accuracy: 1e-9)
+    }
+
+    func testAwarenessAttackLockoutAddsOnlyLostReactionTime() {
+        var cooldown = AttackCooldown()
+        cooldown.begin(reactionDelay: 0.05)
+        XCTAssertEqual(cooldown.remaining, 1.0, accuracy: 1e-8)
+        cooldown.reset()
+        cooldown.begin(reactionDelay: 0.25)
+        XCTAssertEqual(cooldown.remaining, 1.20, accuracy: 1e-8)
+        cooldown.advance(1.0)
+        XCTAssertFalse(cooldown.canAttack)
+        cooldown.advance(0.20)
+        XCTAssertTrue(cooldown.canAttack)
+    }
+
+    func testAwarenessAttackLockoutCapsAndKeepsLevelScaling() {
+        var cooldown = AttackCooldown()
+        cooldown.level = 4
+        cooldown.begin(reactionDelay: 100)
+        XCTAssertEqual(cooldown.remaining, 0.80, accuracy: 1e-8)
+        cooldown.reset()
+        cooldown.begin()
+        XCTAssertEqual(cooldown.remaining, 0.25, accuracy: 1e-8)
+    }
+
+    func testCPUIdleGuardDropsAtThreeSecondsOnLowDraw() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0.0 }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.advance(0.02), .raise)
+        XCTAssertNil(ai.advance(2.99))
+        XCTAssertEqual(ai.state, .guarding)
+        XCTAssertEqual(ai.advance(0.01), .release)
+        XCTAssertEqual(ai.state, .idle)
+    }
+
+    func testCPUIdleGuardMayHoldUntilNextThreeSecondDecision() {
+        var ai = DefensiveAI()
+        var draws = [0.0, 0.75, 0.0]
+        ai.randomDraw = { draws.removeFirst() }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(ai.advance(0.10), .raise)
+        XCTAssertNil(ai.advance(3))
+        XCTAssertEqual(ai.state, .guarding)
+        XCTAssertNil(ai.advance(2.99))
+        XCTAssertEqual(ai.advance(0.01), .release)
+    }
+
+
 }

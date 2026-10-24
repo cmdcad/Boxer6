@@ -170,6 +170,9 @@ struct FighterHealth {
     mutating func applyDamage(_ amount: Int) {
         current -= min(current, max(0, amount))
     }
+    mutating func heal(_ amount: Int) {
+        current = min(maximum, current + max(0, amount))
+    }
     mutating func reset() { current = maximum }
 }
 
@@ -245,6 +248,13 @@ struct FighterHealthState {
             blueCombat.receiveHealth(blue)
         }
         return true
+    }
+
+    /// Between-round health recovery does not revive a defeated fighter.
+    mutating func beginNextRound(heal amount: Int) {
+        guard canExchangePunches else { return }
+        blue.heal(amount)
+        orange.heal(amount)
     }
 
     /// Awareness KO is independent of the legacy integer health meter.

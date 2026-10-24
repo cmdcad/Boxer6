@@ -75,6 +75,7 @@ final class IdleTestScene: SKScene {
     private var motion = FootworkMotion()
     private var orangeMotion = FootworkMotion()
     private var cpuDistance = CPUDistanceController()
+    private var cpuWithdrawal = CPUWithdrawalPolicy()
     private var orangeLocomotionClip = FighterClip.idle
     private var orangeXFraction: CGFloat = 0.70
     var cpuMovementLabel: String { cpuDistance.intent.rawValue }
@@ -82,6 +83,7 @@ final class IdleTestScene: SKScene {
     private func stopCPUFootwork() {
         orangeMotion.stop()
         cpuDistance.reset()
+        cpuWithdrawal.reset()
         setOrangeLocomotion(.idle)
     }
     // Restart the approved bounce from its shared stance when a non-reaction
@@ -118,6 +120,8 @@ final class IdleTestScene: SKScene {
     private(set) var lastCounterText = "Last Counter: -"
     private var blueRecovery = PunchRecovery()
     private var orangeRecovery = PunchRecovery()
+    private var blueAttackCooldown = AttackCooldown()
+    private var orangeAttackCooldown = AttackCooldown()
     var blueActionLabel: String {
         if blueVisualBusy { return blueKnockdown.hasStarted ? blueKnockdown.clip.rawValue.uppercased() : "HIT REACTION" }
         if blueBlockFeedback.isActive { return "BLOCK REACTION" }
@@ -144,6 +148,8 @@ final class IdleTestScene: SKScene {
         return cpuEnabled ? "READY" : "CPU OFF"
     }
     private func advancePhysicalRecovery(_ dt: Double) {
+        blueAttackCooldown.advance(dt)
+        orangeAttackCooldown.advance(dt)
         let blueReady = blueRecovery.advance(dt)
         let orangeReady = orangeRecovery.advance(dt)
         if orangeReady { restartOrangeBounceAtStance() }
@@ -198,6 +204,98 @@ final class IdleTestScene: SKScene {
         }
         blueBlockFeedback.advance(dt)
     }
+    // Phase 5B: earned blocks and a narrow, player-triggered slip window.
+    // Pivot and side-switch require separate geometry and are not enabled here.
+    private(set) var consecutiveBlueBlocks = 0
+    var blueEnhancedEscapeReady: Bool { consecutiveBlueBlocks >= 2 }
+    private var slipContactExpiresAt = -1.0
+    private var slipCooldownUntil = 0.0
+
+    /// Phase 5B directional action. A diagonal toward the center of the ring
+    /// can spend two earned blocks on a short rope escape. Other vertical
+    /// inputs remain the existing timed slip. No side switching is implied.
+    func requestBlueEvade(horizontal: Int, vertical: Int) {
+        guard vertical != 0, isPlaying, hasFocus, health.canExchangePunches,
+              blueCombatState == .standing, !blueVisualBusy,
+              !punch.isActive, !blueGuard.isSelected,
+              simulationTime >= slipCooldownUntil else { return }
+        if horizontal > 0 && blueEnhancedEscapeReady && attemptBlueRopePivot() {
+            return
+        }
+        requestBlueSlip()
+    }
+
+    @discardableResult
+    private func attemptBlueRopePivot() -> Bool {
+        guard boxerA != nil, boxerB != nil, size.width > 1 else { return false }
+        let limits = movementLimits()
+        // Blue remains on the left until side-switch geometry is implemented.
+        // Outer quarter is a provisional rope-pressure region.
+        let ropeThreshold = Self.edgePaddingPoints + size.width * 0.25
+        guard rootA.position.x <= ropeThreshold else { return false }
+        let available = limits.upperBound - rootA.position.x
+        guard available >= 12 else {
+            showEvadeCue("PIVOT BLOCKED", success: false)
+            logCombat("PIVOT_BLOCKED", fighter: .blue)
+            slipCooldownUntil = simulationTime + 0.35
+            return true // handled; do not fall back to a free slip
+        }
+        let destination = min(limits.upperBound, rootA.position.x + min(32, available))
+        motion.stop()
+        holdAdvance = false
+        holdRetreat = false
+        rootA.position.x = destination
+        blueXFraction = destination / size.width
+        originA.position = rootA.position
+        consecutiveBlueBlocks = 0
+        slipContactExpiresAt = -1
+        slipCooldownUntil = simulationTime + 0.9
+        showEvadeCue("PIVOT!", success: true)
+        logCombat("PIVOT_SUCCESS", fighter: .blue)
+        applyFrames()
+        onPlaybackChange?()
+        return true
+    }
+
+    func requestBlueSlip() {
+        guard isPlaying, hasFocus, health.canExchangePunches,
+              blueCombatState == .standing, !blueVisualBusy,
+              !punch.isActive, !blueGuard.isSelected,
+              simulationTime >= slipCooldownUntil else { return }
+        slipCooldownUntil = simulationTime + 0.75
+        let approaching = orangePunch.isActive
+            && (orangePunch.timeUntilContact ?? .infinity) > 0
+            && (orangePunch.timeUntilContact ?? .infinity) <= 0.18
+        slipContactExpiresAt = approaching ? simulationTime + 0.22 : -1
+        logCombat(approaching ? "SLIP_TIMED" : "SLIP_ATTEMPT", fighter: .blue)
+        showEvadeCue(approaching ? "SLIP · TIMED" : "SLIP · ATTEMPT",
+                     success: false)
+        onPlaybackChange?()
+    }
+
+    private func showEvadeCue(_ title: String, success: Bool) {
+        // Temporary feedback deliberately uses no new boxer artwork.
+        let origin = CGPoint(x: rootA.position.x, y: rootA.position.y + 105)
+        let cue = SKLabelNode(text: title)
+        cue.fontName = "AvenirNext-Bold"
+        cue.fontSize = 17
+        cue.fontColor = success ? .systemGreen : .systemBlue
+        cue.position = origin
+        cue.zPosition = 1000
+        addChild(cue)
+        cue.run(.sequence([.group([.moveBy(x: 0, y: 24, duration: 0.65),
+                                      .fadeOut(withDuration: 0.65)]), .removeFromParent()]))
+        let ring = SKShapeNode(ellipseOf: CGSize(width: 68, height: 18))
+        ring.position = CGPoint(x: rootA.position.x, y: rootA.position.y + 6)
+        ring.strokeColor = success ? .systemGreen : .systemBlue
+        ring.fillColor = .clear
+        ring.lineWidth = 3
+        ring.zPosition = 999
+        addChild(ring)
+        ring.run(.sequence([.group([.scale(to: 1.5, duration: 0.45),
+                                       .fadeOut(withDuration: 0.45)]), .removeFromParent()]))
+    }
+
     private var blueReaction = HitReactionPlayback()
     private var blueKnockdown = KnockdownPlayback()
     private var cpuOffense = CPUOffense()
@@ -304,8 +402,14 @@ final class IdleTestScene: SKScene {
     var testBlueLimits: ClosedRange<CGFloat> { movementLimits() }
     var testOrangeLimits: ClosedRange<CGFloat> { orangeMovementLimits() }
     var testCanCPUAttack: Bool { canCPUAttack }
+    var testCPUWithdrawalActive: Bool { cpuWithdrawal.active }
+    func testDamageOrangeAwareness() {
+        combatMeters.testDamageOrangeAwareness()
+    }
     var testBlueRecovery: PunchRecovery { blueRecovery }
     var testOrangeRecovery: PunchRecovery { orangeRecovery }
+    var testBlueCooldown: Double { blueAttackCooldown.remaining }
+    var testOrangeCooldown: Double { orangeAttackCooldown.remaining }
     var testBlueGuardEffective: Bool { blueGuard.isEffective }
     var testOrangeGuardEffective: Bool { guardPlayback.isEffective }
     var testBlueTexture: SKTexture? { boxerA.texture }
@@ -318,9 +422,10 @@ final class IdleTestScene: SKScene {
     private var blueVisualBusy: Bool { blueReaction.isActive || blueKnockdown.hasStarted }
     private var canCPUAttack: Bool {
         health.canExchangePunches && !reaction.isActive && !knockdown.hasStarted
-            && !guardPlayback.isSelected && !blockFeedback.isActive && !orangePunch.isActive
+            && !cpuWithdrawal.active && !guardPlayback.isSelected && !blockFeedback.isActive && !orangePunch.isActive
             && defensiveAI.state == .idle
             && orangePunchAssetsAvailable && blueRecoveryAssetsAvailable && !orangeRecovery.isRecovering
+            && orangeAttackCooldown.canAttack
     }
     private(set) var orangePunchAssetsAvailable = false
     private(set) var blueRecoveryAssetsAvailable = false
@@ -508,6 +613,7 @@ final class IdleTestScene: SKScene {
     private var contactTracker = PunchContactTracker()
     private var health = FighterHealthState()
     private var combatMeters = CombatMetersState()
+    private(set) var match = MatchState()
     var blueMeters: FighterMeters { combatMeters.blue }
     var orangeMeters: FighterMeters { combatMeters.orange }
     var blueHealth: FighterHealth { health.blue }
@@ -526,7 +632,12 @@ final class IdleTestScene: SKScene {
         logCombat("RESET", fighter: .blue)
         health.reset()
         combatMeters.reset()
+        consecutiveBlueBlocks = 0
+        slipContactExpiresAt = -1
+        slipCooldownUntil = 0
+        match.reset()
         blueRecovery.cancel(); orangeRecovery.cancel()
+        blueAttackCooldown.reset(); orangeAttackCooldown.reset()
         clearBlueGuardInput()
         orangePunch.cancel(); cpuContactTracker.finish()
         blueReaction.cancel(); blueKnockdown.cancel()
@@ -567,10 +678,10 @@ final class IdleTestScene: SKScene {
     private(set) var textureCanvasInfo = "Textures pending"
     var onPunchContact: ((PunchContactEvent) -> Void)?
     var canStartJab: Bool {
-        health.canExchangePunches && jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && !blueBlockFeedback.isActive && !guardHeld
+        health.canExchangePunches && jabAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && blueAttackCooldown.canAttack && !blueBlockFeedback.isActive && !guardHeld
     }
     var canStartCross: Bool {
-        health.canExchangePunches && crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && !blueBlockFeedback.isActive && !guardHeld
+        health.canExchangePunches && crossAssetsAvailable && boxerA != nil && hasFocus && isPlaying && !punch.isActive && !blueVisualBusy && !blueGuard.isSelected && !blueRecovery.isRecovering && blueAttackCooldown.canAttack && !blueBlockFeedback.isActive && !guardHeld
     }
     var showsJabContact: Bool {
         punch.isActive && punch.kind == .jab && punch.frameIndex == punch.kind.contactFrame
@@ -754,11 +865,28 @@ final class IdleTestScene: SKScene {
         }
         let blueGuardWasRaising = blueGuard.isSelected && !blueGuard.isEffective
         simulationTime += dt
+        if !match.isFinished {
+            let newRounds = match.advance(dt)
+            if newRounds > 0 {
+                for _ in 0..<newRounds {
+                    health.beginNextRound(heal: Int(match.tuning.roundStartHealthRegen))
+                }
+                logCombat("ROUND_START", fighter: .blue, detail: "\(match.round)")
+                onPlaybackChange?()
+            }
+        }
+        // Phase 5: recovery is earned by actively retreating beyond the
+        // opponent's jab AND cross reach, not by idle distance or guarding.
         combatMeters.advance(dt, blueGuarding: blueGuard.isSelected,
-                             orangeGuarding: guardPlayback.isSelected)
+                             orangeGuarding: guardPlayback.isSelected,
+                             blueWithdrawing: blueIsWithdrawing,
+                             orangeWithdrawing: orangeIsWithdrawing)
         advancePhysicalRecovery(dt)
         advanceBlueRecovery(dt)
         advanceBlueDefense(dt)
+        // Decide withdrawal before offense: a low-awareness CPU must not
+        // start a punch in the same tick it becomes eligible to retreat.
+        if cpuEnabled { cpuWithdrawal.update(awareness: combatMeters.orange.awareness) }
         advanceCPUOffense(dt)
         // Advance the previous orange state before processing this tick's HIT.
         // A newly triggered recoil must still display frame zero at applyFrames.
@@ -837,10 +965,19 @@ final class IdleTestScene: SKScene {
     private var lastPublishedBlueFX = ""
     private var lastPublishedCPUAttack = ""
     private var lastPublishedBlueAnimation = ""
+    // Publish only whole-percentage meter changes, not every 60fps tick.
+    private var lastPublishedMeters: [Int] = []
+    private var lastPublishedMatch = ""
 
     private func publishIfNeeded() {
         let x = rootA.position.x
-        if frameIndex != lastPublishedFrame
+        let meterReadout = [combatMeters.blue.stamina, combatMeters.blue.awareness,
+                            combatMeters.orange.stamina, combatMeters.orange.awareness]
+            .map { Int($0.rounded()) }
+        let matchReadout = "\(match.round):\(Int(match.remaining.rounded(.up))):\(match.bluePoints):\(match.orangePoints):\(String(describing: match.result))"
+        if matchReadout != lastPublishedMatch
+            || meterReadout != lastPublishedMeters
+            || frameIndex != lastPublishedFrame
             || activeClip != lastPublishedClip
             || lastPublishedX.isNaN
             || abs(x - lastPublishedX) >= 1
@@ -854,6 +991,8 @@ final class IdleTestScene: SKScene {
             || blueBlockFeedbackLabel != lastPublishedBlueFX
             || cpuAttackLabel != lastPublishedCPUAttack
             || blueAnimationLabel != lastPublishedBlueAnimation {
+            lastPublishedMatch = matchReadout
+            lastPublishedMeters = meterReadout
             lastPublishedFrame = frameIndex
             lastPublishedClip = activeClip
             lastPublishedX = x
@@ -930,6 +1069,7 @@ final class IdleTestScene: SKScene {
     }
 
     func cancelMovement() {
+        slipContactExpiresAt = -1
         lastTime = 0
         clearHeldInput()
         clearBlueGuardInput()
@@ -946,9 +1086,11 @@ final class IdleTestScene: SKScene {
 
     @discardableResult
     private func beginAttack(_ attacker: FighterID, kind: PunchKind) -> Bool {
+        guard !match.isFinished else { return false }
         if attacker == .orange {
             guard cpuEnabled, canCPUAttack, orangePunch.start(kind) else { return false }
             orangeRecovery.begin(kind)
+            orangeAttackCooldown.begin(reactionDelay: combatMeters.orange.reactionDelay)
             attackSequence += 1
             cpuContactTracker.begin(kind, attackerID: .orange, attackID: attackSequence, startTime: simulationTime,
                                     counterAttempt: isAttackVulnerable(.blue))
@@ -962,6 +1104,7 @@ final class IdleTestScene: SKScene {
         let available = kind == .jab ? canStartJab : canStartCross
         guard available, punch.start(kind) else { return false }
         blueRecovery.begin(kind)
+        blueAttackCooldown.begin(reactionDelay: combatMeters.blue.reactionDelay)
         motion.stop()
         attackSequence += 1
         contactTracker.begin(kind, attackerID: .blue, attackID: attackSequence, startTime: simulationTime,
@@ -969,7 +1112,9 @@ final class IdleTestScene: SKScene {
         logAttackStart(.blue, context: contactTracker.context)
         punchStartSequence += 1
         defensiveAI.observe(sequence: punchStartSequence, kind: kind,
-                            inRange: predictedContact(.blue, kind: kind), eligible: canRequestGuard)
+                            inRange: predictedContact(.blue, kind: kind), eligible: canRequestGuard,
+                            awarenessPenalty: max(0, combatMeters.orange.reactionDelay
+                                                   - combatMeters.orange.tuning.baseReaction))
         if defensiveAI.state == .reacting && !orangePunch.isActive { cpuOffense.cancelPreparation() }
         setClip(kind == .jab ? .jab : .cross)
         lastTime = 0
@@ -980,6 +1125,24 @@ final class IdleTestScene: SKScene {
     private func logAttackStart(_ fighter: FighterID, context: AttackContext?) {
         logCombat("ATTACK_START", fighter: fighter, context: context)
         if context?.isCounterAttempt == true { logCombat("COUNTER_ATTEMPT", fighter: fighter, context: context) }
+    }
+
+    /// Withdraw uses existing retreat art. No new input or sprite is needed.
+    /// CPU retreats toward positive X; the player retreats toward negative X.
+    var blueIsWithdrawing: Bool {
+        motion.velocity < -1e-8 && !blueGuard.isSelected
+            && !predictedContact(.orange, kind: .jab)
+            && !predictedContact(.orange, kind: .cross)
+    }
+    var orangeIsWithdrawing: Bool {
+        // At the arena boundary velocity becomes zero. A CPU already in
+        // tactical withdrawal must still recover while safely out of reach,
+        // otherwise it can become permanently stranded below 75 awareness.
+        cpuEnabled && !guardPlayback.isSelected
+            && !orangePunch.isActive && !reaction.isActive && !knockdown.hasStarted
+            && (orangeMotion.velocity > 1e-8 || cpuWithdrawal.active)
+            && !predictedContact(.blue, kind: .jab)
+            && !predictedContact(.blue, kind: .cross)
     }
 
     private func predictedContact(_ attacker: FighterID, kind: PunchKind) -> Bool {
@@ -993,6 +1156,15 @@ final class IdleTestScene: SKScene {
     @discardableResult
     private func resolveContact(_ attacker: FighterID, kind: PunchKind, deferImpact: Bool = false) -> PunchContactEvent? {
         guard health.canExchangePunches else { return nil }
+        // A timed diagonal slip avoids this one incoming CPU punch. It does
+        // not create permanent invulnerability or award points.
+        if attacker == .orange && simulationTime <= slipContactExpiresAt {
+            slipContactExpiresAt = -1
+            logCombat("SLIP_AVOID", fighter: .blue)
+            showEvadeCue("EVADED!", success: true)
+            onPlaybackChange?()
+            return nil
+        }
         var tracker = attacker == .blue ? contactTracker : cpuContactTracker
         let contact = tracker.evaluate(kind,
             attacker: canvasTransform(for: attacker == .blue ? boxerA : boxerB),
@@ -1004,6 +1176,17 @@ final class IdleTestScene: SKScene {
         guard let event = contact else { return nil }
         if !deferImpact { applyContact(event) }
         return event
+    }
+
+    private func finalizeMatchKO() {
+        // A simultaneous exchange is resolved completely before choosing a winner.
+        if blueCombatState == .defeated && orangeCombatState == .defeated {
+            match.simultaneousKnockout()
+        } else if blueCombatState == .defeated {
+            match.knockout(winner: .orange)
+        } else if orangeCombatState == .defeated {
+            match.knockout(winner: .blue)
+        }
     }
 
     private func applyContact(_ event: PunchContactEvent, simultaneous: Bool = false) {
@@ -1019,6 +1202,12 @@ final class IdleTestScene: SKScene {
                 context: event.defenderID == .blue ? contactTracker.context : cpuContactTracker.context) }
         }
         let eligible = health.canExchangePunches || simultaneous
+        // A real incoming head contact (including a successful block) makes
+        // Orange more alert to the next punch. A miss does not count.
+        if eligible && event.defenderID == .orange && event.result != .miss {
+            defensiveAI.recordIncomingContact()
+        }
+        if eligible { match.score(event) }
         health.receive(event, simultaneous: simultaneous)
         if eligible && combatMeters.receive(event) {
             let defender = event.defenderID
@@ -1030,6 +1219,7 @@ final class IdleTestScene: SKScene {
                               ? contactTracker.context : cpuContactTracker.context)
             }
         }
+        if !simultaneous { finalizeMatchKO() }
         let nextHealth = event.defenderID == .blue ? blueHealth.current : orangeHealth.current
         if previousHealth != nextHealth { logCombat("HEALTH_CHANGED", fighter: event.defenderID,
             context: event.attackerID == .blue ? contactTracker.context : cpuContactTracker.context, detail: "\(previousHealth)->\(nextHealth)") }
@@ -1037,6 +1227,14 @@ final class IdleTestScene: SKScene {
             let actor = event.attackerID == .blue ? "BLUE" : "ORANGE"
             let kind = event.kind == .jab ? "JAB" : "CROSS"
             lastCounterText = "Last Counter: \(actor) \(kind) \(event.result.rawValue)"
+        }
+        if event.defenderID == .blue {
+            if event.result == .block {
+                consecutiveBlueBlocks = min(2, consecutiveBlueBlocks + 1)
+                if consecutiveBlueBlocks == 2 { showEvadeCue("ESCAPE READY", success: true) }
+            } else if event.result == .hit {
+                consecutiveBlueBlocks = 0
+            }
         }
         if event.result == .hit {
             if event.defenderID == .orange {
@@ -1106,6 +1304,7 @@ final class IdleTestScene: SKScene {
             let orangeContact = resolveContact(.orange, kind: orangeKind, deferImpact: true)
             if let event = blueContact { applyContact(event, simultaneous: true) }
             if let event = orangeContact { applyContact(event, simultaneous: true) }
+            finalizeMatchKO()
         } else if blueTime <= orangeTime {
             if blueEvent.contact { diagnosticContactTime = simulationTime - dt + blueTime; resolveContact(.blue, kind: blueKind) }
             if orangeEvent.contact && orangePunch.isActive { diagnosticContactTime = simulationTime - dt + orangeTime; resolveContact(.orange, kind: orangeKind) }
@@ -1249,9 +1448,13 @@ final class IdleTestScene: SKScene {
         cpuDistance.maximumRangeFactor = 0.99
         cpuDistance.advance(dt, separation: Double(abs(rootB.position.x-rootA.position.x)),
                             reach: max(1, reach), minimum: max(0, minimum))
+        // Low-awareness CPU can choose distance defense using the existing
+        // retreat sprites. It resumes normal footwork once recovered.
+        // An active guard or attack always has priority.
         orangeMotion.maximumSpeed = cpuDistance.speed
         let direction = guardEntry || cpuOffense.state == .preparing ? 0.0
-            : (cpuDistance.intent == .advance ? -1.0 : (cpuDistance.intent == .retreat ? 1.0 : 0))
+            : (cpuWithdrawal.active && !guardPlayback.isSelected ? 1.0
+                : (cpuDistance.intent == .advance ? -1.0 : (cpuDistance.intent == .retreat ? 1.0 : 0)))
         for segment in orangeMotion.advance(duration: dt, direction: direction,
             speedMultiplier: guardPlayback.isEffective ? guardedMovementMultiplier : 1) {
             let old = rootB.position.x

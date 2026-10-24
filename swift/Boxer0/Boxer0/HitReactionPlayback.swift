@@ -245,19 +245,27 @@ struct DefensiveAIProfile {
 }
 
 enum DefensiveAIState: String { case idle, reacting, guarding }
-enum DefensiveAIRequest { case raise, release }
+enum DefensiveAIRequest: Equatable { case raise, release }
 
 /// Receives accepted punch-start identities, never random per-frame polling.
 struct DefensiveAI {
     var randomDraw: (() -> Double)?
     var jabProfile = DefensiveAIProfile.jab
     var crossProfile = DefensiveAIProfile.cross
-    var maximumGuardDuration = 1.5
+    var maximumGuardDuration = 9.0
+    var idleGuardDropAfter = CombatTuning().idleGuardDropAfter
+    var idleGuardDropChance = CombatTuning().idleGuardDropChance
+    /// At level 1, after an actual incoming contact the next defense attempt
+    /// succeeds with 95% probability. The base profiles stay unchanged.
+    var attackedDefenseChance = 0.95
+    var fighterLevel = 1
+    private(set) var wasAttacked = false
     private(set) var enabled = false
     private(set) var state: DefensiveAIState = .idle
     private(set) var remaining = 0.0
     private var pendingHold = 0.0
     private var continuousGuardTime = 0.0
+    private var timeWithoutAttack = 0.0
     private var lastSequence = 0
     private var randomState: UInt64
     private let initialSeed: UInt64
@@ -266,41 +274,73 @@ struct DefensiveAI {
     var timeToTransition: Double { state == .idle ? .infinity : remaining }
 
     mutating func setEnabled(_ value: Bool) { enabled = value; cancel() }
+
+    /// Call only for a confirmed hit or block, not for a missed punch.
+    mutating func recordIncomingContact() { wasAttacked = true }
     mutating func cancel(reseed: Bool = false) {
         state = .idle
         remaining = 0
         pendingHold = 0
         continuousGuardTime = 0
-        if reseed { randomState = initialSeed }
+        timeWithoutAttack = 0
+        if reseed {
+            randomState = initialSeed
+            wasAttacked = false
+        }
     }
-    mutating func observe(sequence: Int, kind: PunchKind, inRange: Bool, eligible: Bool) {
+    mutating func observe(sequence: Int, kind: PunchKind, inRange: Bool, eligible: Bool,
+                          awarenessPenalty: Double = 0) {
         guard sequence > lastSequence else { return }
         lastSequence = sequence
         guard enabled, eligible, inRange else { return }
         let profile = kind == .jab ? jabProfile : crossProfile
         if state == .guarding {
-            remaining = min(max(remaining, profile.holdDuration),
+            // A new attack resets the idle-drop clock, not the guard pose.
+            timeWithoutAttack = 0
+            remaining = min(max(0, idleGuardDropAfter),
                             max(0, maximumGuardDuration - continuousGuardTime))
             return
         }
         guard state == .idle else { return } // earliest pending reaction wins
         randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
         let draw = Double(randomState >> 11) / 9007199254740992.0
-        guard (randomDraw?() ?? draw) < min(1, max(0, profile.chance)) else { return }
+        let baseChance = wasAttacked ? max(profile.chance, attackedDefenseChance) : profile.chance
+        // Higher fighter levels raise the chance slightly, capped at certainty.
+        let chance = min(1, max(0, baseChance + 0.01 * Double(max(0, fighterLevel - 1))))
+        guard (randomDraw?() ?? draw) < chance else { return }
         state = .reacting
-        remaining = max(0, profile.reactionDelay)
+        // At full awareness the existing defensive timing is unchanged.
+        // Reduced awareness adds a bounded delay to the guard decision.
+        let penalty = awarenessPenalty.isFinite ? min(0.55, max(0, awarenessPenalty)) : 0
+        remaining = max(0, profile.reactionDelay + penalty)
         pendingHold = max(0, profile.holdDuration)
     }
     mutating func advance(_ dt: Double) -> DefensiveAIRequest? {
         guard enabled, state != .idle, dt.isFinite, dt >= 0 else { return nil }
-        if state == .guarding { continuousGuardTime += dt }
+        if state == .guarding {
+            continuousGuardTime += dt
+            timeWithoutAttack += dt
+        }
         remaining = max(0, remaining - dt)
         guard remaining <= 1e-10 else { return nil }
         if state == .reacting {
             state = .guarding
             continuousGuardTime = 0
-            remaining = min(pendingHold, max(0, maximumGuardDuration))
+            // Hold through the first idle decision instead of releasing after
+            // the short jab/cross pose. GuardPlayback still owns entry timing.
+            remaining = min(max(pendingHold, idleGuardDropAfter), max(0, maximumGuardDuration))
             return .raise
+        }
+        // Every 3 seconds of no attack, decide whether to drop guard.
+        // A hard duration limit prevents indefinite guard lockout.
+        randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
+        let draw = Double(randomState >> 11) / 9007199254740992.0
+        if continuousGuardTime < maximumGuardDuration &&
+            (randomDraw?() ?? draw) >= idleGuardDropChance {
+            timeWithoutAttack = 0
+            remaining = min(max(0, idleGuardDropAfter),
+                            max(0, maximumGuardDuration - continuousGuardTime))
+            return nil
         }
         cancel()
         return .release
