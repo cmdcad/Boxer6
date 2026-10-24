@@ -404,6 +404,37 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(scene.orangeMeters.awareness, 100, accuracy: 1e-8)
     }
 
+    func testWithdrawalAwardsNoPassiveMatchPoints() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        let beforeBlue = scene.match.bluePoints
+        let beforeOrange = scene.match.orangePoints
+        driver.advance(0.25)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertEqual(scene.match.bluePoints, beforeBlue)
+        XCTAssertEqual(scene.match.orangePoints, beforeOrange)
+    }
+
+    func testOutOfRangeAttackDuringWithdrawalIsStillAMiss() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        let orangeAwareness = scene.orangeMeters.awareness
+        let bluePoints = scene.match.bluePoints
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+        driver.advance(0.15)
+        XCTAssertEqual(scene.testBlueTracker.latest?.result, .miss)
+        XCTAssertEqual(scene.match.bluePoints, bluePoints)
+        XCTAssertGreaterThanOrEqual(scene.orangeMeters.awareness, orangeAwareness)
+    }
+
     func testCPUWithdrawalPolicyHysteresisAndReset() {
         var policy = CPUWithdrawalPolicy()
         XCTAssertFalse(policy.active)
