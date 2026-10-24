@@ -435,6 +435,36 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(scene.orangeMeters.awareness, orangeAwareness)
     }
 
+    func testPlayerRetreatOnlyRecoversWhenOutOfRange() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.setRetreatHeld(true)
+        driver.advance(0.10)
+        XCTAssertTrue(scene.blueIsWithdrawing)
+        scene.testSetSeparation(170)
+        XCTAssertFalse(scene.blueIsWithdrawing)
+        scene.setRetreatHeld(false)
+        driver.advance(0.20)
+        XCTAssertFalse(scene.blueIsWithdrawing)
+    }
+
+    func testCPUWithdrawalLeavesRecoveryModeAtSeventyFiveAwareness() {
+        var policy = CPUWithdrawalPolicy()
+        policy.update(awareness: 49)
+        XCTAssertTrue(policy.active)
+        var meters = FighterMeters()
+        meters.receiveHit(zone: .head, guarded: false)
+        meters.advance(1, mode: .withdraw)
+        policy.update(awareness: meters.awareness)
+        XCTAssertTrue(policy.active)
+        meters.advance(1, mode: .withdraw)
+        policy.update(awareness: meters.awareness)
+        XCTAssertTrue(policy.active)
+        meters.advance(1, mode: .withdraw)
+        policy.update(awareness: meters.awareness)
+        XCTAssertFalse(policy.active)
+    }
+
     func testCPUWithdrawalPolicyHysteresisAndReset() {
         var policy = CPUWithdrawalPolicy()
         XCTAssertFalse(policy.active)
