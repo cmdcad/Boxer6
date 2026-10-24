@@ -309,4 +309,32 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(ai.timeToTransition, 0.57, accuracy: 1e-8)
     }
 
+    func testCPUDefenseChanceBoostsOnlyAfterConfirmedContact() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0.90 }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .idle) // Base jab chance = 60%.
+        ai.recordIncomingContact()
+        XCTAssertTrue(ai.wasAttacked)
+        ai.observe(sequence: 2, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .reacting) // Boosted chance = 95%.
+        ai.cancel(reseed: true)
+        XCTAssertFalse(ai.wasAttacked)
+        ai.observe(sequence: 3, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .idle)
+    }
+
+    func testCPUDefenseBoostIsBoundedAndLevelAware() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0.995 }
+        ai.setEnabled(true)
+        ai.recordIncomingContact()
+        ai.observe(sequence: 1, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .idle) // 99.5% draw exceeds 95% threshold.
+        ai.fighterLevel = 6
+        ai.observe(sequence: 2, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(ai.state, .reacting) // Level bonus capped at 100%.
+    }
+
 }
