@@ -1003,7 +1003,9 @@ final class IdleTestScene: SKScene {
         logAttackStart(.blue, context: contactTracker.context)
         punchStartSequence += 1
         defensiveAI.observe(sequence: punchStartSequence, kind: kind,
-                            inRange: predictedContact(.blue, kind: kind), eligible: canRequestGuard)
+                            inRange: predictedContact(.blue, kind: kind), eligible: canRequestGuard,
+                            awarenessPenalty: max(0, combatMeters.orange.reactionDelay
+                                                   - combatMeters.orange.tuning.baseReaction))
         if defensiveAI.state == .reacting && !orangePunch.isActive { cpuOffense.cancelPreparation() }
         setClip(kind == .jab ? .jab : .cross)
         lastTime = 0
