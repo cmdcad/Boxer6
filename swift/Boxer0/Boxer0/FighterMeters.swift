@@ -107,9 +107,12 @@ struct CombatMetersState {
         return true
     }
 
-    mutating func advance(_ dt: Double, blueGuarding: Bool, orangeGuarding: Bool) {
-        blue.advance(dt, mode: blueGuarding ? .guarding : .idle)
-        orange.advance(dt, mode: orangeGuarding ? .guarding : .idle)
+    /// Withdrawal is an out-of-range retreat, never ordinary idle or guard.
+    /// Guard has precedence so holding guard cannot regenerate awareness.
+    mutating func advance(_ dt: Double, blueGuarding: Bool, orangeGuarding: Bool,
+                          blueWithdrawing: Bool = false, orangeWithdrawing: Bool = false) {
+        blue.advance(dt, mode: blueGuarding ? .guarding : (blueWithdrawing ? .withdraw : .idle))
+        orange.advance(dt, mode: orangeGuarding ? .guarding : (orangeWithdrawing ? .withdraw : .idle))
     }
 
     /// Preserve accepted sequence watermarks when resetting for debug recovery.
