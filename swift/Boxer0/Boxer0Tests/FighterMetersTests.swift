@@ -265,4 +265,21 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(cooldown.duration, 0.25, accuracy: 1e-10)
     }
 
+    func testSceneAttackCooldownDoesNotBlockGuardInput() {
+        let driver = CombatDriver(distance: 400)
+        let scene = driver.scene
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+        XCTAssertEqual(scene.testBlueCooldown, 1, accuracy: 1e-8)
+        driver.advance(0.42)
+        XCTAssertFalse(scene.testBeginAttack(.blue, .jab))
+        XCTAssertGreaterThan(scene.testBlueCooldown, 0.5)
+        // Guard input remains independent of the attack cooldown.
+        scene.setGuardHeld(true)
+        XCTAssertTrue(scene.guardHeld)
+        scene.setGuardHeld(false)
+        driver.advance(0.58)
+        XCTAssertEqual(scene.testBlueCooldown, 0, accuracy: 1e-8)
+        XCTAssertTrue(scene.testBeginAttack(.blue, .jab))
+    }
+
 }
