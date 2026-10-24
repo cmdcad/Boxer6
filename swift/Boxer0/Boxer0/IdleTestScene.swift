@@ -75,7 +75,7 @@ final class IdleTestScene: SKScene {
     private var motion = FootworkMotion()
     private var orangeMotion = FootworkMotion()
     private var cpuDistance = CPUDistanceController()
-    private var cpuTacticalWithdrawal = false
+    private var cpuWithdrawal = CPUWithdrawalPolicy()
     private var orangeLocomotionClip = FighterClip.idle
     private var orangeXFraction: CGFloat = 0.70
     var cpuMovementLabel: String { cpuDistance.intent.rawValue }
@@ -83,7 +83,7 @@ final class IdleTestScene: SKScene {
     private func stopCPUFootwork() {
         orangeMotion.stop()
         cpuDistance.reset()
-        cpuTacticalWithdrawal = false
+        cpuWithdrawal.reset()
         setOrangeLocomotion(.idle)
     }
     // Restart the approved bounce from its shared stance when a non-reaction
@@ -326,7 +326,7 @@ final class IdleTestScene: SKScene {
     private var blueVisualBusy: Bool { blueReaction.isActive || blueKnockdown.hasStarted }
     private var canCPUAttack: Bool {
         health.canExchangePunches && !reaction.isActive && !knockdown.hasStarted
-            && !cpuTacticalWithdrawal && !guardPlayback.isSelected && !blockFeedback.isActive && !orangePunch.isActive
+            && !cpuWithdrawal.active && !guardPlayback.isSelected && !blockFeedback.isActive && !orangePunch.isActive
             && defensiveAI.state == .idle
             && orangePunchAssetsAvailable && blueRecoveryAssetsAvailable && !orangeRecovery.isRecovering
             && orangeAttackCooldown.canAttack
@@ -1326,11 +1326,10 @@ final class IdleTestScene: SKScene {
         // Low-awareness CPU can choose distance defense using the existing
         // retreat sprites. It resumes normal footwork once recovered.
         // An active guard or attack always has priority.
-        if combatMeters.orange.awareness < 50 { cpuTacticalWithdrawal = true }
-        if combatMeters.orange.awareness >= 75 { cpuTacticalWithdrawal = false }
+        cpuWithdrawal.update(awareness: combatMeters.orange.awareness)
         orangeMotion.maximumSpeed = cpuDistance.speed
         let direction = guardEntry || cpuOffense.state == .preparing ? 0.0
-            : (cpuTacticalWithdrawal && !guardPlayback.isSelected ? 1.0
+            : (cpuWithdrawal.active && !guardPlayback.isSelected ? 1.0
                 : (cpuDistance.intent == .advance ? -1.0 : (cpuDistance.intent == .retreat ? 1.0 : 0)))
         for segment in orangeMotion.advance(duration: dt, direction: direction,
             speedMultiplier: guardPlayback.isEffective ? guardedMovementMultiplier : 1) {
