@@ -1031,8 +1031,13 @@ final class IdleTestScene: SKScene {
 
     private func finalizeMatchKO() {
         // A simultaneous exchange is resolved completely before choosing a winner.
-        if blueCombatState == .defeated { match.knockout(winner: .orange) }
-        else if orangeCombatState == .defeated { match.knockout(winner: .blue) }
+        if blueCombatState == .defeated && orangeCombatState == .defeated {
+            match.simultaneousKnockout()
+        } else if blueCombatState == .defeated {
+            match.knockout(winner: .orange)
+        } else if orangeCombatState == .defeated {
+            match.knockout(winner: .blue)
+        }
     }
 
     private func applyContact(_ event: PunchContactEvent, simultaneous: Bool = false) {
