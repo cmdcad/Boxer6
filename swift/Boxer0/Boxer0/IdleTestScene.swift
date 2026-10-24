@@ -214,15 +214,17 @@ final class IdleTestScene: SKScene {
     /// Phase 5B directional action. A diagonal toward the center of the ring
     /// can spend two earned blocks on a short rope escape. Other vertical
     /// inputs remain the existing timed slip. No side switching is implied.
-    func requestBlueEvade(horizontal: Int, vertical: Int) {
+    @discardableResult
+    func requestBlueEvade(horizontal: Int, vertical: Int) -> Bool {
         guard vertical != 0, isPlaying, hasFocus, health.canExchangePunches,
               blueCombatState == .standing, !blueVisualBusy,
               !punch.isActive, !blueGuard.isSelected,
-              simulationTime >= slipCooldownUntil else { return }
+              simulationTime >= slipCooldownUntil else { return false }
         if horizontal > 0 && blueEnhancedEscapeReady && attemptBlueRopePivot() {
-            return
+            return true
         }
         requestBlueSlip()
+        return false
     }
 
     @discardableResult
