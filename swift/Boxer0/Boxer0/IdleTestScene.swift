@@ -573,6 +573,9 @@ final class IdleTestScene: SKScene {
         logCombat("RESET", fighter: .blue)
         health.reset()
         combatMeters.reset()
+        consecutiveBlueBlocks = 0
+        slipContactExpiresAt = -1
+        slipCooldownUntil = 0
         match.reset()
         blueRecovery.cancel(); orangeRecovery.cancel()
         blueAttackCooldown.reset(); orangeAttackCooldown.reset()
