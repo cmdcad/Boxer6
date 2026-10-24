@@ -253,6 +253,11 @@ struct DefensiveAI {
     var jabProfile = DefensiveAIProfile.jab
     var crossProfile = DefensiveAIProfile.cross
     var maximumGuardDuration = 1.5
+    /// At level 1, after an actual incoming contact the next defense attempt
+    /// succeeds with 95% probability. The base profiles stay unchanged.
+    var attackedDefenseChance = 0.95
+    var fighterLevel = 1
+    private(set) var wasAttacked = false
     private(set) var enabled = false
     private(set) var state: DefensiveAIState = .idle
     private(set) var remaining = 0.0
@@ -266,12 +271,18 @@ struct DefensiveAI {
     var timeToTransition: Double { state == .idle ? .infinity : remaining }
 
     mutating func setEnabled(_ value: Bool) { enabled = value; cancel() }
+
+    /// Call only for a confirmed hit or block, not for a missed punch.
+    mutating func recordIncomingContact() { wasAttacked = true }
     mutating func cancel(reseed: Bool = false) {
         state = .idle
         remaining = 0
         pendingHold = 0
         continuousGuardTime = 0
-        if reseed { randomState = initialSeed }
+        if reseed {
+            randomState = initialSeed
+            wasAttacked = false
+        }
     }
     mutating func observe(sequence: Int, kind: PunchKind, inRange: Bool, eligible: Bool,
                           awarenessPenalty: Double = 0) {
@@ -287,7 +298,10 @@ struct DefensiveAI {
         guard state == .idle else { return } // earliest pending reaction wins
         randomState = randomState &* 6364136223846793005 &+ 1442695040888963407
         let draw = Double(randomState >> 11) / 9007199254740992.0
-        guard (randomDraw?() ?? draw) < min(1, max(0, profile.chance)) else { return }
+        let baseChance = wasAttacked ? max(profile.chance, attackedDefenseChance) : profile.chance
+        // Higher fighter levels raise the chance slightly, capped at certainty.
+        let chance = min(1, max(0, baseChance + 0.01 * Double(max(0, fighterLevel - 1))))
+        guard (randomDraw?() ?? draw) < chance else { return }
         state = .reacting
         // At full awareness the existing defensive timing is unchanged.
         // Reduced awareness adds a bounded delay to the guard decision.
