@@ -526,6 +526,7 @@ final class IdleTestScene: SKScene {
         logCombat("RESET", fighter: .blue)
         health.reset()
         combatMeters.reset()
+        match.reset()
         blueRecovery.cancel(); orangeRecovery.cancel()
         clearBlueGuardInput()
         orangePunch.cancel(); cpuContactTracker.finish()
@@ -754,6 +755,16 @@ final class IdleTestScene: SKScene {
         }
         let blueGuardWasRaising = blueGuard.isSelected && !blueGuard.isEffective
         simulationTime += dt
+        if !match.isFinished {
+            let newRounds = match.advance(dt)
+            if newRounds > 0 {
+                for _ in 0..<newRounds {
+                    health.beginNextRound(heal: Int(match.tuning.roundStartHealthRegen))
+                }
+                logCombat("ROUND_START", fighter: .blue, detail: "\(match.round)")
+                onPlaybackChange?()
+            }
+        }
         combatMeters.advance(dt, blueGuarding: blueGuard.isSelected,
                              orangeGuarding: guardPlayback.isSelected)
         advancePhysicalRecovery(dt)
@@ -953,6 +964,7 @@ final class IdleTestScene: SKScene {
 
     @discardableResult
     private func beginAttack(_ attacker: FighterID, kind: PunchKind) -> Bool {
+        guard !match.isFinished else { return false }
         if attacker == .orange {
             guard cpuEnabled, canCPUAttack, orangePunch.start(kind) else { return false }
             orangeRecovery.begin(kind)
@@ -1013,6 +1025,12 @@ final class IdleTestScene: SKScene {
         return event
     }
 
+    private func finalizeMatchKO() {
+        // A simultaneous exchange is resolved completely before choosing a winner.
+        if blueCombatState == .defeated { match.knockout(winner: .orange) }
+        else if orangeCombatState == .defeated { match.knockout(winner: .blue) }
+    }
+
     private func applyContact(_ event: PunchContactEvent, simultaneous: Bool = false) {
         let previousHealth = event.defenderID == .blue ? blueHealth.current : orangeHealth.current
         logCombat("CONTACT_" + event.result.rawValue.uppercased(), fighter: event.attackerID,
@@ -1026,6 +1044,7 @@ final class IdleTestScene: SKScene {
                 context: event.defenderID == .blue ? contactTracker.context : cpuContactTracker.context) }
         }
         let eligible = health.canExchangePunches || simultaneous
+        if eligible { match.score(event) }
         health.receive(event, simultaneous: simultaneous)
         if eligible && combatMeters.receive(event) {
             let defender = event.defenderID
@@ -1037,6 +1056,7 @@ final class IdleTestScene: SKScene {
                               ? contactTracker.context : cpuContactTracker.context)
             }
         }
+        if !simultaneous { finalizeMatchKO() }
         let nextHealth = event.defenderID == .blue ? blueHealth.current : orangeHealth.current
         if previousHealth != nextHealth { logCombat("HEALTH_CHANGED", fighter: event.defenderID,
             context: event.attackerID == .blue ? contactTracker.context : cpuContactTracker.context, detail: "\(previousHealth)->\(nextHealth)") }
@@ -1113,6 +1133,7 @@ final class IdleTestScene: SKScene {
             let orangeContact = resolveContact(.orange, kind: orangeKind, deferImpact: true)
             if let event = blueContact { applyContact(event, simultaneous: true) }
             if let event = orangeContact { applyContact(event, simultaneous: true) }
+            finalizeMatchKO()
         } else if blueTime <= orangeTime {
             if blueEvent.contact { diagnosticContactTime = simulationTime - dt + blueTime; resolveContact(.blue, kind: blueKind) }
             if orangeEvent.contact && orangePunch.isActive { diagnosticContactTime = simulationTime - dt + orangeTime; resolveContact(.orange, kind: orangeKind) }
