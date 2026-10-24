@@ -274,6 +274,7 @@ final class IdleTestScene: SKScene {
         originA.position = rootA.position
         consecutiveBlueBlocks = 0
         slipContactExpiresAt = -1
+        duckPending = false
         slipCooldownUntil = simulationTime + 0.9
         showEvadeCue("PIVOT!", success: true)
         logCombat("PIVOT_SUCCESS", fighter: .blue)
@@ -288,6 +289,7 @@ final class IdleTestScene: SKScene {
               !punch.isActive, !blueGuard.isSelected,
               simulationTime >= slipCooldownUntil else { return }
         slipCooldownUntil = simulationTime + 0.75
+        duckPending = false
         let approaching = orangePunch.isActive
             && (orangePunch.timeUntilContact ?? .infinity) > 0
             && (orangePunch.timeUntilContact ?? .infinity) <= 0.18
@@ -1185,7 +1187,7 @@ final class IdleTestScene: SKScene {
     @discardableResult
     private func resolveContact(_ attacker: FighterID, kind: PunchKind, deferImpact: Bool = false) -> PunchContactEvent? {
         guard health.canExchangePunches else { return nil }
-        // A timed diagonal slip avoids this one incoming CPU punch. It does
+        // A timed slip or earned duck avoids this one incoming CPU punch. It does
         // not create permanent invulnerability or award points.
         if attacker == .orange && simulationTime <= slipContactExpiresAt {
             slipContactExpiresAt = -1
