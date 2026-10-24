@@ -66,4 +66,47 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertGreaterThan(m.reactionDelay, 0.05)
         XCTAssertLessThanOrEqual(m.reactionDelay, 0.6)
     }
+    func testDefaultCapsAndLevelOneStats() {
+        let tuning = CombatTuning()
+        let meters = FighterMeters(tuning: tuning)
+        XCTAssertEqual(FighterStats().level, 1)
+        XCTAssertEqual(meters.stamina, tuning.maxStamina)
+        XCTAssertEqual(meters.awareness, tuning.maxAwareness)
+        XCTAssertFalse(meters.isKnockedOut)
+        XCTAssertEqual(tuning.rounds, 8)
+        XCTAssertEqual(tuning.roundSeconds, 120)
+        XCTAssertEqual(tuning.levelMultiplier(attacker: 1, defender: 1), 1)
+    }
+
+    func testGuardedHitPreservesHeadStreakUntilDefenseReset() {
+        var meters = FighterMeters()
+        meters.receiveHit(zone: .head, guarded: false)
+        XCTAssertEqual(meters.consecutiveHeadHits, 1)
+        let awarenessAfterHead = meters.awareness
+        meters.receiveHit(zone: .head, guarded: true)
+        XCTAssertEqual(meters.awareness, awarenessAfterHead, accuracy: 1e-9)
+        // Guard stamina loss and streak termination are separate operations:
+        // the combat layer explicitly calls endHeadHitStreak on defense.
+        XCTAssertEqual(meters.consecutiveHeadHits, 1)
+        meters.endHeadHitStreak()
+        XCTAssertEqual(meters.consecutiveHeadHits, 0)
+        XCTAssertEqual(meters.receiveHit(zone: .head, guarded: false),
+                       100.0 / 3.0, accuracy: 1e-9)
+    }
+
+    func testStaminaClampsAndReactionDelayCaps() {
+        var meters = FighterMeters()
+        for _ in 0..<30 {
+            meters.receiveHit(zone: .body, guarded: true)
+        }
+        XCTAssertEqual(meters.stamina, 0, accuracy: 1e-9)
+        meters.advance(1000, mode: .idle)
+        XCTAssertEqual(meters.stamina, 100, accuracy: 1e-9)
+        meters.receiveHit(zone: .head, guarded: false)
+        meters.receiveHit(zone: .head, guarded: false)
+        meters.receiveHit(zone: .head, guarded: false)
+        XCTAssertTrue(meters.isKnockedOut)
+        XCTAssertEqual(meters.reactionDelay, CombatTuning().maxReaction, accuracy: 1e-9)
+    }
+
 }
