@@ -145,4 +145,36 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(scene.orangeMeters.stamina, 100, accuracy: 1e-8)
     }
 
+    func testThreeConsecutiveHeadHitsKnockOutAtPositiveHealth() {
+        var meters = FighterMeters()
+        XCTAssertEqual(meters.receiveHit(zone: .head, guarded: false),
+                       100.0 / 3.0, accuracy: 1e-8)
+        XCTAssertFalse(meters.isKnockedOut)
+        meters.receiveHit(zone: .head, guarded: false)
+        XCTAssertFalse(meters.isKnockedOut)
+        meters.receiveHit(zone: .head, guarded: false)
+        XCTAssertTrue(meters.isKnockedOut)
+
+        var health = FighterHealthState()
+        XCTAssertTrue(health.receiveAwarenessKO(for: .orange))
+        XCTAssertEqual(health.orange.current, 100)
+        XCTAssertEqual(health.orangeCombat.state, .defeated)
+        XCTAssertFalse(health.receiveAwarenessKO(for: .orange))
+        XCTAssertFalse(health.canExchangePunches)
+        XCTAssertTrue(health.recoverOrange())
+        XCTAssertTrue(health.canExchangePunches)
+    }
+
+    func testHealthBelowFortyButNotAtForty() {
+        var health = FighterHealth()
+        var status = FighterCombatStatus()
+        health.applyDamage(60)
+        XCTAssertEqual(health.current, 40)
+        XCTAssertFalse(status.receiveHealth(health))
+        health.applyDamage(1)
+        XCTAssertEqual(health.current, 39)
+        XCTAssertTrue(status.receiveHealth(health))
+        XCTAssertFalse(status.receiveHealth(health))
+    }
+
 }
