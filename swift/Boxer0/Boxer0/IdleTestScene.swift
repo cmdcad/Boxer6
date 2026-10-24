@@ -1361,6 +1361,17 @@ final class IdleTestScene: SKScene {
             // the SpriteKit child transform used by contact geometry.
             let renderer = UIGraphicsImageRenderer(size: image.size)
             let corrected = renderer.image { context in
+                // Bounce V3 has a taller silhouette than the approved Jab V2
+                // stance (354 px versus 295 px). Normalize only this family
+                // around the shared image-space foot line, without resizing
+                // the SpriteKit node or changing contact/spacing transforms.
+                // This is a runtime art correction; source PNGs stay intact.
+                if prefix == "orange_bounce" {
+                    let stanceScale: CGFloat = 295.0 / 354.0
+                    context.cgContext.translateBy(x: 256, y: 448)
+                    context.cgContext.scaleBy(x: stanceScale, y: stanceScale)
+                    context.cgContext.translateBy(x: -256, y: -448)
+                }
                 context.cgContext.translateBy(x: image.size.width, y: 0)
                 context.cgContext.scaleBy(x: -1, y: 1)
                 image.draw(at: .zero)
