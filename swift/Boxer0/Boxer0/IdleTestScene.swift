@@ -1410,9 +1410,10 @@ final class IdleTestScene: SKScene {
         }
     }
 
-    // Orange's approved jab frames face left; Blue faces right. A selective
-    // warm-to-blue hue conversion preserves shading and transparency while
-    // keeping the same poses/timing. This does not change Orange's textures.
+    // Blue reuses Orange's approved jab timing but NOT Orange's proportions
+    // or a global hue shift. Only strongly saturated warm kit pixels are
+    // recolored; skin, outlines and highlights retain their source colors.
+    // The prior horizontal mirror made the punch face the wrong way.
     private func loadBlueJabFromOrange() -> [SKTexture] {
         loadSharedBlueJab(prefix: "jab_b", count: PunchKind.jab.frameCount)
     }
@@ -1421,28 +1422,68 @@ final class IdleTestScene: SKScene {
         loadSharedBlueJab(prefix: "jab_recovery_b", count: 1)
     }
 
+    private lazy var blueKitColorCube: Data = {
+        let dimension = 32
+        var cube = [Float]()
+        cube.reserveCapacity(dimension * dimension * dimension * 4)
+        for b in 0..<dimension {
+            for g in 0..<dimension {
+                for r in 0..<dimension {
+                    let red = CGFloat(r) / CGFloat(dimension - 1)
+                    let green = CGFloat(g) / CGFloat(dimension - 1)
+                    let blue = CGFloat(b) / CGFloat(dimension - 1)
+                    var hue: CGFloat = 0
+                    var saturation: CGFloat = 0
+                    var brightness: CGFloat = 0
+                    var alpha: CGFloat = 0
+                    UIColor(red: red, green: green, blue: blue, alpha: 1)
+                        .getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+                    // The orange/red gloves and shorts are saturated; skin is
+                    // comparatively desaturated. Keep skin and neutral ink.
+                    let isKit = (hue < 0.12 || hue > 0.96)
+                        && saturation > 0.67 && brightness > 0.17
+                    if isKit {
+                        let replacement = UIColor(hue: 0.60, saturation: min(1, saturation),
+                                                  brightness: brightness, alpha: 1)
+                        var rr: CGFloat = 0
+                        var gg: CGFloat = 0
+                        var bb: CGFloat = 0
+                        replacement.getRed(&rr, green: &gg, blue: &bb, alpha: &alpha)
+                        cube.append(contentsOf: [Float(rr), Float(gg), Float(bb), 1])
+                    } else {
+                        cube.append(contentsOf: [Float(red), Float(green), Float(blue), 1])
+                    }
+                }
+            }
+        }
+        return cube.withUnsafeBufferPointer { Data(buffer: $0) }
+    }()
+
     private func loadSharedBlueJab(prefix: String, count: Int) -> [SKTexture] {
-        let images = (0..<count).compactMap { UIImage(named: "\(prefix)_\($0)") }
+        let images = (0..<count).compactMap { UIImage(named: "\\(prefix)_\\($0)") }
         guard images.count == count, images.allSatisfy({
             $0.cgImage?.width == 512 && $0.cgImage?.height == 512
         }) else { return [] }
-        let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+        let context = CIContext()
         return images.compactMap { image -> SKTexture? in
             guard let cgImage = image.cgImage else { return nil }
-            let input = CIImage(cgImage: cgImage)
-            // Hue-shift the approved artwork into Blue's palette while
-            // retaining the original silhouette, shading and alpha.
-            let recolored = input.applyingFilter("CIHueAdjust", parameters: [
-                kCIInputAngleKey: CGFloat.pi
+            let source = CIImage(cgImage: cgImage)
+            let recolored = source.applyingFilter("CIColorCube", parameters: [
+                "inputCubeDimension": 32,
+                "inputCubeData": blueKitColorCube
             ])
-            guard let output = ciContext.createCGImage(recolored, from: input.extent) else { return nil }
-            let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
-            let facingRight = renderer.image { context in
-                context.cgContext.translateBy(x: 512, y: 0)
-                context.cgContext.scaleBy(x: -1, y: 1)
-                UIImage(cgImage: output).draw(at: .zero)
-            }
-            let texture = SKTexture(image: facingRight)
+            // Blue is the lighter-built fighter. Narrow the Orange-derived
+            // pose around the common stance axis, retaining the 512px canvas
+            // and foot line used by all combat contact transforms.
+            let narrower = recolored.transformed(by:
+                CGAffineTransform(translationX: 256, y: 64)
+                    .scaledBy(x: 0.88, y: 0.94)
+                    .translatedBy(x: -256, y: -64))
+            guard let output = context.createCGImage(narrower,
+                from: CGRect(x: 0, y: 0, width: 512, height: 512)) else { return nil }
+            // Do not mirror here: the old double-facing correction made Blue's
+            // punch travel backwards relative to the game scene.
+            let texture = SKTexture(cgImage: output)
             texture.filteringMode = .linear
             return texture
         }
