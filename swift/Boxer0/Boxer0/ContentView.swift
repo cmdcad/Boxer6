@@ -597,16 +597,7 @@ struct ContentView: View {
             if showsDevelopmentDiagnostics {
                 controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
                 controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
-                controlButton(playback.showsGuides ? "Guides on" : "Guides off", action: playback.toggleGuides)
             }
-#if DEBUG
-            if showsDevelopmentDiagnostics {
-            Menu("Log") {
-                Button(playback.combatLogEnabled ? "Disable log" : "Enable log", action: playback.toggleCombatLog)
-                Button("Copy recent events", action: playback.copyCombatLog)
-            }
-            }
-#endif
         }
         .padding(.horizontal, 8)
         .frame(height: 54)
