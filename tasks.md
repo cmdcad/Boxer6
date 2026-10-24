@@ -4,7 +4,7 @@
 
 ## Status — 2026-10-24
 
-- **Current priority: Verify the revised automatic CPU start countdown on an iPhone; then implement Phase 4B idle guard-drop and awareness-dependent attack lockout.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
+- **Current priority: Verify CPU startup and awareness attack lockout on an iPhone; next reconcile Phase 4B idle guard-drop with the existing short automatic guard hold.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
 - **Phase 1 — implemented on master, expanded tests on `phase1-v2`:** commit `1d0ffb3` introduced `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift` and their Xcode project references on `master`. The separate `tools/phase1.patch` is a historical delivery artifact, not a missing integration prerequisite. `phase1-v2` was fast-forwarded from master, then expanded with three focused tests. **Xcode compilation and test execution are still pending on a Mac.**
 - **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
 - **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
@@ -67,7 +67,7 @@
 ## Phase 4 — Attack timing and CPU defense (4A DEVICE VERIFIED; 4B REACTION SOURCE COMMITTED)
 
 - [x] Introduce **1000ms attack-start cooldown at level 1**, shorter at higher injected levels (minimum 250ms). Both fighters share the same model; this cooldown is separate from punch animation/recovery and does not lock guard. Model and scene tests added, not yet run in Xcode.
-- [ ] Awareness-dependent attack lockout; do not impose a new delay before guard after a punch.
+- [x] Awareness-dependent attack lockout for both fighters: base attack cooldown plus the awareness-derived reaction penalty (up to 550ms); guarding and footwork remain independent. Enforced cooldown for Cross as well as Jab. Source and deterministic tests committed; Xcode verification pending.
 - [ ] Preserve full simultaneous-hit and mid-attack vulnerability semantics.
 - [x] CPU defense chance **60% jab / 75% cross** initially; **95% after a confirmed incoming hit or block** (misses excluded); +1 percentage point per injected fighter level above 1, capped at 100%. The post-contact flag clears on full reset. Deterministic model tests committed; Xcode verification pending.
 - [ ] Awareness-dependent CPU reaction delay, starting at **50ms** with full awareness; guard last-attacked zone (head only for now).
