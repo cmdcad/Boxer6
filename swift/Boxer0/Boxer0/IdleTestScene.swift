@@ -1020,7 +1020,16 @@ final class IdleTestScene: SKScene {
         }
         let eligible = health.canExchangePunches || simultaneous
         health.receive(event, simultaneous: simultaneous)
-        if eligible { combatMeters.receive(event) }
+        if eligible && combatMeters.receive(event) {
+            let defender = event.defenderID
+            let knockedOut = defender == .blue
+                ? combatMeters.blue.isKnockedOut : combatMeters.orange.isKnockedOut
+            if knockedOut && health.receiveAwarenessKO(for: defender) {
+                logCombat("AWARENESS_KO", fighter: defender,
+                          context: event.attackerID == .blue
+                              ? contactTracker.context : cpuContactTracker.context)
+            }
+        }
         let nextHealth = event.defenderID == .blue ? blueHealth.current : orangeHealth.current
         if previousHealth != nextHealth { logCombat("HEALTH_CHANGED", fighter: event.defenderID,
             context: event.attackerID == .blue ? contactTracker.context : cpuContactTracker.context, detail: "\(previousHealth)->\(nextHealth)") }
