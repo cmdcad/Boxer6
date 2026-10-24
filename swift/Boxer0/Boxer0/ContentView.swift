@@ -350,14 +350,16 @@ final class IdlePlayback: ObservableObject {
     /// Single source of movement-pad input; vertical entry requests a slip.
     /// Only a correctly timed incoming CPU punch can be avoided.
     private var previousPadVertical = 0
+    private var pivotInputLatched = false
     func setPadDirection(horizontal: Int, vertical: Int) {
         playerDidInteract()
         if vertical != 0 && previousPadVertical == 0 {
-            scene.requestBlueSlip()
+            pivotInputLatched = scene.requestBlueEvade(horizontal: horizontal, vertical: vertical)
         }
         previousPadVertical = vertical
-        scene.setRetreatHeld(horizontal < 0)
-        scene.setAdvanceHeld(horizontal > 0)
+        if horizontal == 0 && vertical == 0 { pivotInputLatched = false }
+        scene.setRetreatHeld(!pivotInputLatched && horizontal < 0)
+        scene.setAdvanceHeld(!pivotInputLatched && horizontal > 0)
         syncFromScene()
     }
 
