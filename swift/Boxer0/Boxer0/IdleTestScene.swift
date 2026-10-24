@@ -7,6 +7,7 @@
 
 import SpriteKit
 import UIKit
+import CoreImage
 
 enum IdlePlaybackSpeed: Double, CaseIterable {
     case quarter = 0.25
