@@ -142,3 +142,25 @@ struct MatchState {
 
     mutating func reset() { self = MatchState(tuning: tuning) }
 }
+
+
+/// Phase 4A: independent attack-start cooldown. Does not restrict guarding,
+/// footwork, hit reactions or the existing animation/recovery locks.
+struct AttackCooldown {
+    var tuning = CombatTuning()
+    var level = 1
+    private(set) var remaining = 0.0
+
+    var canAttack: Bool { remaining <= 1e-10 }
+    var duration: Double {
+        // Level 1 = 1s. Later levels shorten the delay, never below 0.25s.
+        max(0.25, tuning.attackCooldown / Double(max(1, level)))
+    }
+
+    mutating func begin() { remaining = duration }
+    mutating func advance(_ dt: Double) {
+        guard dt.isFinite, dt > 0 else { return }
+        remaining = max(0, remaining - dt)
+    }
+    mutating func reset() { remaining = 0 }
+}
