@@ -14,6 +14,10 @@ final class IdlePlayback: ObservableObject {
     @Published var orangeCombatState = FighterCombatState.standing
     @Published var blueHealth = 100
     @Published var orangeHealth = 100
+    @Published var blueStamina = 100.0
+    @Published var orangeStamina = 100.0
+    @Published var blueAwareness = 100.0
+    @Published var orangeAwareness = 100.0
     @Published var blueMaximumHealth = 100
     @Published var orangeMaximumHealth = 100
     @Published var isPlaying = true
@@ -100,6 +104,10 @@ final class IdlePlayback: ObservableObject {
         orangeCombatState = scene.orangeCombatState
         blueHealth = scene.blueHealth.current
         orangeHealth = scene.orangeHealth.current
+        blueStamina = scene.blueMeters.stamina
+        orangeStamina = scene.orangeMeters.stamina
+        blueAwareness = scene.blueMeters.awareness
+        orangeAwareness = scene.orangeMeters.awareness
         blueMaximumHealth = scene.blueHealth.maximum
         orangeMaximumHealth = scene.orangeHealth.maximum
         isPlaying = scene.isPlaying
@@ -395,8 +403,10 @@ struct ContentView: View {
     // Reserved top strip keeps health separate from fighter art and Guides.
     var healthHUD: some View {
         HStack(spacing: 12) {
-            healthIndicator("BLUE", state: playback.blueCombatState, value: playback.blueHealth,
-                            maximum: playback.blueMaximumHealth, color: .blue)
+            fighterMeterHUD("BLUE", state: playback.blueCombatState,
+                            health: playback.blueHealth, maximum: playback.blueMaximumHealth,
+                            stamina: playback.blueStamina, awareness: playback.blueAwareness,
+                            color: .blue)
             if showsDevelopmentDiagnostics {
                 Button(playback.cpuEnabled ? "CPU: ON" : "CPU: OFF", action: playback.toggleCPU)
                     .font(.system(size: 12, weight: .semibold))
@@ -420,31 +430,54 @@ struct ContentView: View {
                     .frame(minWidth: 84, minHeight: 44)
                     .buttonStyle(.plain)
             }
-            healthIndicator("ORANGE", state: playback.orangeCombatState, value: playback.orangeHealth,
-                            maximum: playback.orangeMaximumHealth, color: .orange)
+            fighterMeterHUD("ORANGE", state: playback.orangeCombatState,
+                            health: playback.orangeHealth, maximum: playback.orangeMaximumHealth,
+                            stamina: playback.orangeStamina, awareness: playback.orangeAwareness,
+                            color: .orange)
         }
         .padding(.horizontal, 12)
+        .padding(.vertical, 5)
         .background(Color(red: 0.91, green: 0.933, blue: 0.957))
     }
 
-    func healthIndicator(_ name: String, state: FighterCombatState, value: Int, maximum: Int,
-                                 color: Color) -> some View {
-        VStack(spacing: 2) {
-            HStack {
-                Text(state == .defeated ? "\(name) - DEFEATED" : name)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                Spacer(minLength: 4)
-                Text("\(value)/\(maximum)")
+    /// Read-only Phase 2 HUD. Three independently scaled values per fighter.
+    /// Keep the numeric values visible while tuning combat on a device.
+    private func fighterMeterHUD(_ name: String, state: FighterCombatState,
+                                 health: Int, maximum: Int, stamina: Double,
+                                 awareness: Double, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 4) {
+                Text(name).foregroundColor(color)
+                if state == .defeated {
+                    Text("DEFEATED").foregroundColor(.red)
+                }
+                Spacer(minLength: 0)
             }
-            .font(.system(size: 12, weight: .bold, design: .monospaced))
-            ProgressView(value: Double(value), total: Double(maximum))
-                .tint(color)
-                .accessibilityLabel("\(name) health")
-                .accessibilityValue("\(value) of \(maximum)")
+            .font(.system(size: 11, weight: .bold, design: .monospaced))
+            .lineLimit(1)
+            meterRow("HP", value: Double(health), maximum: Double(maximum), tint: color)
+            meterRow("STA", value: stamina, maximum: 100, tint: .green)
+            meterRow("AWA", value: awareness, maximum: 100, tint: .purple)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+    }
+
+    private func meterRow(_ title: String, value: Double, maximum: Double,
+                          tint: Color) -> some View {
+        let safeValue = value.isFinite ? min(max(value, 0), maximum) : 0
+        return HStack(spacing: 5) {
+            Text(title)
+                .frame(width: 27, alignment: .leading)
+            ProgressView(value: safeValue, total: maximum)
+                .tint(tint)
+            Text("\(Int(safeValue.rounded()))")
+                .frame(width: 26, alignment: .trailing)
+                .monospacedDigit()
+        }
+        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title) \(Int(safeValue.rounded())) of \(Int(maximum))")
     }
 
     var statusLabel: some View {
