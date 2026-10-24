@@ -25,10 +25,10 @@ struct HealthDamageChecks {
         precondition(health.blue.current == 100 && health.orange.current == 100)
         precondition(!health.receive(event(5, .jab, .hit))) // reset retains watermark
         precondition(health.orange.current == 100)
-        for sequence in 6...25 { health.receive(event(sequence, .cross, .hit)) }
-        precondition(health.orange.current == 0 && health.blue.current == 100)
-        health.receive(event(26, .jab, .hit))
-        precondition(health.orange.current == 0)
+        for sequence in 6...12 { health.receive(event(sequence, .cross, .hit)) }
+        precondition(health.orange.current == 30 && health.blue.current == 100)
+        health.receive(event(13, .jab, .hit))
+        precondition(health.orange.current == 30)
         var fighter = FighterHealth()
         fighter.applyDamage(-10)
         precondition(fighter.current == 100)
