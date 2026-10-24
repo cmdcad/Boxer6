@@ -337,6 +337,33 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(ai.state, .reacting) // Level bonus capped at 100%.
     }
 
+    func testCPUWithdrawalRecoversWhileOutOfRangeAtEdge() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        let damaged = scene.orangeMeters.awareness
+        XCTAssertLessThan(damaged, 50)
+        driver.advance(0.05) // decision enters withdrawal
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertFalse(scene.testCanCPUAttack)
+        driver.advance(0.25)
+        XCTAssertGreaterThan(scene.orangeMeters.awareness, damaged)
+    }
+
+    func testCPUWithdrawalDoesNotRecoverInPunchRange() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        let damaged = scene.orangeMeters.awareness
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertEqual(scene.orangeMeters.awareness, damaged, accuracy: 1e-8)
+    }
+
     func testCPUWithdrawalPolicyHysteresisAndReset() {
         var policy = CPUWithdrawalPolicy()
         XCTAssertFalse(policy.active)
