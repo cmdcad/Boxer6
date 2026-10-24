@@ -221,20 +221,34 @@ final class IdleTestScene: SKScene {
             && (orangePunch.timeUntilContact ?? .infinity) > 0
             && (orangePunch.timeUntilContact ?? .infinity) <= 0.18
         slipContactExpiresAt = approaching ? simulationTime + 0.22 : -1
-        showEvadeCue(approaching ? "SLIP!" : "SLIP", success: approaching)
+        // An eligible attempt is not yet a successful avoidance.
+        logCombat(approaching ? "SLIP_TIMED" : "SLIP_ATTEMPT", fighter: .blue)
+        showEvadeCue(approaching ? "SLIP · TIMED" : "SLIP · ATTEMPT",
+                     success: false)
         onPlaybackChange?()
     }
 
     private func showEvadeCue(_ title: String, success: Bool) {
+        // Temporary feedback deliberately uses no new boxer artwork.
+        let origin = CGPoint(x: rootA.position.x, y: rootA.position.y + 105)
         let cue = SKLabelNode(text: title)
         cue.fontName = "AvenirNext-Bold"
         cue.fontSize = 17
         cue.fontColor = success ? .systemGreen : .systemBlue
-        cue.position = CGPoint(x: rootA.position.x, y: rootA.position.y + 115)
+        cue.position = origin
         cue.zPosition = 1000
         addChild(cue)
-        cue.run(.sequence([.group([.moveBy(x: 0, y: 24, duration: 0.35),
-                                      .fadeOut(withDuration: 0.35)]), .removeFromParent()]))
+        cue.run(.sequence([.group([.moveBy(x: 0, y: 24, duration: 0.65),
+                                      .fadeOut(withDuration: 0.65)]), .removeFromParent()]))
+        let ring = SKShapeNode(ellipseOf: CGSize(width: 68, height: 18))
+        ring.position = CGPoint(x: rootA.position.x, y: rootA.position.y + 6)
+        ring.strokeColor = success ? .systemGreen : .systemBlue
+        ring.fillColor = .clear
+        ring.lineWidth = 3
+        ring.zPosition = 999
+        addChild(ring)
+        ring.run(.sequence([.group([.scale(to: 1.5, duration: 0.45),
+                                       .fadeOut(withDuration: 0.45)]), .removeFromParent()]))
     }
 
     private var blueReaction = HitReactionPlayback()
@@ -1102,6 +1116,8 @@ final class IdleTestScene: SKScene {
         if attacker == .orange && simulationTime <= slipContactExpiresAt {
             slipContactExpiresAt = -1
             logCombat("SLIP_AVOID", fighter: .blue)
+            showEvadeCue("EVADED!", success: true)
+            onPlaybackChange?()
             return nil
         }
         var tracker = attacker == .blue ? contactTracker : cpuContactTracker
