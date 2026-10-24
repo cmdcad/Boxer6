@@ -211,6 +211,52 @@ final class IdleTestScene: SKScene {
     private var slipContactExpiresAt = -1.0
     private var slipCooldownUntil = 0.0
 
+    /// Phase 5B directional action. A diagonal toward the center of the ring
+    /// can spend two earned blocks on a short rope escape. Other vertical
+    /// inputs remain the existing timed slip. No side switching is implied.
+    func requestBlueEvade(horizontal: Int, vertical: Int) {
+        guard vertical != 0, isPlaying, hasFocus, health.canExchangePunches,
+              blueCombatState == .standing, !blueVisualBusy,
+              !punch.isActive, !blueGuard.isSelected,
+              simulationTime >= slipCooldownUntil else { return }
+        if horizontal > 0 && blueEnhancedEscapeReady && attemptBlueRopePivot() {
+            return
+        }
+        requestBlueSlip()
+    }
+
+    @discardableResult
+    private func attemptBlueRopePivot() -> Bool {
+        guard boxerA != nil, boxerB != nil, size.width > 1 else { return false }
+        let limits = movementLimits()
+        // Blue remains on the left until side-switch geometry is implemented.
+        // Outer quarter is a provisional rope-pressure region.
+        let ropeThreshold = Self.edgePaddingPoints + size.width * 0.25
+        guard rootA.position.x <= ropeThreshold else { return false }
+        let available = limits.upperBound - rootA.position.x
+        guard available >= 12 else {
+            showEvadeCue("PIVOT BLOCKED", success: false)
+            logCombat("PIVOT_BLOCKED", fighter: .blue)
+            slipCooldownUntil = simulationTime + 0.35
+            return true // handled; do not fall back to a free slip
+        }
+        let destination = min(limits.upperBound, rootA.position.x + min(32, available))
+        motion.stop()
+        holdAdvance = false
+        holdRetreat = false
+        rootA.position.x = destination
+        blueXFraction = destination / size.width
+        originA.position = rootA.position
+        consecutiveBlueBlocks = 0
+        slipContactExpiresAt = -1
+        slipCooldownUntil = simulationTime + 0.9
+        showEvadeCue("PIVOT!", success: true)
+        logCombat("PIVOT_SUCCESS", fighter: .blue)
+        applyFrames()
+        onPlaybackChange?()
+        return true
+    }
+
     func requestBlueSlip() {
         guard isPlaying, hasFocus, health.canExchangePunches,
               blueCombatState == .standing, !blueVisualBusy,
@@ -221,7 +267,6 @@ final class IdleTestScene: SKScene {
             && (orangePunch.timeUntilContact ?? .infinity) > 0
             && (orangePunch.timeUntilContact ?? .infinity) <= 0.18
         slipContactExpiresAt = approaching ? simulationTime + 0.22 : -1
-        // An eligible attempt is not yet a successful avoidance.
         logCombat(approaching ? "SLIP_TIMED" : "SLIP_ATTEMPT", fighter: .blue)
         showEvadeCue(approaching ? "SLIP · TIMED" : "SLIP · ATTEMPT",
                      success: false)
