@@ -210,6 +210,7 @@ final class IdleTestScene: SKScene {
     var blueEnhancedEscapeReady: Bool { consecutiveBlueBlocks >= 2 }
     private var slipContactExpiresAt = -1.0
     private var slipCooldownUntil = 0.0
+    private var duckPending = false
 
     /// Phase 5B directional action. A diagonal toward the center of the ring
     /// can spend two earned blocks on a short rope escape. Other vertical
@@ -223,8 +224,30 @@ final class IdleTestScene: SKScene {
         if horizontal > 0 && blueEnhancedEscapeReady && attemptBlueRopePivot() {
             return true
         }
+        if horizontal < 0 && blueEnhancedEscapeReady && attemptBlueDuck() {
+            return true
+        }
         requestBlueSlip()
         return false
+    }
+
+    /// Stage one of duck-and-switch: the earned duck is functional against a
+    /// committed CPU punch. A side switch is deliberately NOT performed until
+    /// both fighters' facing, spacing and mirrored collision paths support it.
+    @discardableResult
+    private func attemptBlueDuck() -> Bool {
+        let time = orangePunch.timeUntilContact ?? .infinity
+        guard orangePunch.isActive, time > 0, time <= 0.18 else { return false }
+        duckPending = true
+        slipContactExpiresAt = simulationTime + 0.22
+        slipCooldownUntil = simulationTime + 0.9
+        motion.stop()
+        holdAdvance = false
+        holdRetreat = false
+        showEvadeCue("DUCK · TIMED", success: false)
+        logCombat("DUCK_TIMED", fighter: .blue)
+        onPlaybackChange?()
+        return true
     }
 
     @discardableResult
@@ -639,6 +662,7 @@ final class IdleTestScene: SKScene {
         consecutiveBlueBlocks = 0
         slipContactExpiresAt = -1
         slipCooldownUntil = 0
+        duckPending = false
         match.reset()
         blueRecovery.cancel(); orangeRecovery.cancel()
         blueAttackCooldown.reset(); orangeAttackCooldown.reset()
@@ -1074,6 +1098,7 @@ final class IdleTestScene: SKScene {
 
     func cancelMovement() {
         slipContactExpiresAt = -1
+        duckPending = false
         lastTime = 0
         clearHeldInput()
         clearBlueGuardInput()
@@ -1164,8 +1189,15 @@ final class IdleTestScene: SKScene {
         // not create permanent invulnerability or award points.
         if attacker == .orange && simulationTime <= slipContactExpiresAt {
             slipContactExpiresAt = -1
-            logCombat("SLIP_AVOID", fighter: .blue)
-            showEvadeCue("EVADED!", success: true)
+            if duckPending {
+                duckPending = false
+                consecutiveBlueBlocks = 0
+                logCombat("DUCK_AVOID", fighter: .blue)
+                showEvadeCue("DUCKED!", success: true)
+            } else {
+                logCombat("SLIP_AVOID", fighter: .blue)
+                showEvadeCue("EVADED!", success: true)
+            }
             onPlaybackChange?()
             return nil
         }
