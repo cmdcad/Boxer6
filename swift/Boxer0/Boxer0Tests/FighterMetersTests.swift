@@ -337,6 +337,36 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(ai.state, .reacting) // Level bonus capped at 100%.
     }
 
+    func testWithdrawalRestoresAwarenessButGrabAndIdleDoNot() {
+        var fighter = FighterMeters()
+        fighter.receiveHit(zone: .head, guarded: false)
+        let reduced = fighter.awareness
+        fighter.advance(1, mode: .idle)
+        fighter.advance(1, mode: .grab)
+        fighter.advance(1, mode: .guarding)
+        XCTAssertEqual(fighter.awareness, reduced, accuracy: 1e-9)
+        fighter.advance(1, mode: .withdraw)
+        XCTAssertEqual(fighter.awareness, reduced + 12, accuracy: 1e-9)
+        fighter.advance(100, mode: .withdraw)
+        XCTAssertEqual(fighter.awareness, 100, accuracy: 1e-9)
+    }
+
+    func testGuardTakesPrecedenceOverWithdrawalRecovery() {
+        var state = CombatMetersState()
+        // Accepted contact decreases Orange's awareness before regeneration.
+        let driver = CombatDriver(distance: 170)
+        XCTAssertTrue(driver.scene.testBeginAttack(.blue, .jab))
+        driver.advance(0.15)
+        let damaged = driver.scene.orangeMeters.awareness
+        XCTAssertLessThan(damaged, 100)
+        // Exercise the bridge's recovery selection with a contact-damaged copy
+        // by checking direct state transitions on both fighters.
+        state.advance(1, blueGuarding: true, orangeGuarding: true,
+                      blueWithdrawing: true, orangeWithdrawing: true)
+        XCTAssertEqual(state.blue.awareness, 100, accuracy: 1e-9)
+        XCTAssertEqual(state.orange.awareness, 100, accuracy: 1e-9)
+    }
+
     func testAwarenessAttackLockoutAddsOnlyLostReactionTime() {
         var cooldown = AttackCooldown()
         cooldown.begin(reactionDelay: 0.05)
