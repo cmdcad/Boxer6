@@ -1372,42 +1372,40 @@ final class IdleTestScene: SKScene {
     // Do not scale boxerB: gameplay collision geometry uses its transform.
     private static let orangeBounceStanceScale: CGFloat = 295.0 / 354.0
 
+    // Share one Core Image renderer rather than allocating an extra renderer
+    // and full-size UIKit bitmap for every reaction/bounce frame.
+    private lazy var spriteCIContext = CIContext(options: [.cacheIntermediates: false])
+
     private func loadNumberedTextures(prefix: String, count: Int) -> [SKTexture] {
-        let images = (0..<count).compactMap { UIImage(named: String(format: "%@_%02d", prefix, $0)) }
-        guard images.count == count, images.allSatisfy({
-            $0.cgImage?.width == 512 && $0.cgImage?.height == 512
-        }) else { return [] }
-        let ciContext = CIContext()
-        return images.map { image in
-            var prepared = image
-            if prefix == "orange_bounce", let cgImage = image.cgImage {
-                // Core Image uses a bottom-left origin. The original bounce
-                // feet are at y=62; jab feet at y=64. Explicitly rasterize
-                // the scaled artwork onto a full 512px transparent canvas.
-                // This avoids UIKit context transform-order ambiguities.
-                let scale = Self.orangeBounceStanceScale
-                let transform = CGAffineTransform(translationX: 256, y: 64)
-                    .scaledBy(x: scale, y: scale)
-                    .translatedBy(x: -256, y: -62)
-                let resized = CIImage(cgImage: cgImage).transformed(by: transform)
-                if let rendered = ciContext.createCGImage(
-                    resized, from: CGRect(x: 0, y: 0, width: 512, height: 512)
-                ) {
-                    prepared = UIImage(cgImage: rendered)
+        var textures: [SKTexture] = []
+        textures.reserveCapacity(count)
+        for index in 0..<count {
+            let name = String(format: "%@_%02d", prefix, index)
+            guard let texture: SKTexture = autoreleasepool(invoking: { () -> SKTexture? in
+                guard let cg = UIImage(named: name)?.cgImage,
+                      cg.width == 512, cg.height == 512 else { return nil }
+                var source = CIImage(cgImage: cg)
+                if prefix == "orange_bounce" {
+                    let scale = Self.orangeBounceStanceScale
+                    source = source.transformed(by:
+                        CGAffineTransform(translationX: 256, y: 64)
+                            .scaledBy(x: scale, y: scale)
+                            .translatedBy(x: -256, y: -62))
                 }
-            }
-            // Orange artwork faces left. Pre-flip pixels so the existing
-            // rootB mirror restores left-facing art without touching physics.
-            let renderer = UIGraphicsImageRenderer(size: image.size)
-            let corrected = renderer.image { context in
-                context.cgContext.translateBy(x: image.size.width, y: 0)
-                context.cgContext.scaleBy(x: -1, y: 1)
-                prepared.draw(at: .zero)
-            }
-            let texture = SKTexture(image: corrected)
-            texture.filteringMode = .linear
-            return texture
+                // Pre-flip artwork to compensate for the Orange root mirror.
+                // Render once directly into a CGImage; avoid UIKit bitmap copies.
+                source = source.transformed(by:
+                    CGAffineTransform(a: -1, b: 0, c: 0, d: 1, tx: 512, ty: 0))
+                guard let output = spriteCIContext.createCGImage(
+                    source, from: CGRect(x: 0, y: 0, width: 512, height: 512)
+                ) else { return nil }
+                let texture = SKTexture(cgImage: output)
+                texture.filteringMode = .linear
+                return texture
+            }) else { return [] }
+            textures.append(texture)
         }
+        return textures
     }
 
     // Blue reuses Orange's approved jab timing but NOT Orange's proportions
@@ -1460,11 +1458,11 @@ final class IdleTestScene: SKScene {
     }()
 
     private func loadSharedBlueJab(prefix: String, count: Int) -> [SKTexture] {
-        let images = (0..<count).compactMap { UIImage(named: "\\(prefix)_\\($0)") }
+        let images = (0..<count).compactMap { UIImage(named: "\(prefix)_\($0)") }
         guard images.count == count, images.allSatisfy({
             $0.cgImage?.width == 512 && $0.cgImage?.height == 512
         }) else { return [] }
-        let context = CIContext()
+        let context = spriteCIContext
         return images.compactMap { image -> SKTexture? in
             guard let cgImage = image.cgImage else { return nil }
             let source = CIImage(cgImage: cgImage)
