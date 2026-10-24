@@ -364,6 +364,46 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(scene.orangeMeters.awareness, damaged, accuracy: 1e-8)
     }
 
+    func testCPUWithdrawalBlocksOffenseOnFirstDecisionTick() {
+        let driver = CombatDriver(distance: 170)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.01)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        XCTAssertFalse(scene.testCanCPUAttack)
+        XCTAssertEqual(scene.orangeMeters.awareness, 100 - 100.0 / 3 - 40, accuracy: 1e-8)
+    }
+
+    func testGuardPreventsWithdrawalAwarenessRecovery() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        scene.testSetOrangeGuard(true)
+        let before = scene.orangeMeters.awareness
+        driver.advance(0.20)
+        XCTAssertEqual(scene.orangeMeters.awareness, before, accuracy: 1e-8)
+        XCTAssertFalse(scene.orangeIsWithdrawing)
+    }
+
+    func testResetCancelsTacticalWithdrawal() {
+        let driver = CombatDriver(distance: 500)
+        let scene = driver.scene
+        scene.toggleCPU()
+        scene.testDamageOrangeAwareness()
+        scene.testDamageOrangeAwareness()
+        driver.advance(0.05)
+        XCTAssertTrue(scene.testCPUWithdrawalActive)
+        scene.resetHealth()
+        XCTAssertFalse(scene.testCPUWithdrawalActive)
+        XCTAssertEqual(scene.orangeMeters.awareness, 100, accuracy: 1e-8)
+    }
+
     func testCPUWithdrawalPolicyHysteresisAndReset() {
         var policy = CPUWithdrawalPolicy()
         XCTAssertFalse(policy.active)
