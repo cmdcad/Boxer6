@@ -36,6 +36,15 @@ Deliverable: Orange has reliable, visually distinct reactions throughout gamepla
 
 Deliverable: Two complete, consistently animated boxers.
 
+
+### Video2 reference extraction — 2026-10-24
+
+- Received `Video2_Frame_Groups.zip`: 73 full-color RGB gameplay screenshots in six **Blue** attack groups (14 + 14 + 14 jab/punch; 12 + 9 low/body; 10 uppercut). These are not isolated transparent sprite assets.
+- Added `tools/extract_video2_sprites.py` to produce draft 512x512 alpha-isolated frames from the screenshots, with the text and HUD outside the crop. **The extracted frames are not production-ready**: Blue/Orange overlap and the targeting reticle can contaminate the alpha mask; missing limbs behind Orange must be redrawn.
+- The archive contains no independently authored Orange attack frames or isolated bilateral reactions. These cannot be faithfully reconstructed just by renaming Blue frames.
+- **Do not mark Body Hook or Uppercut implemented yet.** The app still has the existing Cross gameplay path. Next deliverable is cleaned transparent sprites for both fighters and per-attack bilateral reactions, then combat/UI integration and Xcode verification.
+- A local preview ZIP was prepared for visual inspection; binary sprite frames have **not** been pushed to GitHub because the connected GitHub text-file workflow does not provide local file upload.
+
 ### Phase 4 — Refine combat mechanics
 
 **Updated punch roadmap (2026-10-23):** Replace Cross/Heavy Punch with **Body Hook** and **Uppercut**, alongside Jab. Create attack-specific reactions for both fighters, grounded in the supplied gameplay video. Blue must retain its lighter build, and new sprite art must not contain baked-in text. Existing Cross remains in the code until its replacements are playable; this is a pending milestone, not a completed feature. See `swift/Boxer0/Tasks/phase3f_blue_jab_and_new_attack_art.md`.
