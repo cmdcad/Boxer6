@@ -4,7 +4,7 @@
 
 ## Status — 2026-10-24
 
-- **Current priority: Phase 4B — verify awareness-scaled CPU guard reaction and post-contact guard probability in Xcode; next address idle guard-drop and attack lockout.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
+- **Current priority: Verify the revised automatic CPU start countdown on an iPhone; then implement Phase 4B idle guard-drop and awareness-dependent attack lockout.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
 - **Phase 1 — implemented on master, expanded tests on `phase1-v2`:** commit `1d0ffb3` introduced `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift` and their Xcode project references on `master`. The separate `tools/phase1.patch` is a historical delivery artifact, not a missing integration prerequisite. `phase1-v2` was fast-forwarded from master, then expanded with three focused tests. **Xcode compilation and test execution are still pending on a Mac.**
 - **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
 - **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
@@ -59,9 +59,10 @@
 **Checkpoint:** Phase 3 source committed on `phase1-v2`; **device build, Xcode tests, 2-minute boundary and eight-round completion checks are pending**. Combat rule tuning and round-transition animation polish remain future tasks. The debug rise/reset workflow still exists for development; do not treat it as a production rematch flow.
 
 ### CPU start UX (committed; device verification pending)
-- [x] Start CPU with **haptics only**, counting 5, 4, 3, 2, 1, 0 across five seconds; do not enable CPU until the final confirmation.
-- [x] Keep countdown silent and without on-screen digits; button reads **Cancel Start** while pending. Cancel on tap, app backgrounding, or view disappearance.
-- [ ] Verify haptics and exact CPU activation timing on a physical iPhone; simulator haptics are not a valid verification.
+- [x] Emit **one haptic when the game view first appears**. If the player provides no tap response for **5 seconds**, automatically start the silent 5-to-0 haptic countdown; CPU enables only on the final confirmation.
+- [x] A player tap during the initial idle window suppresses automatic countdown for that session; Start CPU still manually begins the countdown. Keep a `autoStartCountdownEnabled` flag for a future Settings switch (default true).
+- [x] Countdown stays silent and without on-screen digits; button reads **Cancel Start** while pending. Cancel on tap of that button, app backgrounding, or view disappearance.
+- [ ] Verify launch haptic, 5-second idle delay, 5-second countdown, manual override, cancellation, and CPU activation timing on a physical iPhone; simulator haptics are not a valid verification.
 
 ## Phase 4 — Attack timing and CPU defense (4A DEVICE VERIFIED; 4B REACTION SOURCE COMMITTED)
 
