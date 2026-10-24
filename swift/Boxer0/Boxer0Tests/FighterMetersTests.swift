@@ -235,4 +235,34 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(meters.orange.awareness, awareness, accuracy: 1e-8)
     }
 
+    func testLevelOneAttackCooldownAndReset() {
+        var cooldown = AttackCooldown()
+        XCTAssertTrue(cooldown.canAttack)
+        XCTAssertEqual(cooldown.duration, 1, accuracy: 1e-10)
+        cooldown.begin()
+        XCTAssertFalse(cooldown.canAttack)
+        cooldown.advance(0.999)
+        XCTAssertFalse(cooldown.canAttack)
+        cooldown.advance(0.001)
+        XCTAssertTrue(cooldown.canAttack)
+        cooldown.begin()
+        cooldown.reset()
+        XCTAssertTrue(cooldown.canAttack)
+    }
+
+    func testHigherLevelCooldownAndInvalidDelta() {
+        var cooldown = AttackCooldown()
+        cooldown.level = 2
+        XCTAssertEqual(cooldown.duration, 0.5, accuracy: 1e-10)
+        cooldown.begin()
+        cooldown.advance(-10)
+        XCTAssertEqual(cooldown.remaining, 0.5, accuracy: 1e-10)
+        cooldown.advance(.nan)
+        XCTAssertEqual(cooldown.remaining, 0.5, accuracy: 1e-10)
+        cooldown.advance(0.5)
+        XCTAssertTrue(cooldown.canAttack)
+        cooldown.level = 99
+        XCTAssertEqual(cooldown.duration, 0.25, accuracy: 1e-10)
+    }
+
 }
