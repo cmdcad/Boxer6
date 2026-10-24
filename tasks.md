@@ -90,6 +90,39 @@
 
 **Checkpoint:** complete bilateral animations with no baked-in text and verified gameplay, not just extracted PNGs.
 
+## Carry-forward register: legacy tasks and Video2
+
+The new phases own the older tasks; this section prevents previously planned work from disappearing. Earlier "Phase 3E/3F" labels refer to the *old animation roadmap*, not the new combat Phase 3.
+
+| Legacy task | New phase | Current state |
+|---|---|---|
+| Orange Reaction V2, bounce height, facing, feet, reaction differences and recovery | 6 | Source adjustments exist; device and asset verification pending |
+| Blue jab facing, color, lighter proportions, recovery | 6 | Provisional code committed; visual review and independent lighter-build artwork pending |
+| Guard/advance/retreat/idle handoffs, animation registry, knockdown/rise for both fighters | 6, then 7 regression | Partially refined; comprehensive verification pending |
+| Video2 six groups / 73 Blue screenshot frames and extraction utility | 6 | Draft extraction tool committed; production sprites not complete |
+| Jab, Body Hook, Uppercut attacks and reactions in both directions | 6 | Not implemented; no verified bilateral animation sets |
+| Remove Cross/Heavy Punch from gameplay | 6 | Deferred until replacement art, contact and controls work; current cross remains head-only |
+| Glove contact, hit/miss/block, counters, pushback, stun and recovery | 2, 4, 6, 7 | Existing logic needs new meter effects and attack-specific regression |
+| CPU offense/defense, distance and levels | 4, 5, 6 | Planned |
+| Touch UI, match HUD, pause/results, audio, arena and debug controls | 2, 3, 7 | Planned |
+| iPhone testing, FPS/memory, full matches and TestFlight | 7 | Planned |
+
+### Video2 execution checklist (Phase 6, not a separate phase)
+
+- [x] Inventory the Video2 screenshot groups: three Blue punch groups (14 frames each), two low-hit groups (12 and 9), one uppercut group (10): 73 frames.
+- [x] Add `tools/extract_video2_sprites.py` as a **draft** extraction utility; the local preview ZIP is not production-ready.
+- [ ] Review source poses and identify contact, recovery, occlusions and target zones.
+- [ ] Redraw and clean Blue Jab, **Body Hook** (low hit) and Uppercut on consistent transparent 512px canvases; fix backward facing, color and lighter body proportions.
+- [ ] Produce Orange Jab, Body Hook and Uppercut poses with Orange's distinct heavier build and correct facing. Blue screenshots alone are insufficient as finished Orange frames.
+- [ ] Produce matched Jab/head, Body Hook/body and Uppercut/upward hit reactions **for both receivers**; replace mismatched existing Orange reactions as needed.
+- [ ] Remove baked-in text, HUD, reticles, arena and overlap artifacts; validate alpha, foot anchors and motion continuity frame by frame.
+- [ ] Document frame counts, contact frames, timing, recovery, target zones, anchor points and facing in an animation manifest.
+- [ ] Integrate the new attacks and reactions into `PunchKind`, collision geometry, player controls, CPU choices, meter effects, match scoring, recovery and diagnostics.
+- [ ] Remove legacy Cross/Heavy Punch from the playable system **when** Jab, Body Hook and Uppercut are working; update tests and references together.
+- [ ] Test hit, miss, block, counter, simultaneous contact, interruptions, knockdown and recovery in both directions; perform on-device visual verification.
+
+**Scheduling:** Phase 1 Mac tests and Phases 2–5 remain the gameplay priority. Video2 art preparation can proceed separately, but animation integration is gated on cleaned bilateral sprites and compatible combat logic. Moving an item here does not mark it complete.
+
 ## Phase 7 — UI polish, system testing, and prototype release
 
 - [ ] Touch control refinement, pause/restart/match result, arena and sound/impact polish.
