@@ -374,28 +374,29 @@ struct ContentView: View {
                     
                 }
 
-            HStack(alignment: .center, spacing: 12) {
-                movementPad
-                Spacer(minLength: 4)
-                HStack(spacing: 8) {
-                    punchButton("Jab", enabled: playback.canJab, action: playback.jab)
-                    punchButton("Cross", enabled: playback.canCross, action: playback.cross)
-                    playerGuardControl
+            VStack(spacing: 4) {
+                HStack(alignment: .center, spacing: 12) {
+                    movementPad
+                    Spacer(minLength: 4)
+                    HStack(spacing: 8) {
+                        punchButton("Jab", enabled: playback.canJab, action: playback.jab)
+                        punchButton("Cross", enabled: playback.canCross, action: playback.cross)
+                        playerGuardControl
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                HStack(spacing: 8) {
+                    if showsDevelopmentDiagnostics { statusLabel }
+                    Spacer(minLength: 0)
+                    debugControls
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 6)
+
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 8)
-            HStack(spacing: 8) {
-                if showsDevelopmentDiagnostics { statusLabel }
-                Spacer(minLength: 0)
-                debugControls
-            }
-            .padding(.horizontal, 12)
-            .padding(.bottom, 6)
             .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 12)
-            .padding(.bottom, 8)
             .frame(maxWidth: .infinity)
             .background(Color(red: 0.85, green: 0.89, blue: 0.93))
             .layoutPriority(1)
