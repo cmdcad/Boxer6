@@ -337,4 +337,27 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(ai.state, .reacting) // Level bonus capped at 100%.
     }
 
+    func testAwarenessAttackLockoutAddsOnlyLostReactionTime() {
+        var cooldown = AttackCooldown()
+        cooldown.begin(reactionDelay: 0.05)
+        XCTAssertEqual(cooldown.remaining, 1.0, accuracy: 1e-8)
+        cooldown.reset()
+        cooldown.begin(reactionDelay: 0.25)
+        XCTAssertEqual(cooldown.remaining, 1.20, accuracy: 1e-8)
+        cooldown.advance(1.0)
+        XCTAssertFalse(cooldown.canAttack)
+        cooldown.advance(0.20)
+        XCTAssertTrue(cooldown.canAttack)
+    }
+
+    func testAwarenessAttackLockoutCapsAndKeepsLevelScaling() {
+        var cooldown = AttackCooldown()
+        cooldown.level = 4
+        cooldown.begin(reactionDelay: 100)
+        XCTAssertEqual(cooldown.remaining, 0.80, accuracy: 1e-8)
+        cooldown.reset()
+        cooldown.begin()
+        XCTAssertEqual(cooldown.remaining, 0.25, accuracy: 1e-8)
+    }
+
 }
