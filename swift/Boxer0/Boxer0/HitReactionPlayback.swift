@@ -273,7 +273,8 @@ struct DefensiveAI {
         continuousGuardTime = 0
         if reseed { randomState = initialSeed }
     }
-    mutating func observe(sequence: Int, kind: PunchKind, inRange: Bool, eligible: Bool) {
+    mutating func observe(sequence: Int, kind: PunchKind, inRange: Bool, eligible: Bool,
+                          awarenessPenalty: Double = 0) {
         guard sequence > lastSequence else { return }
         lastSequence = sequence
         guard enabled, eligible, inRange else { return }
@@ -288,7 +289,10 @@ struct DefensiveAI {
         let draw = Double(randomState >> 11) / 9007199254740992.0
         guard (randomDraw?() ?? draw) < min(1, max(0, profile.chance)) else { return }
         state = .reacting
-        remaining = max(0, profile.reactionDelay)
+        // At full awareness the existing defensive timing is unchanged.
+        // Reduced awareness adds a bounded delay to the guard decision.
+        let penalty = awarenessPenalty.isFinite ? min(0.55, max(0, awarenessPenalty)) : 0
+        remaining = max(0, profile.reactionDelay + penalty)
         pendingHold = max(0, profile.holdDuration)
     }
     mutating func advance(_ dt: Double) -> DefensiveAIRequest? {
