@@ -837,10 +837,16 @@ final class IdleTestScene: SKScene {
     private var lastPublishedBlueFX = ""
     private var lastPublishedCPUAttack = ""
     private var lastPublishedBlueAnimation = ""
+    // Publish only whole-percentage meter changes, not every 60fps tick.
+    private var lastPublishedMeters: [Int] = []
 
     private func publishIfNeeded() {
         let x = rootA.position.x
-        if frameIndex != lastPublishedFrame
+        let meterReadout = [combatMeters.blue.stamina, combatMeters.blue.awareness,
+                            combatMeters.orange.stamina, combatMeters.orange.awareness]
+            .map { Int($0.rounded()) }
+        if meterReadout != lastPublishedMeters
+            || frameIndex != lastPublishedFrame
             || activeClip != lastPublishedClip
             || lastPublishedX.isNaN
             || abs(x - lastPublishedX) >= 1
@@ -854,6 +860,7 @@ final class IdleTestScene: SKScene {
             || blueBlockFeedbackLabel != lastPublishedBlueFX
             || cpuAttackLabel != lastPublishedCPUAttack
             || blueAnimationLabel != lastPublishedBlueAnimation {
+            lastPublishedMeters = meterReadout
             lastPublishedFrame = frameIndex
             lastPublishedClip = activeClip
             lastPublishedX = x
