@@ -454,15 +454,12 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertTrue(policy.active)
         var meters = FighterMeters()
         meters.receiveHit(zone: .head, guarded: false)
-        meters.advance(1, mode: .withdraw)
+        meters.advance(0.5, mode: .withdraw)
         policy.update(awareness: meters.awareness)
         XCTAssertTrue(policy.active)
-        meters.advance(1, mode: .withdraw)
+        meters.advance(0.25, mode: .withdraw)
         policy.update(awareness: meters.awareness)
-        XCTAssertTrue(policy.active)
-        meters.advance(1, mode: .withdraw)
-        policy.update(awareness: meters.awareness)
-        XCTAssertTrue(policy.active)
+        XCTAssertFalse(policy.active)
     }
 
     func testCPUWithdrawalPolicyHysteresisAndReset() {
