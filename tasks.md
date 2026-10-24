@@ -4,7 +4,7 @@
 
 ## Status — 2026-10-24
 
-- **Current priority: Verify CPU startup and awareness attack lockout on an iPhone; next reconcile Phase 4B idle guard-drop with the existing short automatic guard hold.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
+- **Current priority: Verify CPU startup, awareness attack lockout, and the new three-second CPU guard decision on an iPhone.** Phase 2A contact/guard/stamina wiring and Phase 2B awareness KO / health <40 defeat are committed on `phase1-v2`; Xcode regression tests remain pending.
 - **Phase 1 — implemented on master, expanded tests on `phase1-v2`:** commit `1d0ffb3` introduced `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift` and their Xcode project references on `master`. The separate `tools/phase1.patch` is a historical delivery artifact, not a missing integration prerequisite. `phase1-v2` was fast-forwarded from master, then expanded with three focused tests. **Xcode compilation and test execution are still pending on a Mac.**
 - **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
 - **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
@@ -71,11 +71,11 @@
 - [ ] Preserve full simultaneous-hit and mid-attack vulnerability semantics.
 - [x] CPU defense chance **60% jab / 75% cross** initially; **95% after a confirmed incoming hit or block** (misses excluded); +1 percentage point per injected fighter level above 1, capped at 100%. The post-contact flag clears on full reset. Deterministic model tests committed; Xcode verification pending.
 - [ ] Awareness-dependent CPU reaction delay, starting at **50ms** with full awareness; guard last-attacked zone (head only for now).
-- [ ] After **3 seconds without attack**, CPU drops guard with **50% chance**; allow defensive stamina-preservation choices.
+- [x] After **3 seconds without attack**, CPU drops guard with **50% chance**; otherwise reevaluates after another 3 seconds, with a 9-second safety cap. New attacks reset the idle decision clock; guard entry animation remains unchanged. Deterministic tests committed; Xcode verification pending.
 - [ ] Keep current **120ms guard entry** until OPEN guard-activation rule is resolved; do not silently wire `defenseActivation = 0.5`.
 - [ ] Update CPU and guard tests with seeded/injected randomness.
 
-**Checkpoint:** Phase 4A cooldown source and tests committed; verify in Xcode before extending the CPU defense model. Awareness-dependent attack lockout and idle guard-drop decisions remain Phase 4B. Existing CPU guard auto-releases after a short hold; a 3-second idle guard-drop policy requires reconciling that behavior before implementation. No new sprite art required for Phase 4A/4B because existing jab, cross and guard poses suffice. Removed Log and Guides buttons from the Dev bar while preserving their underlying APIs for future use.
+**Checkpoint:** Phase 4A cooldown source and tests committed; verify in Xcode before extending the CPU defense model. Awareness-dependent attack lockout and idle guard-drop source are committed; both require Xcode/device verification. Existing CPU guard auto-releases after a short hold; a 3-second idle guard-drop policy requires reconciling that behavior before implementation. No new sprite art required for Phase 4A/4B because existing jab, cross and guard poses suffice. Removed Log and Guides buttons from the Dev bar while preserving their underlying APIs for future use.
 
 ## Phase 5 — Withdraw and distance defense
 
