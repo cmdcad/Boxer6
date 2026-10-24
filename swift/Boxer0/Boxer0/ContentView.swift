@@ -197,9 +197,48 @@ final class IdlePlayback: ObservableObject {
         syncFromScene()
     }
 
+    // CPU stays disabled throughout the silent 5-to-0 haptic countdown.
+    // Generation invalidation makes pending callbacks harmless after cancellation.
+    @Published private(set) var cpuStarting = false
+    private var cpuStartGeneration = 0
+
     func toggleCPU() {
-        scene.toggleCPU()
-        syncFromScene()
+        if cpuStarting {
+            cancelCPUStart()
+            return
+        }
+        if scene.cpuEnabled {
+            scene.toggleCPU()
+            syncFromScene()
+            return
+        }
+        cpuStarting = true
+        cpuStartGeneration += 1
+        let generation = cpuStartGeneration
+        for second in 0...5 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(second)) { [weak self] in
+                guard let self = self, self.cpuStarting,
+                      self.cpuStartGeneration == generation else { return }
+                // Five regular ticks, then a distinct final start confirmation.
+                if second < 5 {
+                    let feedback = UIImpactFeedbackGenerator(style: .medium)
+                    feedback.prepare()
+                    feedback.impactOccurred()
+                } else {
+                    let feedback = UINotificationFeedbackGenerator()
+                    feedback.prepare()
+                    feedback.notificationOccurred(.success)
+                    self.cpuStarting = false
+                    if !self.scene.cpuEnabled { self.scene.toggleCPU() }
+                    self.syncFromScene()
+                }
+            }
+        }
+    }
+
+    func cancelCPUStart() {
+        cpuStartGeneration += 1
+        cpuStarting = false
     }
 
     func toggleGuard() {
@@ -315,9 +354,11 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             playback.cancelMovement()
+            playback.cancelCPUStart()
         }
         .onDisappear {
             playback.cancelMovement()
+            playback.cancelCPUStart()
         }
     }
 
@@ -460,7 +501,8 @@ struct ContentView: View {
                             health: playback.blueHealth, maximum: playback.blueMaximumHealth,
                             stamina: playback.blueStamina, awareness: playback.blueAwareness,
                             color: .blue)
-            Button(playback.cpuEnabled ? "CPU: ON" : "CPU: OFF", action: playback.toggleCPU)
+            Button(playback.cpuStarting ? "Cancel Start" :
+                   (playback.cpuEnabled ? "CPU: ON" : "Start CPU"), action: playback.toggleCPU)
                     .font(.system(size: 12, weight: .semibold))
                     .frame(minWidth: 60, minHeight: 44)
                     .buttonStyle(.plain)
