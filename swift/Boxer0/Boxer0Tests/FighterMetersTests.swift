@@ -337,6 +337,25 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(ai.state, .reacting) // Level bonus capped at 100%.
     }
 
+    func testCPUWithdrawalPolicyHysteresisAndReset() {
+        var policy = CPUWithdrawalPolicy()
+        XCTAssertFalse(policy.active)
+        policy.update(awareness: 49.9)
+        XCTAssertTrue(policy.active)
+        policy.update(awareness: 50)
+        XCTAssertTrue(policy.active)
+        policy.update(awareness: 74.9)
+        XCTAssertTrue(policy.active)
+        policy.update(awareness: 75)
+        XCTAssertFalse(policy.active)
+        policy.update(awareness: 60)
+        XCTAssertFalse(policy.active)
+        policy.update(awareness: .nan)
+        XCTAssertFalse(policy.active)
+        policy.reset()
+        XCTAssertFalse(policy.active)
+    }
+
     func testWithdrawalRestoresAwarenessButGrabAndIdleDoNot() {
         var fighter = FighterMeters()
         fighter.receiveHit(zone: .head, guarded: false)
