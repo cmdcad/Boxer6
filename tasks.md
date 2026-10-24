@@ -88,6 +88,7 @@
 - [x] Add scene regression tests: withdrawal earns no passive match points; a Jab outside range remains a miss with zero points. Existing match scoring is unchanged; tests still require Xcode execution.
 - [ ] Confirm on device that withdrawal counts as distance defense without changing the existing block/hit scoring or awarding passive points.
 - [ ] Provisionally halve incoming awareness loss while withdrawing **only after confirming OPEN item 4**.
+- [x] Add automated regression coverage for Blue retreat entering/leaving punching range and CPU recovery hysteresis. Tests committed; Xcode execution pending.
 - [ ] Test transition into/out of range, counterplay, and CPU defensive decisions.
 
 **Checkpoint:** withdraw state is playable with existing art and consistent contact rules.
