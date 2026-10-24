@@ -377,6 +377,12 @@ struct ContentView: View {
             VStack(spacing: 4) {
                 HStack(alignment: .center, spacing: 12) {
                     movementPad
+                    Button(showsDevelopmentDiagnostics ? "Hide Dev" : "Dev") {
+                        showsDevelopmentDiagnostics.toggle()
+                    }
+                    .font(.system(size: 12, weight: .semibold))
+                    .buttonStyle(.bordered)
+                    .fixedSize(horizontal: true, vertical: false)
                     Spacer(minLength: 4)
                     HStack(spacing: 8) {
                         punchButton("Jab", enabled: playback.canJab, action: playback.jab)
@@ -387,13 +393,15 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
-                HStack(spacing: 8) {
-                    if showsDevelopmentDiagnostics { statusLabel }
-                    Spacer(minLength: 0)
-                    debugControls
+                if showsDevelopmentDiagnostics {
+                    HStack(spacing: 8) {
+                        statusLabel
+                        Spacer(minLength: 0)
+                        debugControls
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 6)
                 }
-                .padding(.horizontal, 12)
-                .padding(.bottom, 6)
 
             }
             .fixedSize(horizontal: false, vertical: true)
@@ -726,15 +734,8 @@ struct ContentView: View {
 
     var debugControls: some View {
         HStack(spacing: 8) {
-            Button(showsDevelopmentDiagnostics ? "Hide Dev" : "Dev") {
-                showsDevelopmentDiagnostics.toggle()
-            }
-            .font(.system(size: 12, weight: .semibold))
-            .buttonStyle(.bordered)
-            if showsDevelopmentDiagnostics {
-                controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
-                controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
-            }
+            controlButton(playback.isPlaying ? "Pause" : "Resume", action: playback.togglePlayback)
+            controlButton("Step \(playback.frameIndex + 1)/\(playback.frameCount)", action: playback.step)
         }
         .padding(.horizontal, 8)
         .frame(height: 54)
