@@ -4,12 +4,12 @@
 
 ## Status — 2026-10-24
 
-- **Current priority: Phase 2 — wire meters into existing combat.**
+- **Current priority: Phase 2 — meter-to-defeat integration.** Phase 2A contact/guard/stamina wiring is source-committed on `phase1-v2`, but Xcode verification is still required.
 - **Phase 1 — implemented on master, expanded tests on `phase1-v2`:** commit `1d0ffb3` introduced `CombatTuning.swift`, `FighterMeters.swift`, `FighterMetersTests.swift` and their Xcode project references on `master`. The separate `tools/phase1.patch` is a historical delivery artifact, not a missing integration prerequisite. `phase1-v2` was fast-forwarded from master, then expanded with three focused tests. **Xcode compilation and test execution are still pending on a Mac.**
 - **Existing game:** jab and cross remain implemented as **head attacks** until body art and controls exist. Cross is a temporary legacy attack, not the final design. Do not remove it without replacing the functional gameplay path.
 - **Video2 art:** 73 RGB screenshots across six Blue attack groups; extraction script `tools/extract_video2_sprites.py` committed. Draft masks are **not production-ready**, and matching Orange attack/reaction art is not yet integrated. Do not claim Body Hook or Uppercut playable.
-- **Blue jab:** directional correction, selective kit recoloring, and provisional lighter proportions are committed, but visual correctness is **not verified in Xcode**.
-- **Orange bounce:** runtime height normalization committed; device verification outstanding.
+- **Blue jab:** switched to the original `jab_a` and `jab_recovery_a` assets first to avoid Blue's reported bluish skin tint; corrected an escaped source-asset interpolation typo in the Orange-derived fallback. Direction/color must be rechecked in Xcode. A genuine lighter-build redraw is still pending.
+- **Orange bounce:** changed numbered Orange bounce/reaction loading to per-frame Core Image rendering without per-frame UIKit bitmap renderer; intended to reduce the memory spike reported at `IdleTestScene.swift:1407` (formerly `SKTexture(image: corrected)`). **Not yet memory-profiled or device-verified.**
 - **Tests:** no claim of passing Xcode tests or simulator/device verification.
 
 ## Working rules
@@ -32,10 +32,12 @@
 
 **Checkpoint:** Phase 1 implementation and test registration are source-complete; **do not claim test pass or phase verification** until Xcode runs. Phase 2 wiring is not part of Phase 1.
 
-## Phase 2 — Wire health, stamina, and awareness (NEXT)
+## Phase 2 — Wire health, stamina, and awareness (IN PROGRESS)
 
-- [ ] Add per-fighter meters in the scene using `FighterMeters` and `CombatTuning`; avoid duplicating state across `FighterHealthState` and new meters.
-- [ ] Route `PunchContactResult.hit` to **unguarded head-hit** meter changes and `.block` to **guarded head-hit** changes; retain existing simultaneous-hit semantics (both contacts land in full).
+- [x] Add per-fighter `FighterMeters` in the scene, exposed read-only for diagnostics. Legacy `FighterHealthState` still owns health/defeat until the next checkpoint; meter state is not yet the sole combat source of truth.
+- [x] Route `PunchContactResult.hit` to unguarded head awareness and `.block` to guarded stamina, with per-attacker contact-sequence deduplication. Existing simultaneous-contact order is retained.
+- [x] Add idle/guarding stamina advancement per simulation tick and meter reset/recovery handling; withdraw/grab modes remain later phases.
+- [x] Add scene-level tests for hit awareness in both directions, guarded stamina loss and reset (source committed; execution pending).
 - [ ] Awareness: 0–100, independent of stamina; **0 = KO**. Unguarded head-hit awareness loss starts at one-third maximum and escalates by approximately `1.2^(n-1)` for consecutive head hits. Body hits never escalate. Low awareness prolongs attack lockout; guard/sway/withdraw remain eligible.
 - [ ] Health: maximum 100; **health below 40 loses** (instead of existing zero threshold). Apply the new consecutive-head-hit rule, while keeping unresolved single-hit damage tunable.
 - [ ] Stamina: maximum 100. Guarded hits consume stamina only, with **no awareness reduction**; account for guard's separate point cost in the match layer.
@@ -44,7 +46,7 @@
 - [ ] Feed awareness KO and health-threshold loss into existing defeat/knockdown handling.
 - [ ] Display meters read-only in the development HUD; add focused hit/block/streak/KO/threshold tests and deliberately update affected old tests.
 
-**Checkpoint:** deterministic meter transitions and KO behavior tested, with current jab/cross still head-only.
+**Checkpoint:** Phase 2A source is committed; **Mac build/tests and memory profiling are the immediate gate**. Awareness KO, health <40 defeat, UI/debug readout, and tuning decisions remain Phase 2B; do not claim Phase 2 complete.
 
 ## Phase 3 — Match state and scoring
 
@@ -147,8 +149,8 @@ These items come from `new_direction.md`. They are **not** settled by this task 
 
 ## Immediate next three agent tasks
 
-1. **Phase 1 Mac verification:** build and run `FighterMetersTests` plus the existing test suite from `phase1-v2`; address failures before Phase 2.
-2. **Phase 2 meters wiring:** connect contact, guard, health threshold, awareness KO, streak and debug HUD without a wholesale scene rewrite; test deterministically.
+1. **Mac regression checkpoint:** clean-build `phase1-v2`, run `FighterMetersTests` and `CombatTests`, and use Xcode Memory Graph/Instruments to retest the prior `IdleTestScene.swift:1407` crash. Capture the exact diagnostic if it recurs.
+2. **Phase 2B meter-driven defeat:** implement awareness-zero KO, health-below-40 defeat, head-hit streak health damage, debug meter readout and corresponding test updates; resolve OPEN damage/precedence rules before finalizing.
 3. **Phase 3 match-state skeleton:** timer, eight rounds, points, draw/KO, and round-start health regen; defer body scoring in live gameplay until body art exists.
 
 **Review discipline:** each task ends with a commit, focused verification results, and an explicit list of Xcode/device checks that remain unverified. This file tracks planned and completed work; it is not evidence that a feature has passed device testing.
