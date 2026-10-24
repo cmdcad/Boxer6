@@ -360,4 +360,30 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertEqual(cooldown.remaining, 0.25, accuracy: 1e-8)
     }
 
+    func testCPUIdleGuardDropsAtThreeSecondsOnLowDraw() {
+        var ai = DefensiveAI()
+        ai.randomDraw = { 0.0 }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .jab, inRange: true, eligible: true)
+        XCTAssertEqual(ai.advance(0.02), .raise)
+        XCTAssertNil(ai.advance(2.99))
+        XCTAssertEqual(ai.state, .guarding)
+        XCTAssertEqual(ai.advance(0.01), .release)
+        XCTAssertEqual(ai.state, .idle)
+    }
+
+    func testCPUIdleGuardMayHoldUntilNextThreeSecondDecision() {
+        var ai = DefensiveAI()
+        var draws = [0.0, 0.75, 0.0]
+        ai.randomDraw = { draws.removeFirst() }
+        ai.setEnabled(true)
+        ai.observe(sequence: 1, kind: .cross, inRange: true, eligible: true)
+        XCTAssertEqual(ai.advance(0.10), .raise)
+        XCTAssertNil(ai.advance(3))
+        XCTAssertEqual(ai.state, .guarding)
+        XCTAssertNil(ai.advance(2.99))
+        XCTAssertEqual(ai.advance(0.01), .release)
+    }
+
+
 }
