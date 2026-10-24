@@ -97,6 +97,8 @@
 
 - [x] First Phase 5B control-layout integration: replace the two wide hold-movement buttons with a compact left/right hold movement pad; keep Jab/Cross/Guard functional and place Dev on a separate row. Mac/Xcode verification pending. Full directional Evade gesture handling is not implemented yet.
 - [ ] Test touch ergonomics, hold/release cancellation, and landscape sizing before Phase 6 adds new moves.
+- [x] Place persistent Dev/Hide Dev toggle between the current movement buttons and Jab; keep expanded Pause/Step tools on a conditional row so gameplay space is reclaimed when Dev is hidden. Xcode layout verification pending.
+- [ ] Design the final D-pad as a circular, multi-direction input surface (including diagonals and future contextual melee/defense gestures); the current two-direction hold pad is an interim control only. Preserve distinct gestures, touch cancellation, and movement/evade eligibility; do not invent unapproved melee behavior.
 
 ### Phase 5B Evade design — approved behavioral requirements (implementation pending)
 
