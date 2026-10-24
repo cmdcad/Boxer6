@@ -13,7 +13,7 @@ from pathlib import Path
 from PIL import Image
 
 EXPECTED = ("jab_blue", "body_hook_blue", "uppercut_blue")
-FRAME = re.compile(r"_(\\d+)\\.png$", re.IGNORECASE)
+FRAME = re.compile(r"_(\d+)\.png$", re.IGNORECASE)
 
 
 def inspect(root):
@@ -73,7 +73,7 @@ def main():
     if not args.directory.is_dir():
         parser.error("directory does not exist")
     report = inspect(args.directory)
-    output = json.dumps(report, indent=2) + "\\n"
+    output = json.dumps(report, indent=2) + "\n"
     print(output, end="")
     if args.report:
         args.report.write_text(output, encoding="utf-8")
