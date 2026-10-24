@@ -134,5 +134,11 @@ struct MatchState {
         result = winner == .blue ? .blueKO : .orangeKO
     }
 
+    /// Provisional double-KO policy: draw.
+    mutating func simultaneousKnockout() {
+        guard !isFinished else { return }
+        result = .draw
+    }
+
     mutating func reset() { self = MatchState(tuning: tuning) }
 }
