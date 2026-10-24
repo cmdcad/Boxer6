@@ -467,10 +467,11 @@ final class FighterMetersTests: XCTestCase {
         let before = scene.testBluePosition
         XCTAssertFalse(scene.requestBlueEvade(horizontal: 1, vertical: 1))
         XCTAssertEqual(scene.testBluePosition, before)
-        scene.testSetBluePosition(300)
-        scene.testSetBlueBlockChain(2)
-        XCTAssertFalse(scene.requestBlueEvade(horizontal: 1, vertical: 1))
-        XCTAssertTrue(scene.blueEnhancedEscapeReady)
+        let away = CombatDriver(distance: 400).scene
+        away.testSetBluePosition(300)
+        away.testSetBlueBlockChain(2)
+        XCTAssertFalse(away.requestBlueEvade(horizontal: 1, vertical: 1))
+        XCTAssertTrue(away.blueEnhancedEscapeReady)
     }
 
     func testCPUWithdrawalStaysActiveBelowSeventyFiveAwareness() {
