@@ -121,6 +121,8 @@
 
 - [ ] Cleanly isolate Video2 frames: remove text, targeting graphics, background and overlaps; reconstruct missing limbs; align 512px transparent frames to consistent foot anchors.
 - [ ] Author Blue as a genuinely **lighter-built** boxer, not merely a recolored Orange; check facing, glove colors and pose continuity. Keep Orange heavier-built.
+- [ ] Uppercut action contract: a clean, sufficiently powerful uppercut has a **chance**, not a guarantee, to knock the defender down; blocked or missed uppercuts must not trigger knockdown. Specify probability/eligibility and test both Blue and Orange before implementation. Reuse existing knockdown/rise system and match scoring rules.
+- [ ] Define action phases, impact frames, target zones, guard responses and recovery before producing production sprite frames; approve frame timing and glove trajectories before hooking up hit detection.
 - [ ] Create distinct **Jab, Body Hook and Uppercut** attack animations and attack-specific receiving reactions for **both** fighters, based on the video; existing Orange reactions may be replaced if mismatched.
 - [ ] Use the newly highlighted Blue-to-Orange footage as a reference for three distinguishable impacts: head punch with head recoil, body hit with torso fold/twist, and the final uppercut with upward chin/head recoil. Review exact frame order and timing with the developer before committing production sprites; do not claim extracted frames are approved.
 - [ ] When verified artwork exists, replace **Cross/Heavy Punch** with Body Hook and Uppercut in controls, `PunchKind`, CPU selection, collision zones, recovery, meters, scoring, diagnostics and tests. Until then jab/cross remain head-only legacy functionality.
