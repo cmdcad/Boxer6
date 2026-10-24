@@ -82,6 +82,7 @@
 - [x] Reuse existing retreat motion and artwork to detect **out-of-reach withdrawal** for Blue and Orange: retreating velocity, neither opponent jab nor cross in reach, and guard not selected. No new control or art.
 - [x] Feed qualifying withdrawal into the existing 12 points/second stamina **and awareness** regeneration mode; idle and Grab do not restore awareness, and Guard takes precedence. Model tests committed; Mac/Xcode verification pending.
 - [x] Add provisional CPU tactical withdrawal at awareness <50, staying withdrawn until >=75 (hysteresis); prioritize active guard/attack, disable new CPU attacks during withdrawal, use existing retreat motion. Isolated policy tests committed; Mac/Xcode verification pending.
+- [x] Handle CPU retreat at arena edge: while tactical withdrawal is active and both opponent punches are out of range, awareness can recover even when boundary-clamped velocity is zero. Guard, active attacks, and reactions still suppress withdrawal recovery. Scene regression tests committed, execution pending.
 - [ ] Validate scene-level retreat entry/exit, distance boundaries, guard precedence, and CPU retreat decisions in Xcode; tune only after device testing.
 - [ ] Withdraw counts as defense; loses no points; validate against live match scoring and contact rules.
 - [ ] Provisionally halve incoming awareness loss while withdrawing **only after confirming OPEN item 4**.
