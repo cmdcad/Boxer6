@@ -789,6 +789,9 @@ final class IdleTestScene: SKScene {
         advancePhysicalRecovery(dt)
         advanceBlueRecovery(dt)
         advanceBlueDefense(dt)
+        // Decide withdrawal before offense: a low-awareness CPU must not
+        // start a punch in the same tick it becomes eligible to retreat.
+        if cpuEnabled { cpuWithdrawal.update(awareness: combatMeters.orange.awareness) }
         advanceCPUOffense(dt)
         // Advance the previous orange state before processing this tick's HIT.
         // A newly triggered recoil must still display frame zero at applyFrames.
@@ -1335,7 +1338,6 @@ final class IdleTestScene: SKScene {
         // Low-awareness CPU can choose distance defense using the existing
         // retreat sprites. It resumes normal footwork once recovered.
         // An active guard or attack always has priority.
-        cpuWithdrawal.update(awareness: combatMeters.orange.awareness)
         orangeMotion.maximumSpeed = cpuDistance.speed
         let direction = guardEntry || cpuOffense.state == .preparing ? 0.0
             : (cpuWithdrawal.active && !guardPlayback.isSelected ? 1.0
