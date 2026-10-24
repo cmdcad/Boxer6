@@ -448,6 +448,31 @@ final class FighterMetersTests: XCTestCase {
         XCTAssertFalse(scene.blueIsWithdrawing)
     }
 
+    func testEarnedRopePivotMovesBlueAndConsumesBlocks() {
+        let driver = CombatDriver(distance: 400)
+        let scene = driver.scene
+        scene.testSetBluePosition(150)
+        scene.testSetBlueBlockChain(2)
+        let before = scene.testBluePosition
+        XCTAssertTrue(scene.requestBlueEvade(horizontal: 1, vertical: 1))
+        XCTAssertGreaterThan(scene.testBluePosition, before)
+        XCTAssertFalse(scene.blueEnhancedEscapeReady)
+        XCTAssertFalse(scene.requestBlueEvade(horizontal: 1, vertical: 1))
+    }
+
+    func testRopePivotRequiresBlocksAndRopeProximity() {
+        let driver = CombatDriver(distance: 400)
+        let scene = driver.scene
+        scene.testSetBluePosition(150)
+        let before = scene.testBluePosition
+        XCTAssertFalse(scene.requestBlueEvade(horizontal: 1, vertical: 1))
+        XCTAssertEqual(scene.testBluePosition, before)
+        scene.testSetBluePosition(300)
+        scene.testSetBlueBlockChain(2)
+        XCTAssertFalse(scene.requestBlueEvade(horizontal: 1, vertical: 1))
+        XCTAssertTrue(scene.blueEnhancedEscapeReady)
+    }
+
     func testCPUWithdrawalStaysActiveBelowSeventyFiveAwareness() {
         var policy = CPUWithdrawalPolicy()
         policy.update(awareness: 49)
