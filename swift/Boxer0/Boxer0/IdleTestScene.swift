@@ -1456,7 +1456,7 @@ final class IdleTestScene: SKScene {
                 }
             }
         }
-        return cube.withUnsafeBufferPointer { Data(buffer: $0) }
+        return cube.withUnsafeBytes { Data($0) }
     }()
 
     private func loadSharedBlueJab(prefix: String, count: Int) -> [SKTexture] {
