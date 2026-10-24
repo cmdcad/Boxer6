@@ -507,6 +507,9 @@ final class IdleTestScene: SKScene {
     var orangeFrameIndex: Int { orangePresentedAnimation.index }
     private var contactTracker = PunchContactTracker()
     private var health = FighterHealthState()
+    private var combatMeters = CombatMetersState()
+    var blueMeters: FighterMeters { combatMeters.blue }
+    var orangeMeters: FighterMeters { combatMeters.orange }
     var blueHealth: FighterHealth { health.blue }
     var orangeHealth: FighterHealth { health.orange }
     var blueCombatState: FighterCombatState { health.blueCombat.state }
@@ -522,6 +525,7 @@ final class IdleTestScene: SKScene {
         }
         logCombat("RESET", fighter: .blue)
         health.reset()
+        combatMeters.reset()
         blueRecovery.cancel(); orangeRecovery.cancel()
         clearBlueGuardInput()
         orangePunch.cancel(); cpuContactTracker.finish()
@@ -750,6 +754,8 @@ final class IdleTestScene: SKScene {
         }
         let blueGuardWasRaising = blueGuard.isSelected && !blueGuard.isEffective
         simulationTime += dt
+        combatMeters.advance(dt, blueGuarding: blueGuard.isSelected,
+                             orangeGuarding: guardPlayback.isSelected)
         advancePhysicalRecovery(dt)
         advanceBlueRecovery(dt)
         advanceBlueDefense(dt)
@@ -1012,7 +1018,9 @@ final class IdleTestScene: SKScene {
             if interrupted { logCombat("ATTACK_INTERRUPTED", fighter: event.defenderID,
                 context: event.defenderID == .blue ? contactTracker.context : cpuContactTracker.context) }
         }
+        let eligible = health.canExchangePunches || simultaneous
         health.receive(event, simultaneous: simultaneous)
+        if eligible { combatMeters.receive(event) }
         let nextHealth = event.defenderID == .blue ? blueHealth.current : orangeHealth.current
         if previousHealth != nextHealth { logCombat("HEALTH_CHANGED", fighter: event.defenderID,
             context: event.attackerID == .blue ? contactTracker.context : cpuContactTracker.context, detail: "\(previousHealth)->\(nextHealth)") }
@@ -1112,7 +1120,8 @@ final class IdleTestScene: SKScene {
             let completed = blueKnockdown.advance(dt)
             if completed {
                 blueRecovery.cancel()
-                health.recoverBlue(); clearHeldInput(); clearBlueGuardInput(); motion.stop(); settleIdle()
+                if health.recoverBlue() { combatMeters.recoverBlue() }
+                clearHeldInput(); clearBlueGuardInput(); motion.stop(); settleIdle()
                 frameIndex = 0; blueAccumulator = 0
                 cpuOffense.cancel(); defensiveAI.cancel()
                 onPlaybackChange?()
@@ -1136,6 +1145,7 @@ final class IdleTestScene: SKScene {
 
     private func completeOrangeRecovery() {
         guard health.recoverOrange() else { return }
+        combatMeters.recoverOrange()
         orangeRecovery.cancel()
         cpuOffense.cancel()
         defensiveAI.cancel()
