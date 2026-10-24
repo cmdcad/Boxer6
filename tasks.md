@@ -111,7 +111,9 @@
 - [x] Track consecutive successful Blue blocks; two blocks show ESCAPE READY, and a clean hit clears the chain. Enhanced pivot/switch is **not yet wired**.
 - [x] Initial enhanced rope pivot: after two Blue blocks, diagonal forward/up or forward/down near the left rope shifts Blue toward the ring center if space permits; consumes the block chain, shows PIVOT!, and suppresses concurrent forward movement until pad release. If spacing prevents pivot, shows PIVOT BLOCKED without spending the chain.
 - [x] Added scene regression tests for pivot movement, earned-chain consumption and rope proximity (not yet run).
-- [ ] Full duck-and-switch with attack commitment, bilateral facing, safe destination, mirrored collision geometry and tests remains deferred.
+- [x] Stage-one earned duck: with two consecutive Blue blocks, backward diagonal during the final 180 ms of an active CPU punch requests DUCK · TIMED. A confirmed avoided contact shows DUCKED! and consumes the chain; a noncommitted attack does not consume it. No side change occurs.
+- [x] Added scene tests for confirmed duck avoidance, chain consumption, and no spending without a committed attack (not yet run).
+- [ ] Full duck-and-switch remains deferred: current movement limits, facing and hit geometry assume Blue stays left and Orange stays right. First refactor orientation-aware movement, CPU distance and contact geometry; test both fighter orders before enabling any actual side switch.
 - [ ] Verify SpriteKit timed slip, pad input cancellation, CPU contact timing and multi-touch on Mac/device; current Linux environment cannot run SpriteKit tests.
 
 
