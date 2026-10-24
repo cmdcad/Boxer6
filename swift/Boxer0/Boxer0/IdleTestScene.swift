@@ -1365,29 +1365,43 @@ final class IdleTestScene: SKScene {
             && blockCrossB.count == BlockFeedbackPlayback.frameCount
     }
 
+    // Measured on the source 512px frames: bounce 00 alpha bounds y=96...450
+    // (354px tall); approved jab 0 y=153...448 (295px tall). Normalize
+    // the bounce to the jab's height and foot baseline in texture space.
+    // Do not scale boxerB: gameplay collision geometry uses its transform.
+    private static let orangeBounceStanceScale: CGFloat = 295.0 / 354.0
+
     private func loadNumberedTextures(prefix: String, count: Int) -> [SKTexture] {
         let images = (0..<count).compactMap { UIImage(named: String(format: "%@_%02d", prefix, $0)) }
-        guard images.count == count, images.allSatisfy({ $0.cgImage?.width == 512 && $0.cgImage?.height == 512 }) else { return [] }
+        guard images.count == count, images.allSatisfy({
+            $0.cgImage?.width == 512 && $0.cgImage?.height == 512
+        }) else { return [] }
+        let ciContext = CIContext()
         return images.map { image in
-            // Approved Orange art faces left already. Pre-flip its pixels so
-            // rootB's existing mirror restores left-facing art without changing
-            // the SpriteKit child transform used by contact geometry.
+            var prepared = image
+            if prefix == "orange_bounce", let cgImage = image.cgImage {
+                // Core Image uses a bottom-left origin. The original bounce
+                // feet are at y=62; jab feet at y=64. Explicitly rasterize
+                // the scaled artwork onto a full 512px transparent canvas.
+                // This avoids UIKit context transform-order ambiguities.
+                let scale = Self.orangeBounceStanceScale
+                let transform = CGAffineTransform(translationX: 256, y: 64)
+                    .scaledBy(x: scale, y: scale)
+                    .translatedBy(x: -256, y: -62)
+                let resized = CIImage(cgImage: cgImage).transformed(by: transform)
+                if let rendered = ciContext.createCGImage(
+                    resized, from: CGRect(x: 0, y: 0, width: 512, height: 512)
+                ) {
+                    prepared = UIImage(cgImage: rendered)
+                }
+            }
+            // Orange artwork faces left. Pre-flip pixels so the existing
+            // rootB mirror restores left-facing art without touching physics.
             let renderer = UIGraphicsImageRenderer(size: image.size)
             let corrected = renderer.image { context in
-                // Bounce V3 has a taller silhouette than the approved Jab V2
-                // stance (354 px versus 295 px). Normalize only this family
-                // around the shared image-space foot line, without resizing
-                // the SpriteKit node or changing contact/spacing transforms.
-                // This is a runtime art correction; source PNGs stay intact.
-                if prefix == "orange_bounce" {
-                    let stanceScale: CGFloat = 295.0 / 354.0
-                    context.cgContext.translateBy(x: 256, y: 448)
-                    context.cgContext.scaleBy(x: stanceScale, y: stanceScale)
-                    context.cgContext.translateBy(x: -256, y: -448)
-                }
                 context.cgContext.translateBy(x: image.size.width, y: 0)
                 context.cgContext.scaleBy(x: -1, y: 1)
-                image.draw(at: .zero)
+                prepared.draw(at: .zero)
             }
             let texture = SKTexture(image: corrected)
             texture.filteringMode = .linear
