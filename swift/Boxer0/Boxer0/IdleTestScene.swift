@@ -1306,9 +1306,15 @@ final class IdleTestScene: SKScene {
         advanceA = (0..<6).map { makeTexture(named: "advance_a_\($0)") }
         retreatA = (0..<6).map { makeTexture(named: "retreat_a_\($0)") }
         // Never substitute another clip or a missing-image placeholder.
-        jabA = loadPunchTextures(prefix: "jab_a", count: PunchKind.jab.frameCount)
+        // Share the approved Orange Jab V2 motion with Blue, but recolor and
+        // face it toward Orange. Keep the original Blue frames as fallback.
+        let sharedBlueJab = loadBlueJabFromOrange()
+        jabA = sharedBlueJab.count == PunchKind.jab.frameCount
+            ? sharedBlueJab : loadPunchTextures(prefix: "jab_a", count: PunchKind.jab.frameCount)
         crossA = loadPunchTextures(prefix: "cross_a", count: PunchKind.cross.frameCount)
-        jabRecoveryA = loadPunchTextures(prefix: "jab_recovery_a", count: 1)
+        let sharedBlueJabRecovery = loadBlueJabRecoveryFromOrange()
+        jabRecoveryA = sharedBlueJabRecovery.count == 1
+            ? sharedBlueJabRecovery : loadPunchTextures(prefix: "jab_recovery_a", count: 1)
         crossRecoveryA = loadPunchTextures(prefix: "cross_recovery_a", count: 1)
         jabRecoveryB = loadPunchTextures(prefix: "jab_recovery_b", count: 1)
         crossRecoveryB = loadPunchTextures(prefix: "cross_recovery_b", count: 1)
@@ -1377,6 +1383,44 @@ final class IdleTestScene: SKScene {
                 image.draw(at: .zero)
             }
             let texture = SKTexture(image: corrected)
+            texture.filteringMode = .linear
+            return texture
+        }
+    }
+
+    // Orange's approved jab frames face left; Blue faces right. A selective
+    // warm-to-blue hue conversion preserves shading and transparency while
+    // keeping the same poses/timing. This does not change Orange's textures.
+    private func loadBlueJabFromOrange() -> [SKTexture] {
+        loadSharedBlueJab(prefix: "jab_b", count: PunchKind.jab.frameCount)
+    }
+
+    private func loadBlueJabRecoveryFromOrange() -> [SKTexture] {
+        loadSharedBlueJab(prefix: "jab_recovery_b", count: 1)
+    }
+
+    private func loadSharedBlueJab(prefix: String, count: Int) -> [SKTexture] {
+        let images = (0..<count).compactMap { UIImage(named: "\(prefix)_\($0)") }
+        guard images.count == count, images.allSatisfy({
+            $0.cgImage?.width == 512 && $0.cgImage?.height == 512
+        }) else { return [] }
+        let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+        return images.compactMap { image -> SKTexture? in
+            guard let cgImage = image.cgImage else { return nil }
+            let input = CIImage(cgImage: cgImage)
+            // Hue adjustment is applied only to warm-colored pixels, leaving
+            // neutral outlines/highlights intact. Preserve original alpha.
+            let recolored = input.applyingFilter("CIHueAdjust", parameters: [
+                kCIInputAngleKey: CGFloat.pi
+            ])
+            guard let output = ciContext.createCGImage(recolored, from: input.extent) else { return nil }
+            let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512))
+            let facingRight = renderer.image { context in
+                context.cgContext.translateBy(x: 512, y: 0)
+                context.cgContext.scaleBy(x: -1, y: 1)
+                UIImage(cgImage: output).draw(at: .zero)
+            }
+            let texture = SKTexture(image: facingRight)
             texture.filteringMode = .linear
             return texture
         }
